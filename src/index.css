@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Base styles */
+@layer base {
+  html {
+    @apply antialiased text-gray-900 bg-white;
+  }
+  
+  .dark {
+    @apply text-gray-100 bg-gray-900;
+  }
+  
+  body {
+    @apply min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500 dark:bg-gray-500;
+}
+
+/* Component styles */
+@layer components {
+  /* Chord diagram components */
+  .chord-diagram {
+    @apply relative inline-flex items-center justify-center;
+  }
+  
+  .chord-fretboard {
+    @apply stroke-current text-chord-fret;
+  }
+  
+  .chord-nut {
+    @apply stroke-current text-chord-nut;
+  }
+  
+  .chord-string {
+    @apply stroke-current text-chord-string;
+  }
+  
+  .chord-fret-marker {
+    @apply fill-current text-chord-fret-marker;
+  }
+  
+  .chord-note {
+    @apply fill-current text-chord-note-default hover:text-chord-note-muted transition-colors;
+  }
+  
+  .chord-barre {
+    @apply fill-current text-chord-barre opacity-90;
+  }
+  
+  .chord-finger-label {
+    @apply fill-current text-chord-finger-label text-xs font-bold pointer-events-none;
+  }
+  
+  /* Tooltip */
+  .tooltip {
+    @apply absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 invisible transition-opacity duration-200;
+  }
+  
+  .tooltip-arrow {
+    @apply absolute w-2 h-2 bg-gray-900 transform rotate-45 -translate-x-1/2 -translate-y-1/2;
+  }
+}
+
+/* Dark mode overrides */
+.dark .chord-fretboard {
+  @apply opacity-80;
+}
+
+.dark .chord-nut {
+  @apply opacity-80;
+}
+
+.dark .chord-string {
+  @apply text-chord-string-muted;
+}
+
+.dark .chord-fret-marker {
+  @apply opacity-60;
+}
+
+.dark .chord-barre {
+  @apply opacity-90;
+}

@@ -1,0 +1,30 @@
+{
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "editor.autoClosingQuotes": "always",
+  "editor.autoClosingBrackets": "always",
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "css.validate": false,
+  "less.validate": false,
+  "scss.validate": false,
+  "tailwindCSS.emmetCompletions": true,
+  "tailwindCSS.experimental.classRegex": [
+    ["class=\\"([^\\\"]*)\\"", "[\\\\\\\"'`]([^\"'`]*)"]
+  ],
+  "editor.inlineSuggest.enabled": true,
+  "editor.suggest.showClasses": true,
+  "workbench.colorCustomizations": {
+    "editor.foreground": "#000000"
+  },
+  "workbench.colorTheme": "Default Dark+",
+  "files.autoSave": "afterDelay"
+}
