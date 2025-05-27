@@ -97,6 +97,29 @@ La libreria si limita a visualizzare i dati forniti dall'utente senza eseguire c
 - Seguire lo schema cromatico dell'applicazione
 - Mantenere un allineamento coerente con il diagramma sottostante
 
+## Posizionamento dei Pallini e Spaziatura dei Tasti
+
+### Calcolo della Spaziatura
+- **Altezza totale**: L'altezza disponibile per la tastiera è calcolata sottraendo l'area delle etichette (30px) dall'altezza totale del diagramma
+- **Spaziatura tasti**: La distanza tra i tasti è calcolata come `fretSpacing = (height - labelAreaHeight) / (numFrets + 1)`
+  - Il `+1` è necessario per includere lo spazio per il capotasto
+  - Questo calcolo è condiviso tra `FretboardBase` e `NotesLayer` per garantire consistenza
+
+### Posizionamento Verticale dei Pallini
+- I pallini sono centrati tra due tasti consecutivi
+- La posizione Y di un pallino al tasto `n` è calcolata come: `y = (n - 0.5) * fretSpacing`
+  - Per il primo tasto: `y = 0.5 * fretSpacing` (centrato tra capotasto e primo tasto)
+  - Per il secondo tasto: `y = 1.5 * fretSpacing` (centrato tra primo e secondo tasto)
+  - E così via...
+
+### Gestione delle Corde Aperte/Mute
+- Le corde aperte/mute sono posizionate a `-fretSpacing * 0.5` (appena sopra il capotasto)
+- Viene mostrata una 'X' per le corde mute
+
+### Supporto per `startFret > 1`
+- Quando la tastiera inizia da un tasto superiore al primo, la posizione viene adattata sottraendo `(startFret - 1) * fretSpacing`
+- Questo sposta correttamente l'intera griglia dei tasti verso l'alto
+
 ## Note di Sviluppo
 
 - Il componente è stato progettato per essere il più generico possibile, permettendo la personalizzazione attraverso le props

@@ -3,26 +3,57 @@ import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 
 const testChords: ChordDiagramData[] = [
-  // Chitarra standard (6 corde)
+  // Chitarra standard (6 corde) - C Major con barrè all'ottavo tasto
+  {
+    name: 'C Major (8th position)',
+    instrumentName: 'Guitar (Standard Tuning)',
+    positions: {
+      notes: [
+        { string: 6, fret: 8, tone: 'C' },
+        { string: 5, fret: 10, tone: 'G' },
+        { string: 4, fret: 10, tone: 'C' },
+        { string: 3, fret: 9, tone: 'E' },
+        { string: 2, fret: 8, tone: 'G' },
+        { string: 1, fret: 8, tone: 'C' }
+      ],
+      fingers: [1, 3, 4, 2, 1, 1],
+      barres: [
+        { fromString: 1, toString: 6, fret: 8, finger: 1 }
+      ]
+    },
+    theory: {
+      chordTones: ['C', 'E', 'G'],
+      tones: ['C', 'G', 'C', 'E', 'G', 'C'],
+      intervals: ['R', '5', 'R', '3', '5', 'R'],
+      formula: ['R', '3', '5'],
+      extensions: []
+    },
+    display: {
+      labelType: 'finger',
+      showFretNumbers: true,
+      startFret: 8
+    }
+  },
+  // Chitarra standard (6 corde) - C Major in prima posizione
   {
     name: 'C Major',
     instrumentName: 'Guitar (Standard Tuning)',
     positions: {
       notes: [
-        { string: 6, fret: 0, muted: true },  // Sesta corda (più spessa)
         { string: 5, fret: 3, tone: 'C' },
         { string: 4, fret: 2, tone: 'E' },
-        { string: 3, fret: 0, tone: 'G' },
+        { string: 3, fret: 0, tone: 'G' },  // Corde aperte
         { string: 2, fret: 1, tone: 'C' },
-        { string: 1, fret: 0, tone: 'E' }    // Prima corda (più sottile)
+        { string: 1, fret: 0, tone: 'E' },  // Corde aperte
+        { string: 6, fret: 0, muted: true } // Sesta corda muta
       ],
-      fingers: [null, 3, 2, 0, 1, null],
+      fingers: [3, 2, 0, 1, 0, null],
       barres: []
-    },  
+    },
     theory: {
       chordTones: ['C', 'E', 'G'],
-      tones: [' ','C', 'E', 'G', 'C', 'E'],
-      intervals: [' ', 'R', '3', '5', 'R', '3'],
+      tones: ['', 'C', 'E', 'G', 'C', 'E'],
+      intervals: ['', 'R', '3', '5', 'R', '3'],
       formula: ['R', '3', '5'],
       extensions: []
     },
@@ -38,23 +69,23 @@ const testChords: ChordDiagramData[] = [
     instrumentName: 'Guitar (Standard Tuning)',
     positions: {
       notes: [
-        { string: 6, fret: 3, tone: 'G' },
+        { string: 6, fret: 3, tone: 'G' },  // Sesta corda (più spessa)
         { string: 5, fret: 2, tone: 'B' },
-        { string: 1, fret: 3, tone: 'G' },
+        { string: 4, fret: 0, tone: 'D' },
+        { string: 3, fret: 0, tone: 'G' },
         { string: 2, fret: 0, tone: 'B' },
-        { string: 3, fret: 0, tone: 'D' },
-        { string: 6, fret: 3, tone: 'G' }
+        { string: 1, fret: 3, tone: 'G' }   // Prima corda (più sottile)
       ],
-      fingers: [3, 2, 4, 0, 0, 1],
+      fingers: [3, 2, 0, 0, 0, 4],
       barres: [
-        { fromString: 1, toString: 6, fret: 3, finger: 1 }
+        { fromString: 1, toString: 3, fret: 3, finger: 4 }
       ]
     },
     theory: {
       chordTones: ['G', 'B', 'D'],
       tones: ['G', 'B', 'D', 'G', 'B', 'G'],
-      intervals: ['R', '3', '5', 'R', '3', '5'],
-      formula: ['R','3','5'],
+      intervals: ['R', '3', '5', 'R', '3', 'R'],
+      formula: ['R', '3', '5'],
       extensions: []
     },
     display: {
@@ -413,6 +444,42 @@ const testChords: ChordDiagramData[] = [
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
   {
+    name: 'F Major',
+    instrumentName: 'Guitar (Standard Tuning)',
+    positions: {
+      notes: [
+        { string: 6, fret: 1, tone: 'F' },  // Barrè con il dito 1
+        { string: 5, fret: 3, tone: 'C' },  // Dito 3
+        { string: 4, fret: 3, tone: 'F' },  // Dito 4
+        { string: 3, fret: 2, tone: 'A' },  // Dito 2
+        { string: 2, fret: 1, tone: 'C' },  // Parte del barrè
+        { string: 1, fret: 1, tone: 'F' }   // Parte del barrè
+      ],
+      fingers: [1, 3, 4, 2, 1, 1],  // 1 indica il barrè
+      barres: [
+        {
+          fromString: 1,  // Prima corda
+          toString: 6,    // Sesta corda
+          fret: 1,        // Tasto del barrè
+          finger: 1       // Dito che esegue il barrè
+        }
+      ]
+    },
+    theory: {
+      chordTones: ['F', 'A', 'C'],
+      tones: ['F', 'C', 'F', 'A', 'C', 'F'],
+      intervals: ['R', '5', 'R', '3', '5', 'R'],
+      formula: ['R', '3', '5'],
+      extensions: []
+    },
+    display: {
+      labelType: 'finger',
+      showFretNumbers: true,
+      showStringNames: true
+    },
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+  },
+  {
     name: 'Open G',
     positions: {
       notes: [
@@ -444,11 +511,12 @@ const testChords: ChordDiagramData[] = [
 export function ChordTestPage() {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
-  const [diagramSize, setDiagramSize] = useState({ width: 250, height: 300 });
+  const [diagramSize, setDiagramSize] = useState({ width: 250, height: 350 }); // Aumentata l'altezza da 300 a 350
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
   const [showTuningEditor, setShowTuningEditor] = useState(false);
   const [numFrets, setNumFrets] = useState<number>(5); // Default to 5 frets
+  const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
   
   // Auto-detect number of strings from chord data
   const detectNumStrings = useCallback((chord: ChordDiagramData) => {
@@ -470,19 +538,6 @@ export function ChordTestPage() {
     setNumStrings(detectNumStrings(selectedChord));
   }, [selectedChord, detectNumStrings]);
 
-  // Update custom tuning when chord changes
-  useEffect(() => {
-    if (selectedChord.tuning) {
-      setCustomTuning(selectedChord.tuning);
-    } else {
-      // Default to standard tuning based on number of strings
-      setCustomTuning(
-        numStrings === 6 ? ['E', 'A', 'D', 'G', 'B', 'E'] :
-        numStrings === 5 ? ['B', 'E', 'A', 'D', 'G'] :
-        ['E', 'A', 'D', 'G']
-      );
-    }
-  }, [selectedChord, numStrings]);
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -527,7 +582,23 @@ export function ChordTestPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div>
-          <h2 className="text-xl font-semibold mb-3">Label Type</h2>
+          <h2 className="text-xl font-semibold mb-3">Display Options</h2>
+          <div className="flex items-center justify-between mb-4 p-2 bg-gray-100 dark:bg-gray-800 rounded">
+            <span className="text-sm font-medium">Show Fret Numbers</span>
+            <button
+              onClick={() => setShowFretNumbers(!showFretNumbers)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                showFretNumbers ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                  showFretNumbers ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <h3 className="text-lg font-medium mb-2">Label Type</h3>
           <div className="space-y-2 mb-4">
             {(['none', 'finger', 'tone', 'interval'] as const).map((type) => (
               <label key={type} className="flex items-center">
@@ -637,7 +708,7 @@ export function ChordTestPage() {
                 width={diagramSize.width}
                 height={diagramSize.height}
                 labelType={labelType}
-                showFretNumbers={selectedChord.display?.showFretNumbers}
+                showFretNumbers={showFretNumbers}
                 showStringNames={selectedChord.display?.showStringNames}
                 tuning={customTuning}
                 className="border border-gray-200 rounded p-4"

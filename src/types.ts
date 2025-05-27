@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
 export interface NotePosition {
-  string: number;     // Numero della corda (1-6 per chitarra standard)
-  fret: number;       // Tasto (0 per corda a vuoto)
-  muted?: boolean;    // Se la corda è stoppata
-  tone?: string;      // Nome della nota (es. 'C', 'D#')
-  interval?: string;  // Intervallo musicale (es. 'R', '3', '5')
-  finger?: number;    // Dito da usare (1-4)
+  string: number;               // Numero della corda (1-6 per chitarra standard)
+  fret: number;                 // Tasto (0 per corda a vuoto)
+  muted?: boolean;              // Se la corda è stoppata
+  tone?: string;                // Nome della nota (es. 'C', 'D#')
+  interval?: string;            // Intervallo musicale (es. 'R', '3', '5')
+  finger?: number | 'T' | null; // Dito da usare (1-4, 'T' per pollice, null per non specificato)
 }
 
 export interface Barre {
@@ -15,6 +15,8 @@ export interface Barre {
   fret: number;
   finger?: number | 'T';  // Opzionale: dito per la barrata (1-4 o 'T' per pollice)
 }
+
+export type FretNumberPosition = 'left' | 'right' | 'none';
 
 export interface ChordDiagramData {
   name: string;        // Nome dell'accordo (es. "C Major")
@@ -54,9 +56,11 @@ export interface ChordDiagramData {
   display?: {
     labelType?: 'none' | 'finger' | 'tone' | 'interval';  // Default: 'none'
     showFretNumbers?: boolean;  // Mostra i numeri dei tasti
+    fretNumberPosition?: FretNumberPosition; // Posizione dei numeri dei tasti
     showStringNames?: boolean;  // Mostra i nomi delle corde
     width?: number;            // Larghezza del diagramma
     height?: number;           // Altezza del diagramma
+    startFret?: number;        // Tasto di partenza per la visualizzazione
   };
 
   tuning?: string[]; // Array di note per ogni corda, dalla più grave alla più acuta

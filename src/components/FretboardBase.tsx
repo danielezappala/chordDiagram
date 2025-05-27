@@ -1,12 +1,14 @@
 import React from 'react';
-import { DEFAULT_NUM_FRETS, DEFAULT_NUM_STRINGS } from '../types';
 
-interface FretboardBaseProps {
+export type FretNumberPosition = 'left' | 'right' | 'none';
+
+interface FretboardBaseProps extends React.PropsWithChildren {
   numStrings: number;
   numFrets: number;
   width: number;
   height: number;
   showFretNumbers?: boolean;
+  fretNumberPosition?: FretNumberPosition;
   showStringNames?: boolean;
   className?: string;
   tuning?: string[];
@@ -16,20 +18,24 @@ interface FretboardBaseProps {
     tones?: (string | null)[];
     intervals?: (string | null)[];
   };
+  startFret?: number;
 }
 
 export const FretboardBase: React.FC<FretboardBaseProps> = ({
+  children,
   numStrings,
   numFrets,
   width,
   height,
   showFretNumbers = true,
+  fretNumberPosition = 'left',
   showStringNames = true,
   className = '',
   tuning,
   labelType = 'finger',
   labels = [],
   theory,
+  startFret = 1,
 }) => {
   // Calculate dimensions with padding for labels
   const labelAreaHeight = 30; // Extra space for labels at the bottom
@@ -37,6 +43,14 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   
   const stringSpacing = width / (numStrings - 1);
   const fretSpacing = paddedHeight / (numFrets + 1); // +1 for the nut area
+
+  // Calcola la spaziatura per i numeri dei tasti in base alla larghezza della tastiera
+  const fretNumberSpacing = width * 0.1; // 10% della larghezza
+  const fretNumberOffset = -5; // Offset per spostare i numeri leggermente più a sinistra
+  
+  // Calcola la dimensione del testo in base alla dimensione della tastiera
+  const baseFontSize = Math.min(width, paddedHeight) * 0.05; // 5% della dimensione minore
+  const fontSize = Math.max(12, Math.min(baseFontSize, 16)); // Tra 12px e 16px
 
   // Calculate string thickness based on the number of strings
   const getStringThickness = (index: number, totalStrings: number) => {
@@ -46,8 +60,10 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   };
 
   // Get fret line style
-  const getFretStyle = (index: number): React.SVGProps<SVGLineElement> => {
-    if (index === 0) {
+  const getFretStyle = (fretIndex: number) => {
+    const isNut = fretIndex === 0; // Solo il capotasto
+    
+    if (isNut) {
       return {
         stroke: 'currentColor',
         strokeWidth: 4,
@@ -62,72 +78,54 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
       strokeLinecap: 'round' as const
     };
   };
+  
+  // Calculate fret number to display
+  const getFretNumber = (fretIndex: number): string => {
+    if (!showFretNumbers) return '';
+    if (fretIndex === 0) return ''; // Skip nut
+    return (startFret + fretIndex - 1).toString();
+  };
 
   // Get the label for a specific string based on labelType
   const getStringLabel = (index: number, totalStrings: number) => {
-    // If we have labels and the index is valid, return the corresponding label
     if (labels && index >= 0 && index < labels.length) {
-      return String(labels[labels.length - 1 - index] || ''); // Invert the order to show lowest string at bottom
+      return String(labels[labels.length - 1 - index] || '');
     }
-    
-    // Fallback to tuning if no labels are available
     if (tuning && tuning.length === totalStrings) {
       return tuning[totalStrings - 1 - index];
     }
-    
-    // Default to empty string if no tuning is provided
     return '';
   };
 
-  // Debug logs
-  console.log('FretboardBase - labelType:', labelType);
-  console.log('FretboardBase - theory:', theory);
-  console.log('FretboardBase - labels:', labels);
-  console.log('FretboardBase - showStringNames:', showStringNames);
-  
   return (
     <g className={`fretboard-base ${className}`}>
-      {/* Strings - String 1 (highest pitch) at the top */}
-      {/* Mappatura delle corde per gestire correttamente le corde mute */}
+      {/* Strings */}
       {Array.from({ length: numStrings }).map((_, i) => {
         const stringNumber = i + 1;
         const x = i * stringSpacing;
-        
-        // Ottieni la nota per questa corda
         const noteForString = labels[i];
         const isMuted = noteForString === 'x' || noteForString === 'X';
         
-        // Determina il testo da mostrare in base al tipo di etichetta
         let labelText = '';
-        
         if (isMuted) {
-          // Per le corde mute, mostra 'X' indipendentemente dal labelType
           labelText = 'X';
         } else {
-          // Conta quante corde mute ci sono prima di questa corda
           const mutedStringsBefore = labels.slice(0, i).filter(n => n === 'x' || n === 'X').length;
-          // Calcola l'indice corretto per le note, saltando le corde mute
           const noteIndex = i - mutedStringsBefore;
           
           if (labelType === 'tone') {
-            // Per 'tone', mostra gli intervalli
             labelText = (theory?.intervals?.[noteIndex] || '') as string;
-          } else if (labelType === 'interval' || labelType === 'finger' || labelType === 'none') {
-            // Per 'interval', 'finger' e 'none', mostra le note
+          } else if (['interval', 'finger', 'none'].includes(labelType)) {
             labelText = (theory?.tones?.[noteIndex] || '') as string;
           } else {
-            // Default: mostra l'etichetta della corda (accordatura)
             labelText = getStringLabel(i, numStrings);
           }
         }
         
-        // Mostra l'etichetta se abbiamo del testo da mostrare e non è una corda muta
-        // oppure se è una corda muta e vogliamo mostrare le mute
         const shouldShowLabel = (!!labelText && !isMuted) || isMuted;
         
         return (
           <g key={`string-${stringNumber}`}>
-            {/* String line */}
             <line
               x1={x}
               y1={0}
@@ -139,11 +137,10 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
               className="text-gray-700 dark:text-gray-300"
             />
             
-            {/* String label */}
             {shouldShowLabel && (
               <text
-                x={x} // Spostamento di 10px a destra
-                y={paddedHeight + 20} // Position below the fretboard
+                x={x}
+                y={paddedHeight + 20}
                 textAnchor="middle"
                 className={`fill-current ${
                   labelType === 'finger' 
@@ -179,22 +176,50 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
           />
         );
       })}
-      
-      {/* Add a subtle gradient under the nut for better visibility */}
-      <defs>
-        <linearGradient id="nutGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="rgba(0,0,0,0.1)" />
-          <stop offset="100%" stopColor="rgba(0,0,0,0)" />
-        </linearGradient>
-      </defs>
+
+      {/* Fret numbers */}
+      {showFretNumbers && fretNumberPosition !== 'none' && (
+        <g className="fret-numbers">
+          {Array.from({ length: numFrets + 1 }).map((_, i) => {
+            if (i === 0) return null;
+            const fretNumber = getFretNumber(i);
+            if (!fretNumber) return null;
+            
+            const y = (i - 0.5) * fretSpacing;
+            const x = fretNumberPosition === 'left' 
+              ? -fretNumberSpacing + fretNumberOffset 
+              : width + fretNumberSpacing;
+            
+            return (
+              <text
+                key={`fret-number-${i}`}
+                x={x}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="fill-current text-gray-700 dark:text-gray-300 font-medium"
+                style={{ fontSize: `${fontSize}px` }}
+              >
+                {fretNumber}
+              </text>
+            );
+          })}
+        </g>
+      )}
+
+      {/* Nut */}
       <rect
-        x="0"
-        y="0"
+        x={0}
+        y={0}
         width={width}
         height={fretSpacing * 0.3}
-        fill="url(#nutGradient)"
+        fill="currentColor"
+        className="text-gray-700 dark:text-gray-300"
         opacity="0.5"
       />
+      
+      {/* Children elements (like NotesLayer) */}
+      {children}
     </g>
   );
 };
