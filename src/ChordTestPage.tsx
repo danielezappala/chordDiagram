@@ -168,7 +168,7 @@ const testChords: ChordDiagramData[] = [
         { string: 6, fret: 0, muted: true },
         { string: 5, fret: 0, muted: true }
       ],
-      fingers: [0, 3, 2, 4, null, null],
+      fingers: [3, 1, 2, 0, null, null],
       barres: []
     },
     theory: {
@@ -330,17 +330,17 @@ const testChords: ChordDiagramData[] = [
   
   // Chitarra 7 corde
   {
-    name: 'A7 (7 corde)',
+    name: 'A7',
     positions: {
       notes: [
-        { string: 7, fret: 0, tone: 'A' },
+        { string: 6, fret: 0, tone: 'A' },
         { string: 5, fret: 2, tone: 'E' },
         { string: 4, fret: 2, tone: 'A' },
         { string: 3, fret: 2, tone: 'C#' },
         { string: 2, fret: 2, tone: 'F#' },
         { string: 1, fret: 0, tone: 'E' }
       ],
-      fingers: [0, 2, 3, 4, 1, 0], // 0 per corde a vuoto
+      fingers: [0, 4, 3, 2, 0, 0], // 0 per corde a vuoto
       barres: []
     },
     theory: {
