@@ -2,6 +2,28 @@
 
 Questo documento registra le decisioni di progettazione chiave prese durante lo sviluppo della libreria di diagrammi per chitarra.
 
+## Struttura del Progetto
+
+### Organizzazione dei File
+- `src/components/ChordDiagram`: Contiene il componente principale per la visualizzazione degli accordi
+- `src/types`: Definizioni TypeScript per i tipi pubblici
+- `src/utils`: Funzioni di utilità e helper
+- `src/index.ts`: Punto di ingresso principale della libreria
+
+### Convenzioni API
+1. **Numerazione delle Corde**:
+   - La corda 1 è il Mi cantino (la più sottile), visualizzata come la più a destra
+   - Le corde sono numerate in ordine crescente da destra a sinistra
+
+2. **Gestione dei Tasti**:
+   - `fret`: Il numero assoluto del tasto (0 per corde aperte)
+   - `startFret`: Offset che indica da quale tasto iniziare la visualizzazione
+   - La posizione effettiva è calcolata come `fret - startFret + 1`
+
+3. **Validazione**:
+   - Tutte le props vengono validate utilizzando Zod
+   - I messaggi di errore sono descrittivi e utili per il debugging
+
 ## Struttura dei Dati degli Accordi
 
 ### Formato dell'oggetto accordo
