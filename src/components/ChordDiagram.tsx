@@ -143,9 +143,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     });
     
     // Then apply fingers, tones, and intervals based on their positions
+    // These arrays are assumed to be from lowest string (N) to highest string (1)
+    // So they need to be reversed to match the noteMap keying (1 = highest string)
     if (fingers) {
-      fingers.forEach((finger, index) => {
-        const stringNum = index + 1; // Convert 0-based to 1-based string number
+      const reversedFingers = [...fingers].reverse();
+      reversedFingers.forEach((finger, index) => {
+        const stringNum = index + 1; // Convert 0-based (after reverse, 0 = highest string) to 1-based string number
         if (noteMap.has(stringNum)) {
           noteMap.get(stringNum)!.finger = finger;
         }
@@ -153,8 +156,9 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     }
     
     if (theory?.tones) {
-      theory.tones.forEach((tone, index) => {
-        const stringNum = index + 1; // Convert 0-based to 1-based string number
+      const reversedTones = [...theory.tones].reverse();
+      reversedTones.forEach((tone, index) => {
+        const stringNum = index + 1; // Convert 0-based (after reverse, 0 = highest string) to 1-based string number
         if (noteMap.has(stringNum)) {
           noteMap.get(stringNum)!.tone = tone;
         }
@@ -180,31 +184,43 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   
   // Generate note labels based on label type
   const noteLabels = useMemo(() => {
-    // Create an array filled with spaces for all strings
-    const labels = Array(numStrings).fill(' ');
-    
-    if (labelType === 'none') return labels;
-    
-    // Map notes to their string positions
+    const labels = Array(numStrings).fill(' '); // Initialize with spaces
+
+    if (labelType === 'none') {
+      // For 'none', still respect muted strings for 'X' display by FretboardBase if desired.
+      // This ensures 'X' appears for muted strings even if other labels are off.
+      notesWithMetadata.forEach(note => {
+        const stringIndex = note.string - 1;
+        if (stringIndex < 0 || stringIndex >= numStrings) return;
+        if (note.muted) {
+          labels[stringIndex] = 'X';
+        }
+      });
+      return labels;
+    }
+
     notesWithMetadata.forEach(note => {
-      const stringIndex = note.string - 1; // Convert from 1-based to 0-based
-      
+      const stringIndex = note.string - 1;
       if (stringIndex < 0 || stringIndex >= numStrings) return;
-      
-      if (labelType === 'finger' && note.finger !== null && note.finger !== undefined) {
-        labels[stringIndex] = note.finger.toString();
+
+      if (note.muted) {
+        labels[stringIndex] = 'X'; // Muted strings get 'X'
+      } else if (labelType === 'finger') {
+        if (note.finger !== null && note.finger !== undefined) {
+          labels[stringIndex] = note.finger.toString();
+        } else {
+          labels[stringIndex] = ' '; // Explicitly space for null/undefined finger on non-muted string
+        }
       } else if (labelType === 'tone' && note.tone) {
         labels[stringIndex] = note.tone;
       } else if (labelType === 'interval' && note.interval) {
         labels[stringIndex] = note.interval;
+      } else {
+        labels[stringIndex] = ' '; // Default to space if no label applies
       }
     });
-    
-    // Replace any 'x' or 'X' with spaces
-    return labels.map(label => {
-      if (label === 'x' || label === 'X') return ' ';
-      return label || ' ';
-    });
+
+    return labels; // Return the labels array directly
   }, [labelType, notesWithMetadata, numStrings]);
   
   return (

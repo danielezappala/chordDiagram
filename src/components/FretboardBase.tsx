@@ -80,9 +80,14 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   };
   
   // Calculate fret number to display
+  // Calculates the fret number to display alongside the fretboard.
+  // If startFret is 1 (default), displayed numbers are 1, 2, 3, ...
+  // If startFret is, e.g., 3, displayed numbers will be 3, 4, 5, ...
+  // This aligns the visual fret numbering with the actual frets being shown.
+  // fretIndex is 0-based for calculation ease but represents 1st, 2nd, etc., visible fret line.
   const getFretNumber = (fretIndex: number): string => {
     if (!showFretNumbers) return '';
-    if (fretIndex === 0) return ''; // Skip nut
+    if (fretIndex === 0) return ''; // Skip nut, nut is not a numbered fret in this context.
     return (startFret + fretIndex - 1).toString();
   };
 

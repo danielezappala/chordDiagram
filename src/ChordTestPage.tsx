@@ -47,7 +47,7 @@ const testChords: ChordDiagramData[] = [
         { string: 1, fret: 0, tone: 'E' },  // Corde aperte
         { string: 6, fret: 0, muted: true } // Sesta corda muta
       ],
-      fingers: [3, 2, 0, 1, 0, null],
+      fingers: [null, 3, 2, 0, 1, 0],
       barres: []
     },
     theory: {

@@ -11,16 +11,24 @@ Questo documento registra le decisioni di progettazione chiave prese durante lo 
 - `src/index.ts`: Punto di ingresso principale della libreria
 
 ### Convenzioni API
-1. **Numerazione delle Corde**:
-   - La corda 1 è il Mi cantino (la più sottile), visualizzata come la più a destra
-   - Le corde sono numerate in ordine crescente da destra a sinistra
+1. **Numerazione delle Corde (String Numbering)**:
+   - La **Corda 1** (`string: 1` in `NotePosition`) si riferisce alla corda con il pitch più alto (es. Mi cantino / High E su una chitarra standard). Nel diagramma, questa corda è visualizzata come la più **a destra**.
+   - La **Corda N** (dove N è il numero totale di corde, es. `string: 6` per una chitarra standard) si riferisce alla corda con il pitch più basso (es. Mi basso / Low E). Nel diagramma, questa corda è visualizzata come la più **a sinistra**.
+   - Le etichette testuali delle corde (se mostrate) seguono questa convenzione visiva (da sinistra a destra: Low E, A, D, G, B, High E per una chitarra standard).
 
 2. **Gestione dei Tasti**:
    - `fret`: Il numero assoluto del tasto (0 per corde aperte)
    - `startFret`: Offset che indica da quale tasto iniziare la visualizzazione
-   - La posizione effettiva è calcolata come `fret - startFret + 1`
+   - La posizione effettiva è calcolata come `fret - startFret + 1` (Nota: questa formula potrebbe necessitare di revisione in base all'implementazione effettiva della resa grafica dei tasti rispetto a `startFret`. La gestione principale di `startFret` avviene sottraendo l'offset per la visualizzazione corretta delle note, come descritto in `NotesLayer.getFretY` e `FretboardBase.getFretNumber`.)
 
-3. **Validazione**:
+3. **Convenzioni per Array di Dati Relativi alle Corde (Array Data Conventions for String-Related Data)**:
+   Quando si forniscono array di dati che corrispondono a ciascuna corda dello strumento, come `positions.fingers`, `theory.tones`, `theory.intervals`, e `tuning`, la convenzione è la seguente:
+   - **Ordine degli Elementi nell'Input**: Questi array devono essere forniti con gli elementi ordinati dalla corda con il **pitch più basso** (es. Low E, corrispondente a `string: N`) alla corda con il **pitch più alto** (es. High E, corrispondente a `string: 1`).
+     - Esempio per `tuning` su chitarra standard (6 corde): `['E', 'A', 'D', 'G', 'B', 'E']` (Low E -> High E)
+     - Esempio per `fingers` su un accordo C Major aperto (X32010): `[null, 3, 2, 0, 1, 0]` (dito per Low E, dito per A, ..., dito per High E).
+   - **Gestione Interna**: Il componente `ChordDiagram` internamente inverte questi array. Questo adattamento è necessario perché la logica di mappatura interna e di generazione delle etichette (`noteLabels`) spesso processa i dati partendo dalla Corda 1 (High E) come indice primario o di riferimento. Questa inversione garantisce che i dati forniti secondo la convenzione "dal basso verso l'alto" siano correttamente associati alle rispettive corde nella visualizzazione.
+
+4. **Validazione**:
    - Tutte le props vengono validate utilizzando Zod
    - I messaggi di errore sono descrittivi e utili per il debugging
 
@@ -79,11 +87,15 @@ La libreria si limita a visualizzare i dati forniti dall'utente senza eseguire c
 
 ### Comportamento
 1. Le etichette sono centrate perfettamente nei cerchi delle note
-2. Le corde mute mostrano sempre una 'X' in colore grigio scuro
+2. Le corde mute mostrano sempre una 'X' in colore grigio scuro (simbolo grafico sul tasto zero in `NotesLayer`)
 3. Le corde aperte hanno testo nero su sfondo bianco
 4. Le corde premute hanno testo bianco su sfondo nero
-5. Le etichette vengono mostrate solo se presenti nell'array `labels`
-6. I valori null/undefined vengono gestiti correttamente
+5. Le etichette vengono mostrate solo se presenti nell'array `labels` (passato a `FretboardBase`)
+6. I valori null/undefined vengono gestiti correttamente per non visualizzare "null" o "undefined" come etichette.
+7. **Etichettatura delle Corde Mute (Muted String Labeling)**:
+   - Le corde contrassegnate come mute (`note.muted: true`) riceveranno un'etichetta 'X' nella riga delle etichette visualizzata sotto la tastiera (a condizione che `display.labelType` non sia `'none'` e venga generata tramite `noteLabels`).
+   - Questa etichetta 'X' per le corde mute ha la precedenza su qualsiasi altra etichetta derivante da `finger`, `tone`, o `interval` per quella specifica corda quando si generano le `noteLabels`.
+   - La visualizzazione del simbolo 'X' direttamente sulla corda all'altezza del capotasto (o al tasto zero) è gestita separatamente dal componente `NotesLayer` e non dipende da `noteLabels`.
 
 ## Convenzioni di Codice
 

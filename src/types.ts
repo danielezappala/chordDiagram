@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export interface NotePosition {
-  string: number;               // Numero della corda (1-6 per chitarra standard)
+  string: number;               // String number (e.g., 1-6 for standard guitar; 1 is the highest pitch string, typically rendered rightmost, N is the lowest pitch string, typically rendered leftmost).
   fret: number;                 // Tasto (0 per corda a vuoto)
   muted?: boolean;              // Se la corda è stoppata
   tone?: string;                // Nome della nota (es. 'C', 'D#')
@@ -13,7 +13,7 @@ export interface Barre {
   fromString: number;
   toString: number;
   fret: number;
-  finger?: number | 'T';  // Opzionale: dito per la barrata (1-4 o 'T' per pollice)
+  finger?: number | 'T';  // Optional finger to use for the barre (e.g., 1-4 or 'T' for thumb). Not currently rendered on the diagram.
 }
 
 export type FretNumberPosition = 'left' | 'right' | 'none';

@@ -70,12 +70,34 @@ function App() {
 |------|------|---------|-------------|
 | `strings` | `number` | `6` | Number of strings on the instrument |
 | `frets` | `number` | `5` | Number of frets to display |
-| `startFret` | `number` | `0` | Starting fret number (0 for open position) |
+| `startFret` | `number` | `1` | Starting fret number (1 for first fret) |
 | `notes` | `NotePosition[]` | `[]` | Array of notes to display |
 | `barres` | `Barre[]` | `[]` | Array of barres to display |
 | `width` | `number \| string` | `200` | Width of the diagram |
 | `height` | `number \| string` | `250` | Height of the diagram |
 | `className` | `string` | `''` | Additional CSS class names |
+
+## Data Conventions
+
+### String Numbering
+The library uses a consistent convention for numbering strings in `NotePosition.string`, `Barre.fromString`, and `Barre.toString` fields:
+*   **String 1:** Represents the string with the highest pitch (e.g., the high 'E' string on a standard-tuned guitar). In the diagram, this string is rendered as the **rightmost** string.
+*   **String N:** Represents the string with the lowest pitch (e.g., the low 'E' string on a 6-string guitar, so N=6). In the diagram, this string is rendered as the **leftmost** string.
+
+This means that visually, the strings are ordered from lowest pitch (left) to highest pitch (right).
+
+### Fret Numbering and `startFret`
+Understanding how fret positions are determined is key to providing correct data:
+*   **`NotePosition.fret`**: This field should always represent the **absolute fret number** on the instrument's neck. For example, an open string is `fret: 0`, a note on the first fret is `fret: 1`, and so on.
+*   **`ChordDiagramData.display.startFret`** (or the `startFret` prop on the `ChordDiagram` component): This setting determines which fret is displayed at the **top** of the chord diagram. The default is `1`.
+    *   If `startFret` is `1`, the diagram shows the instrument from the nut (or first fret) upwards.
+    *   If `startFret` is, for example, `3`, the diagram will start by showing the 3rd fret at the top. Notes played on frets 1 and 2 would typically not be visible unless they are open strings (which are handled slightly differently).
+*   **Fret Number Display**: When `showFretNumbers` is enabled, the numbers displayed next to the diagram (e.g., "3", "4", "5") will correspond to the actual fret numbers of the instrument, starting with the `startFret` value. For instance, if `startFret` is 3, the first fret shown will be labeled "3".
+
+### Barre Chords and `Barre.finger`
+The `Barre` type, used in `ChordDiagramData.positions.barres`, includes an optional `finger` field:
+*   **`Barre.finger?: number | 'T';`**: This field allows you to specify the finger used to play the barre (e.g., `1` for the index finger, `T` for the thumb).
+*   **Current Behavior**: While this data can be provided, the library does **not** currently render this finger information visually on the chord diagram. It is stored for potential future use or for other consumers of the data structure.
 
 ### InteractiveChordEditor Props
 

@@ -55,9 +55,14 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
     onBarreClick?.(barre);
   };
 
-  // Calculate the x position for a given string number (1-based, with 1 being the highest string)
+  // Calculate the x position for a given string number.
+  // Convention: String 1 is the highest pitch (e.g., high E on a guitar) and is rendered on the right.
+  // String N (where N is numStrings) is the lowest pitch and is rendered on the left.
   const getStringX = (stringNumber: number) => {
     // Convert from 1-based string number to 0-based index and reverse the order
+    // For example, on a 6-string guitar:
+    // String 1 (high E) becomes index 5 (numStrings - 1)
+    // String 6 (low E) becomes index 0
     const stringIndex = numStrings - stringNumber; // This will reverse the order
     return stringIndex * stringSpacing;
   };
@@ -65,26 +70,29 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   // Calculate the y position for a given fret number
   const getFretY = (fret: number | 'x'): number => {
     // For open strings or muted strings
-    if (fret === 'x' || fret === 0) return -fretSpacing * 0.75; // Spostato più in alto per evitare sovrapposizione
+    if (fret === 'x' || fret === 0) return -fretSpacing * 0.75; // Positioned higher to avoid overlap with the nut/first fret line.
     
-    // Convert fret to number if it's a string
+    // Convert fret to number if it's a string (legacy support)
     const fretNum = typeof fret === 'number' ? fret : parseInt(fret, 10);
     
-    // Calcola la posizione Y del tasto
-    // I tasti sono posizionati a: 0, fretSpacing, 2*fretSpacing, 3*fretSpacing, ...
-    // I pallini devono essere centrati tra i tasti, quindi:
-    // - Per il primo tasto (fretNum = 1): y = (1 - 0.5) * fretSpacing = 0.5 * fretSpacing
-    // - Per il secondo tasto (fretNum = 2): y = (2 - 0.5) * fretSpacing = 1.5 * fretSpacing
-    // E così via...
+    // Calculate the y position for a given fret number.
+    // Notes are typically centered between fret lines.
+    // The fret lines are at 0, fretSpacing, 2*fretSpacing, etc.
+    // - For fretNum = 1 (first fret), the note is centered at 0.5 * fretSpacing.
+    // - For fretNum = 2 (second fret), the note is centered at 1.5 * fretSpacing.
+    // And so on. This is achieved by (fretNum - 0.5) * fretSpacing.
     let y = (fretNum - 0.5) * fretSpacing;
     
-    // Adjust for startFret > 1
+    // Adjust for startFret > 1.
+    // If startFret > 1, the fretboard view is shifted. For example, if startFret is 3,
+    // what was previously the 3rd fret (absolute) becomes the 1st visible fret space on the diagram.
+    // Notes retain their absolute fret numbers (e.g., a note on fret 3 is still fret: 3).
+    // To render it in the correct visual position on a diagram starting at fret 3,
+    // we need to subtract the offset caused by hiding frets 1 and 2.
+    // This offset is (startFret - 1) * fretSpacing.
     if (startFret > 1) {
-      // Sottraiamo (startFret - 1) * fretSpacing per spostare l'inizio della tastiera
       y -= (startFret - 1) * fretSpacing;
     }
-    
-    // Note sono già centrate tra i tasti, nessun aggiustamento necessario
     
     return y;
   };
