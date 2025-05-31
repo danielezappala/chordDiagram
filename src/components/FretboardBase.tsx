@@ -83,14 +83,6 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   // Calculates the fret number to display alongside the fretboard.
   // If startFret is 1 (default), displayed numbers are 1, 2, 3, ...
   // If startFret is, e.g., 3, displayed numbers will be 3, 4, 5, ...
-  // This aligns the visual fret numbering with the actual frets being shown.
-  // fretIndex is 0-based for calculation ease but represents 1st, 2nd, etc., visible fret line.
-  const getFretNumber = (fretIndex: number): string => {
-    if (!showFretNumbers) return '';
-    if (fretIndex === 0) return ''; // Skip nut, nut is not a numbered fret in this context.
-    return (startFret + fretIndex - 1).toString();
-  };
-
   // Get the label for a specific string based on labelType
   const getStringLabel = (index: number, totalStrings: number) => {
     if (labels && index >= 0 && index < labels.length) {
@@ -182,34 +174,53 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
         );
       })}
 
-      {/* Fret numbers */}
-      {showFretNumbers && fretNumberPosition !== 'none' && (
-        <g className="fret-numbers">
-          {Array.from({ length: numFrets + 1 }).map((_, i) => {
-            if (i === 0) return null;
-            const fretNumber = getFretNumber(i);
-            if (!fretNumber) return null;
-            
-            const y = (i - 0.5) * fretSpacing;
-            const x = fretNumberPosition === 'left' 
-              ? -fretNumberSpacing + fretNumberOffset 
-              : width + fretNumberSpacing;
-            
-            return (
-              <text
-                key={`fret-number-${i}`}
-                x={x}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-current text-gray-700 dark:text-gray-300 font-medium"
-                style={{ fontSize: `${fontSize}px` }}
-              >
-                {fretNumber}
-              </text>
-            );
-          })}
-        </g>
+      {/* Fret numbers (revised logic) */}
+      {fretNumberPosition !== 'none' && ( // Outer check for position still valid
+        (showFretNumbers || (startFret > 1)) ? ( // Only render if showFretNumbers is true OR (it's false AND startFret > 1)
+          <g className="fret-numbers">
+            {Array.from({ length: numFrets + 1 }).map((_, i) => {
+              // i is the visual fret line index. 0 is the nut/top line.
+              // Fret numbers are typically for the space *after* the line.
+              // So, i=1 means the first fret space.
+              if (i === 0) return null; // Never label the nut line itself.
+
+              let fretLabelToShow: string | null = null;
+
+              if (showFretNumbers) {
+                // If showing all numbers, calculate based on startFret
+                fretLabelToShow = (startFret + i - 1).toString();
+              } else {
+                // If showFretNumbers is false, only show startFret if startFret > 1 and it's the first fret position
+                if (startFret > 1 && i === 1) { 
+                  fretLabelToShow = startFret.toString(); 
+                  // Optional: add "fr." suffix, e.g., `${startFret}fr.`
+                  // For now, just the number as per user's initial example.
+                }
+              }
+
+              if (!fretLabelToShow) return null; // Don't render if no label determined for this fret index
+
+              const y = (i - 0.5) * fretSpacing; // Position in the middle of the fret space
+              const x = fretNumberPosition === 'left' 
+                ? -fretNumberSpacing + fretNumberOffset 
+                : width + fretNumberSpacing;
+              
+              return (
+                <text
+                  key={`fret-number-${i}`}
+                  x={x}
+                  y={y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-current text-gray-700 dark:text-gray-300 font-medium"
+                  style={{ fontSize: `${fontSize}px` }} // fontSize is already defined in the component
+                >
+                  {fretLabelToShow}
+                </text>
+              );
+            })}
+          </g>
+        ) : null // If not showFretNumbers AND startFret is 1 (or less), render nothing
       )}
 
       {/* Nut */}
