@@ -1,14 +1,3 @@
-// Note: Zod schemas and default values will need to be updated/re-added later for these new types.
-
-<<<<<<< HEAD
-export interface NotePosition {
-  string: number;               // String number (e.g., 1-6 for standard guitar; 1 is the highest pitch string, typically rendered rightmost, N is the lowest pitch string, typically rendered leftmost).
-  fret: number;                 // Tasto (0 per corda a vuoto)
-  muted?: boolean;              // Se la corda è stoppata
-  tone?: string;                // Nome della nota (es. 'C', 'D#')
-  interval?: string;            // Intervallo musicale (es. 'R', '3', '5')
-  finger?: number | 'T' | null; // Dito da usare (1-4, 'T' per pollice, null per non specificato)
-=======
 // --- Core Types for Fret Position and Note Annotation ---
 
 export type Finger = 1 | 2 | 3 | 4 | 'T' | 'P'; // Fingers that press strings (P for Thumb as per user suggestion)
@@ -18,7 +7,6 @@ export type FingerDesignator = Finger | StringStatusSymbol | null; // null for u
 export interface FretPosition {
   string: number; // String number (1-N, e.g., 1-6 for guitar; 1 is the highest pitch string)
   fret: number;   // Fret number (0 for open string, -1 for a muted or unplayed string that should be marked 'X')
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 }
 
 export interface NoteAnnotation {

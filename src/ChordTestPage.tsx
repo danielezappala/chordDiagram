@@ -33,22 +33,23 @@ const testChords: ChordDiagramData[] = [
   {
     name: 'F Major (Barre) v2',
     instrumentName: 'Guitar (Standard Tuning)',
-<<<<<<< HEAD
-    positions: {
-      notes: [
-        { string: 5, fret: 3, tone: 'C' },
-        { string: 4, fret: 2, tone: 'E' },
-        { string: 3, fret: 0, tone: 'G' },
-        { string: 2, fret: 1, tone: 'C' },
-        { string: 1, fret: 0, tone: 'E' },
-        { string: 6, fret: 0, muted: true }
-      ],
-      fingers: [null, 3, 2, 0, 1, 0],
-      barres: []
-    },
+    positions: [
+      {
+        baseFret: 1,
+        notes: [
+          { position: { string: 6, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } },
+          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: '5' } },
+          { position: { string: 4, fret: 3 }, annotation: { finger: 4, tone: 'F', interval: 'R' } },
+          { position: { string: 3, fret: 2 }, annotation: { finger: 2, tone: 'A', interval: '3' } },
+          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: '5' } },
+          { position: { string: 1, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } }
+        ],
+        barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }]
+      }
+    ],
     theory: {
-      chordTones: ['C', 'E', 'G'],
-      tones: ['', 'C', 'E', 'G', 'C', 'E'],
+      chordTones: ['F', 'A', 'C'],
+      formula: 'R 3 5',
       intervals: ['', 'R', '3', '5', 'R', '3'],
       formula: ['R', '3', '5'],
       extensions: []
