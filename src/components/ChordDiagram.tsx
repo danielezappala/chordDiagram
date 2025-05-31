@@ -15,8 +15,8 @@ import type {
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
 const DEFAULT_NUM_FRETS = 5;
-const DEFAULT_WIDTH = 200;
-const DEFAULT_HEIGHT = 250;
+const DEFAULT_WIDTH = 250; // Adjusted as per prompt
+const DEFAULT_HEIGHT = 300; // Adjusted as per prompt
 const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
 import { FretboardBase } from './FretboardBase';
@@ -93,52 +93,78 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   const currentBaseFret = positionToDisplay.baseFret;
 
   const derivedNumStrings = useMemo(() => {
-    if (numStringsProp) return numStringsProp;
-    if (data.tuning && typeof data.tuning !== 'string' && data.tuning.notes) return data.tuning.notes.length;
-    if (data.tuning && Array.isArray(data.tuning)) return data.tuning.length;
-    // Infer from notes if possible, ensuring all strings are accounted for up to the max string number.
-    if (positionToDisplay.notes && positionToDisplay.notes.length > 0) {
-      return Math.max(...positionToDisplay.notes.map(pn => pn.position.string), 0);
+    if (numStringsProp) return numStringsProp; // Prop override
+
+    if (data.tuning) {
+      if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
+        return data.tuning.notes.length;
+      }
+      if (Array.isArray(data.tuning)) {
+        return data.tuning.length;
+      }
     }
-    return 6; // Fallback default
-  }, [numStringsProp, data.tuning, positionToDisplay.notes]);
+
+    if (positionToDisplay && positionToDisplay.notes && positionToDisplay.notes.length > 0) {
+      const validStrings = positionToDisplay.notes
+          .filter(pn => pn && pn.position)
+          .map(pn => pn.position.string);
+      if (validStrings.length > 0) {
+          return Math.max(...validStrings);
+      }
+    }
+    // Ensure DEFAULT_TUNING is defined or use a literal
+    const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
+    return defaultTuningArray.length;
+  }, [numStringsProp, data.tuning, positionToDisplay]);
 
   const derivedActualTuning = useMemo(() => {
-    if (tuningProp) return tuningProp;
-    if (data.tuning && typeof data.tuning !== 'string' && data.tuning.notes) return data.tuning.notes;
-    if (data.tuning && Array.isArray(data.tuning)) return data.tuning;
-    return DEFAULT_TUNING.slice(0, derivedNumStrings); // Ensure tuning matches string count
-  }, [tuningProp, data.tuning, derivedNumStrings]);
+    if (tuningProp) return tuningProp; // Prop override
+    if (data.tuning) {
+      if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
+        return data.tuning.notes;
+      }
+      if (Array.isArray(data.tuning)) {
+        return data.tuning;
+      }
+    }
 
-  // Calculate dimensions with minimums and scale proportionally
-  const minWidth = 250;
-  const minHeight = 300;
+    // Fallback using derivedNumStrings
+    const strings = derivedNumStrings;
+    if (strings === 4) return ['E', 'A', 'D', 'G']; // Bass default EADG (Low to High)
+    if (strings === 5) return ['A', 'D', 'G', 'B', 'E']; // Example 5-string ADGBE (Low to High)
+    if (strings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E']; // 7-string BEADGBE (Low to High)
+
+    // Default 6-string or use DEFAULT_TUNING if available and appropriate
+    const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
+    return defaultTuningArray;
+  }, [tuningProp, data.tuning, derivedNumStrings]);
   
-  // Get base dimensions from props or data, fallback to defaults
-  const baseWidth = typeof widthProp === 'number' ? widthProp : (data.display?.width ?? DEFAULT_WIDTH);
-  const baseHeight = typeof heightProp === 'number' ? heightProp : (data.display?.height ?? DEFAULT_HEIGHT);
-  
-  // Calculate aspect ratio based on minimum dimensions
-  const minAspectRatio = minWidth / minHeight;
-  
-  // Calculate dimensions that respect minimums and maintain aspect ratio
-  let diagramWidth = Math.max(minWidth, baseWidth);
-  let diagramHeight = Math.max(minHeight, baseHeight);
-  
-  // Ensure the aspect ratio is maintained if one dimension is fixed
-  if (diagramWidth / diagramHeight > minAspectRatio) {
-    diagramHeight = diagramWidth / minAspectRatio;
-  } else {
-    diagramWidth = diagramHeight * minAspectRatio;
+  // New Sizing Logic
+  // Local constants for defining content's natural aspect ratio and min size
+  const CONTENT_MIN_WIDTH = 250;
+  const CONTENT_MIN_HEIGHT = 300;
+  const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
+
+  // Start with dimensions from props or defaults
+  const propWidth = widthProp ?? DEFAULT_WIDTH; // widthProp is the 'width' from component props
+  const propHeight = heightProp ?? DEFAULT_HEIGHT; // heightProp is the 'height' from component props
+
+  let calculatedWidth = propWidth;
+  let calculatedHeight = propWidth / CONTENT_ASPECT_RATIO; // Calculate height based on propWidth and content's aspect ratio
+
+  if (calculatedHeight > propHeight) { // If calculated height is too much for propHeight
+    calculatedHeight = propHeight; // Limit height to propHeight
+    calculatedWidth = calculatedHeight * CONTENT_ASPECT_RATIO; // Recalculate width based on limited height
   }
+
+  // Ensure the calculated dimensions are not less than a very small absolute minimum (e.g., to prevent division by zero or invisible diagram)
+  const ABSOLUTE_MIN_RENDER_WIDTH = 50;
+  const ABSOLUTE_MIN_RENDER_HEIGHT = 50;
+  calculatedWidth = Math.max(ABSOLUTE_MIN_RENDER_WIDTH, calculatedWidth);
+  calculatedHeight = Math.max(ABSOLUTE_MIN_RENDER_HEIGHT, calculatedHeight);
   
-  // Limit maximum width to 370px and scale height proportionally
-  const maxDiagramWidth = 370;
-  if (diagramWidth > maxDiagramWidth) {
-    const scale = maxDiagramWidth / diagramWidth;
-    diagramWidth = maxDiagramWidth;
-    diagramHeight = diagramHeight * scale;
-  }
+  const diagramWidth = calculatedWidth;
+  const diagramHeight = calculatedHeight;
   
   // Calculate dimensions and padding
   const sidePadding = 40;
@@ -167,89 +193,6 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
         highlight: pn.annotation?.highlight || false
       };
     });
-<<<<<<< HEAD
-    
-    // Then apply fingers, tones, and intervals based on their positions
-    // These arrays are assumed to be from lowest string (N) to highest string (1)
-    // So they need to be reversed to match the noteMap keying (1 = highest string)
-    if (fingers) {
-      const reversedFingers = [...fingers].reverse();
-      reversedFingers.forEach((finger, index) => {
-        const stringNum = index + 1; // Convert 0-based (after reverse, 0 = highest string) to 1-based string number
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.finger = finger;
-        }
-      });
-    }
-    
-    if (theory?.tones) {
-      const reversedTones = [...theory.tones].reverse();
-      reversedTones.forEach((tone, index) => {
-        const stringNum = index + 1; // Convert 0-based (after reverse, 0 = highest string) to 1-based string number
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.tone = tone;
-        }
-      });
-    }
-    
-    if (theory?.intervals) {
-      // Inverti l'ordine degli intervalli per far corrispondere le corde dal basso verso l'alto
-      // (indice 0 = corda 6, indice 1 = corda 5, ecc.)
-      const reversedIntervals = [...theory.intervals].reverse();
-      
-      reversedIntervals.forEach((interval, index) => {
-        const stringNum = index + 1; // 1-based string number (1 = 6th string, 2 = 5th, etc.)
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.interval = interval;
-        }
-      });
-    }
-    
-    // Convert map back to array of notes
-    return Array.from(noteMap.values());
-  }, [notes, fingers, theory?.tones, theory?.intervals]);
-  
-  // Generate note labels based on label type
-  const noteLabels = useMemo(() => {
-    const labels = Array(numStrings).fill(' '); // Initialize with spaces
-
-    if (labelType === 'none') {
-      // For 'none', still respect muted strings for 'X' display by FretboardBase if desired.
-      // This ensures 'X' appears for muted strings even if other labels are off.
-      notesWithMetadata.forEach(note => {
-        const stringIndex = note.string - 1;
-        if (stringIndex < 0 || stringIndex >= numStrings) return;
-        if (note.muted) {
-          labels[stringIndex] = 'X';
-        }
-      });
-      return labels;
-    }
-
-    notesWithMetadata.forEach(note => {
-      const stringIndex = note.string - 1;
-      if (stringIndex < 0 || stringIndex >= numStrings) return;
-
-      if (note.muted) {
-        labels[stringIndex] = 'X'; // Muted strings get 'X'
-      } else if (labelType === 'finger') {
-        if (note.finger !== null && note.finger !== undefined) {
-          labels[stringIndex] = note.finger.toString();
-        } else {
-          labels[stringIndex] = ' '; // Explicitly space for null/undefined finger on non-muted string
-        }
-      } else if (labelType === 'tone' && note.tone) {
-        labels[stringIndex] = note.tone;
-      } else if (labelType === 'interval' && note.interval) {
-        labels[stringIndex] = note.interval;
-      } else {
-        labels[stringIndex] = ' '; // Default to space if no label applies
-      }
-    });
-
-    return labels; // Return the labels array directly
-  }, [labelType, notesWithMetadata, numStrings]);
-=======
   }, [positionToDisplay]);
 
   const noteLabels = useMemo(() => {
@@ -287,7 +230,6 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     });
     return labels;
   }, [derivedNumStrings, positionToDisplay, processedNotesForLayer, labelTypeProp, data.display?.labelType]);
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
   
   return (
     <div className="flex flex-col items-center w-full">
@@ -299,27 +241,27 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
         }}
       >
         {/* Chord Info Section */}
-        <div className="w-full px-4 mb-2">
+        <div className="w-full px-4 mb-2 order-1">
           <ChordInfo data={data} className="text-sm" /> {/* ChordInfo will need update for v2 data */}
         </div>
         
         {/* Diagram Section */}
         <div 
-          className={`chord-diagram relative ${className || ''}`}
+          className={`chord-diagram relative ${className || ''} order-2`}
           style={{ 
-            width: diagramWidth + 30, // Consider if this +30 is still needed or part of overall sizing
-            height: diagramHeight + 20, // Same for +20
+            width: diagramWidth,
+            height: diagramHeight,
           }}
         >
           <div className="relative w-full h-full">
             <svg
               ref={ref}
               className="w-full h-full"
-              viewBox={`${currentFretNumberPosition === 'left' ? -sidePadding : 0} 0 ${diagramWidth + (currentFretNumberPosition === 'right' ? sidePadding : 0)} ${diagramHeight}`}
+              viewBox={`0 0 ${diagramWidth} ${diagramHeight}`}
               preserveAspectRatio="xMidYMid meet"
               style={{ overflow: 'visible' }}
             >
-              <g transform={`translate(${(currentFretNumberPosition === 'left' ? sidePadding : 0) - 30}, ${topPadding})`}>
+              <g transform={`translate(${sidePadding}, ${topPadding})`}>
                 <FretboardBase
                   width={paddedWidth}
                   height={paddedHeight}

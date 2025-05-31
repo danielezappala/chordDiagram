@@ -82,15 +82,6 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   };
   
   // Calculate fret number to display
-<<<<<<< HEAD
-  // Calculates the fret number to display alongside the fretboard.
-  // If startFret is 1 (default), displayed numbers are 1, 2, 3, ...
-  // If startFret is, e.g., 3, displayed numbers will be 3, 4, 5, ...
-  // Get the label for a specific string based on labelType
-  const getStringLabel = (index: number, totalStrings: number) => {
-    if (labels && index >= 0 && index < labels.length) {
-      return String(labels[labels.length - 1 - index] || '');
-=======
   // Get the label for a specific string.
   // stringVisualIndex: 0 for leftmost string (e.g., Low E on guitar, which is string N)
   //                    N-1 for rightmost string (e.g., High E on guitar, which is string 1)
@@ -99,7 +90,6 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
     const labelFromNoteLabel = labels?.[totalStrings - 1 - stringVisualIndex];
     if (labelFromNoteLabel !== undefined && labelFromNoteLabel !== null && String(labelFromNoteLabel).trim() !== '') {
       return String(labelFromNoteLabel);
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
     }
 
     // Fallback to tuning note if showStringNames is true and no specific label from props.labels
@@ -199,13 +189,8 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
                 fretLabelToShow = (startFret + i - 1).toString();
               } else {
                 // If showFretNumbers is false, only show startFret if startFret > 1 and it's the first fret position
-<<<<<<< HEAD
-                if (startFret > 1 && i === 1) { 
-                  fretLabelToShow = startFret.toString(); 
-=======
                 if (startFret > 1 && i === 1) {
                   fretLabelToShow = startFret.toString();
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
                   // Optional: add "fr." suffix, e.g., `${startFret}fr.`
                   // For now, just the number as per user's initial example.
                 }
@@ -214,17 +199,10 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
               if (!fretLabelToShow) return null; // Don't render if no label determined for this fret index
 
               const y = (i - 0.5) * fretSpacing; // Position in the middle of the fret space
-<<<<<<< HEAD
-              const x = fretNumberPosition === 'left' 
-                ? -fretNumberSpacing + fretNumberOffset 
-                : width + fretNumberSpacing;
-              
-=======
               const x = fretNumberPosition === 'left'
                 ? -fretNumberSpacing + fretNumberOffset
                 : width + fretNumberSpacing;
 
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
               return (
                 <text
                   key={`fret-number-${i}`}

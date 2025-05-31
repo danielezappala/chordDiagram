@@ -1,3 +1,5 @@
+// Note: Zod schemas and default values will need to be updated/re-added later for these new types.
+
 // --- Core Types for Fret Position and Note Annotation ---
 
 export type Finger = 1 | 2 | 3 | 4 | 'T' | 'P'; // Fingers that press strings (P for Thumb as per user suggestion)
@@ -36,17 +38,10 @@ export interface Tuning {
 // --- Barre Chord Type ---
 
 export interface Barre {
-<<<<<<< HEAD
-  fromString: number;
-  toString: number;
-  fret: number;
-  finger?: number | 'T';  // Optional finger to use for the barre (e.g., 1-4 or 'T' for thumb). Not currently rendered on the diagram.
-=======
   fromString: number; // Highest pitch string number involved in the barre (1-N, e.g., 1 for High E)
   toString: number;   // Lowest pitch string number involved in the barre (1-N)
   fret: number;       // Absolute fret number where the barre is placed
   finger?: Finger;     // Optional: Finger used for the barre (1, 2, 3, 4, 'T', 'P')
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 }
 
 // --- Main Chord Diagram Data Structure ---
@@ -129,54 +124,5 @@ export interface ChordDiagramProps {
   style?: React.CSSProperties;
 }
 
-<<<<<<< HEAD
-// Zod validation schemas
-const notePositionSchema = z.object({
-  string: z.number().int().min(1).max(8),
-  fret: z.number().int().min(-1), // -1 for muted, 0 for open
-  muted: z.boolean().optional(),
-});
-
-const barreSchema = z.object({
-  fromString: z.number().int().min(1).max(8),
-  toString: z.number().int().min(1).max(8),
-  fret: z.number().int().min(0).max(24),
-  finger: z.union([z.number().int().min(1).max(4), z.literal('T')]).optional(),
-});
-
-const chordDiagramDataSchema = z.object({
-  name: z.string(),
-  positions: z.object({
-    notes: z.array(notePositionSchema),
-    fingers: z.array(z.union([z.number().int().min(1).max(4), z.literal('T'), z.null()])).optional(),
-    barres: z.array(barreSchema).optional(),
-  }),
-  theory: z.object({
-    tones: z.array(z.string()).optional(),
-    intervals: z.array(z.string()).optional(),
-    chordTones: z.array(z.string()).optional(),
-    formula: z.union([z.string(), z.array(z.string())]).optional(),
-    extensions: z.array(z.string()).optional(),
-    description: z.string().optional(),
-  }).optional(),
-  display: z.object({
-    labelType: z.enum(['none', 'finger', 'tone', 'interval']).optional(),
-    showFretNumbers: z.boolean().optional(),
-    showStringNames: z.boolean().optional(),
-  }).optional(),
-});
-
-export function isValidChordData(data: unknown): data is ChordDiagramData {
-  return chordDiagramDataSchema.safeParse(data).success;
-}
-
-// Default values
-export const DEFAULT_NUM_FRETS = 5;
-export const DEFAULT_NUM_STRINGS = 6;
-export const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
-export const DEFAULT_WIDTH = 250;  // Increased from 200 to 250
-export const DEFAULT_HEIGHT = 300;
-=======
 // Old FretNumberPosition type, still relevant for ChordDiagramProps and display options
 export type FretNumberPosition = 'left' | 'right' | 'none';
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0

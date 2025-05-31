@@ -83,21 +83,12 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   };
   
   // Calculate the y position for a given fret number
-<<<<<<< HEAD
-  const getFretY = (fret: number | 'x'): number => {
-    // For open strings or muted strings
-    if (fret === 'x' || fret === 0) return -fretSpacing * 0.75; // Positioned higher to avoid overlap with the nut/first fret line.
-    
-    // Convert fret to number if it's a string (legacy support)
-    const fretNum = typeof fret === 'number' ? fret : parseInt(fret, 10);
-=======
   const getFretY = (fret: number): number => { // fret is always number
     // For open strings (fret === 0)
     if (fret === 0) return -fretSpacing * 0.75; // Positioned higher
     
     // For fingered frets (fret > 0)
     const fretNum = fret;
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
     
     // Calculate the y position for a given fret number.
     // Notes are typically centered between fret lines.
@@ -108,15 +99,6 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
     let y = (fretNum - 0.5) * fretSpacing;
     
     // Adjust for startFret > 1.
-<<<<<<< HEAD
-    // If startFret > 1, the fretboard view is shifted. For example, if startFret is 3,
-    // what was previously the 3rd fret (absolute) becomes the 1st visible fret space on the diagram.
-    // Notes retain their absolute fret numbers (e.g., a note on fret 3 is still fret: 3).
-    // To render it in the correct visual position on a diagram starting at fret 3,
-    // we need to subtract the offset caused by hiding frets 1 and 2.
-    // This offset is (startFret - 1) * fretSpacing.
-=======
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
     if (startFret > 1) {
       y -= (startFret - 1) * fretSpacing;
     }

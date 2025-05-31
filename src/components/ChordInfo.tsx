@@ -1,7 +1,6 @@
-import React from 'react';
-import type { ChordDiagramData } from '../types';
-
-import type { ChordDiagramData, ChordPositionData } from '../types'; // Ensure ChordPositionData is imported if used explicitly
+import React, { useMemo } from 'react'; // Added useMemo
+// import type { ChordDiagramData } from '../types'; // This line is duplicated below
+import type { ChordDiagramData, ChordPositionData } from '../types';
 
 interface ChordInfoProps {
   data: ChordDiagramData; // This is now ChordDiagramData v2
@@ -63,12 +62,26 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
   const instrument = instrumentName || ''; // Use the destructured instrumentName
   const showFormula = formulaParts.length > 0;
   
-  // Estrai le note suonate (dalla posizione delle dita for the current position)
-  const playedNotes = currentPosition ? currentPosition.notes
-    .filter(pn => pn.position.fret !== -1 && pn.annotation?.tone) // Note is played and has a tone
-    .map(pn => pn.annotation!.tone)
-    .filter((tone, index, self) => self.indexOf(tone) === index) // Unique tones
-    : [];
+  const playedNotes = useMemo(() => {
+    if (!currentPosition || !currentPosition.notes) {
+      return [];
+    }
+    const tones: string[] = [];
+    for (const pn of currentPosition.notes) {
+      // Ensure all parts exist and tone is a non-empty string
+      if (pn &&
+          pn.position &&
+          pn.position.fret !== -1 && // Note is not muted
+          pn.annotation &&
+          typeof pn.annotation.tone === 'string' &&
+          pn.annotation.tone.length > 0) {
+        if (!tones.includes(pn.annotation.tone)) {
+          tones.push(pn.annotation.tone);
+        }
+      }
+    }
+    return tones;
+  }, [currentPosition]);
 
   return (
     <div className={`chord-info ${className} flex flex-col items-center`}>

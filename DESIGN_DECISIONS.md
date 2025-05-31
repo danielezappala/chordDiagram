@@ -15,24 +15,6 @@ Questo documento registra le decisioni di progettazione chiave prese durante lo 
    - La **Corda 1** (`string: 1` in `NotePosition`) si riferisce alla corda con il pitch più alto (es. Mi cantino / High E su una chitarra standard). Nel diagramma, questa corda è visualizzata come la più **a destra**.
    - La **Corda N** (dove N è il numero totale di corde, es. `string: 6` per una chitarra standard) si riferisce alla corda con il pitch più basso (es. Mi basso / Low E). Nel diagramma, questa corda è visualizzata come la più **a sinistra**.
    - Le etichette testuali delle corde (se mostrate) seguono questa convenzione visiva (da sinistra a destra: Low E, A, D, G, B, High E per una chitarra standard).
-<<<<<<< HEAD
-
-2. **Gestione dei Tasti**:
-   - `fret`: Il numero assoluto del tasto (0 per corde aperte)
-   - `startFret`: Offset che indica da quale tasto iniziare la visualizzazione
-   - La posizione effettiva è calcolata come `fret - startFret + 1` (Nota: questa formula potrebbe necessitare di revisione in base all'implementazione effettiva della resa grafica dei tasti rispetto a `startFret`. La gestione principale di `startFret` avviene sottraendo l'offset per la visualizzazione corretta delle note, come descritto in `NotesLayer.getFretY` e `FretboardBase.getFretNumber`.)
-
-3. **Convenzioni per Array di Dati Relativi alle Corde (Array Data Conventions for String-Related Data)**:
-   Quando si forniscono array di dati che corrispondono a ciascuna corda dello strumento, come `positions.fingers`, `theory.tones`, `theory.intervals`, e `tuning`, la convenzione è la seguente:
-   - **Ordine degli Elementi nell'Input**: Questi array devono essere forniti con gli elementi ordinati dalla corda con il **pitch più basso** (es. Low E, corrispondente a `string: N`) alla corda con il **pitch più alto** (es. High E, corrispondente a `string: 1`).
-     - Esempio per `tuning` su chitarra standard (6 corde): `['E', 'A', 'D', 'G', 'B', 'E']` (Low E -> High E)
-     - Esempio per `fingers` su un accordo C Major aperto (X32010): `[null, 3, 2, 0, 1, 0]` (dito per Low E, dito per A, ..., dito per High E).
-   - **Gestione Interna**: Il componente `ChordDiagram` internamente inverte questi array. Questo adattamento è necessario perché la logica di mappatura interna e di generazione delle etichette (`noteLabels`) spesso processa i dati partendo dalla Corda 1 (High E) come indice primario o di riferimento. Questa inversione garantisce che i dati forniti secondo la convenzione "dal basso verso l'alto" siano correttamente associati alle rispettive corde nella visualizzazione.
-
-4. **Validazione**:
-   - Tutte le props vengono validate utilizzando Zod
-   - I messaggi di errore sono descrittivi e utili per il debugging
-=======
    - Questa convenzione si applica a `FretPosition.string` e `Barre.fromString/toString`.
 
 2. **Gestione dei Tasti (v2)**:
@@ -43,7 +25,6 @@ Questo documento registra le decisioni di progettazione chiave prese durante lo 
    - **`Tuning.notes`**: Questo array di stringhe (nomi delle note) per l'accordatura deve essere fornito con gli elementi ordinati dalla corda con il **pitch più basso** (es. Low E, corda N) alla corda con il **pitch più alto** (es. High E, corda 1). Esempio per chitarra standard: `['E', 'A', 'D', 'G', 'B', 'E']`.
    - **`ChordPositionData.notes`**: Questo è un array di oggetti `PositionedNote`. Per una completa annotazione, si raccomanda di fornire un elemento `PositionedNote` per ogni corda dello strumento. L'ordine di questi elementi nell'array non è strettamente imposto per la logica di base, ma per chiarezza e processamento completo, è consigliabile ordinarli per numero di corda (da 1, high-pitch, a N, low-pitch). Ogni `PositionedNote` contiene `position.string` che definisce a quale corda si riferisce.
    - La precedente gestione interna di inversione di array separati per `fingers`, `tones`, `intervals` non è più necessaria in `ChordDiagram.tsx`, poiché queste informazioni sono ora incapsulate per ciascuna nota in `PositionedNote.annotation`.
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 
 4. **`FingerDesignator` (Nuovo Tipo)**:
    - Per specificare la diteggiatura in `NoteAnnotation.finger`, si usa il tipo `FingerDesignator`.
@@ -140,13 +121,10 @@ La libreria si limita a visualizzare i dati forniti dall'utente senza eseguire c
    - Le corde contrassegnate come mute (`note.muted: true`) riceveranno un'etichetta 'X' nella riga delle etichette visualizzata sotto la tastiera (a condizione che `display.labelType` non sia `'none'` e venga generata tramite `noteLabels`).
    - Questa etichetta 'X' per le corde mute ha la precedenza su qualsiasi altra etichetta derivante da `finger`, `tone`, o `interval` per quella specifica corda quando si generano le `noteLabels`.
    - La visualizzazione del simbolo 'X' direttamente sulla corda all'altezza del capotasto (o al tasto zero) è gestita separatamente dal componente `NotesLayer` e non dipende da `noteLabels`.
-<<<<<<< HEAD
-=======
 8. **Visualizzazione Condizionale del `startFret`**:
    - Anche quando la prop `showFretNumbers` è impostata a `false`, se `startFret` è maggiore di 1 (ad esempio, il diagramma inizia dal 3° tasto), il numero di `startFret` (es. "3") verrà comunque visualizzato accanto al primo tasto visibile sul diagramma.
    - Questa decisione è stata presa per garantire che l'utente abbia sempre un riferimento di posizione sulla tastiera quando il diagramma non parte dal capotasto o dal primo tasto.
    - Se `showFretNumbers` è `false` e `startFret` è `1` (o un valore non maggiore di 1), nessun numero di tasto viene visualizzato.
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 
 ## Convenzioni di Codice
 

@@ -1,35 +1,29 @@
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 
 const testChords: ChordDiagramData[] = [
-  // Example 1: C Major (Open) - v2 Format
   {
     name: 'C Major (Open) v2',
     instrumentName: 'Guitar (Standard Tuning)',
     positions: [
       {
         baseFret: 1,
-        notes: [ // Must cover all strings for full annotation
-          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: null, interval: null } }, // Low E Muted
+        notes: [
+          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: null, interval: null } },
           { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
           { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
-          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } }, // O for open finger
+          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
           { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
-          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }  // High E Open
+          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
         ],
         barres: []
       }
     ],
-    theory: {
-      chordTones: ['C', 'E', 'G'],
-      formula: 'R 3 5'
-      // Global intervals/tones arrays are less critical if annotations are per note
-    },
+    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
     display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // LowE to HighE
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
-  // Example 2: F Major (Barre) - v2 Format
   {
     name: 'F Major (Barre) v2',
     instrumentName: 'Guitar (Standard Tuning)',
@@ -47,272 +41,10 @@ const testChords: ChordDiagramData[] = [
         barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }]
       }
     ],
-    theory: {
-      chordTones: ['F', 'A', 'C'],
-      formula: 'R 3 5',
-      intervals: ['', 'R', '3', '5', 'R', '3'],
-      formula: ['R', '3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
+    theory: { chordTones: ['F', 'A', 'C'], formula: 'R 3 5' },
+    display: { labelType: 'finger' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
-  {
-    name: 'G Major',
-    instrumentName: 'Guitar (Standard Tuning)',
-    positions: {
-      notes: [
-        { string: 6, fret: 3, tone: 'G' },
-        { string: 5, fret: 2, tone: 'B' },
-        { string: 4, fret: 0, tone: 'D' },
-        { string: 3, fret: 0, tone: 'G' },
-        { string: 2, fret: 0, tone: 'B' },
-        { string: 1, fret: 3, tone: 'G' }
-      ],
-      fingers: [3, 2, 0, 0, 0, 4],
-      barres: [
-        { fromString: 1, toString: 3, fret: 3, finger: 4 }
-      ]
-    },
-    theory: {
-      chordTones: ['G', 'B', 'D'],
-      tones: ['G', 'B', 'D', 'G', 'B', 'G'],
-      intervals: ['R', '3', '5', 'R', '3', 'R'],
-      formula: ['R', '3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true
-    },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  // Drop D
-  {
-    name: 'D5',
-    instrumentName: 'Guitar (Drop D Tuning)',
-    positions: {
-      notes: [
-        { string: 6, fret: 0, tone: 'D' },
-        { string: 5, fret: 2, tone: 'A' },
-        { string: 4, fret: 2, tone: 'D' },
-        { string: 3, fret: 0, tone: 'G' },
-        { string: 2, fret: 0, tone: 'B' },
-        { string: 1, fret: 0, tone: 'E' }
-      ],
-      fingers: [0, 2, 3, 0, 0, 0], 
-      barres: []
-    },
-    theory: {
-      chordTones: ['D', 'A'],
-      tones: ['D', 'A', 'D', 'G', 'B', 'E'],
-      intervals: ['R', '5', 'R', '4', '6', '2'],
-      formula: ['R','3','5'], // Note: Formula for D5 is typically R 5
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
-    tuning: ['D', 'A', 'D', 'G', 'B', 'E']
-  },
-  // Open G
-  {
-    name: 'Open G', // This name used multiple times by user, data varies
-    instrumentName: 'Guitar (Open G Tuning)',
-    positions: {
-      notes: [
-        { string: 6, fret: 0, tone: 'D' },
-        { string: 5, fret: 0, tone: 'G' },
-        { string: 4, fret: 0, tone: 'D' },
-        { string: 3, fret: 0, tone: 'G' },
-        { string: 2, fret: 0, tone: 'B' },
-        { string: 1, fret: 0, tone: 'D' }
-      ],
-      fingers: [0, 0, 0, 0, 0, 0],
-      barres: []
-    },
-    theory: {
-      chordTones: ['G', 'B', 'D'],
-      tones: ['D', 'G', 'D', 'G', 'B', 'D'],
-      intervals: ['5', 'R', '5', 'R', '3', '5'],
-      formula: ['R', '3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
-    tuning: ['D', 'G', 'D', 'G', 'B', 'D']
-  },
-  {
-    name: 'D Minor', // First instance of D Minor name
-    instrumentName: 'Guitar (Standard Tuning)',
-    positions: {
-      notes: [
-        { string: 4, fret: 0, tone: 'D' },
-        { string: 3, fret: 2, tone: 'A' },
-        { string: 2, fret: 1, tone: 'D' }, // B-string, 1st fret is C. D string is open. This note seems off for Dm.
-        { string: 1, fret: 3, tone: 'F' }, // High E string, 3rd fret is G. F is 1st fret.
-        { string: 6, fret: 0, muted: true },
-        { string: 5, fret: 0, muted: true }
-      ],
-      fingers: [3, 1, 2, 0, null, null], // Check alignment with notes and LowE-HighE order
-      barres: []
-    },
-    theory: {
-      chordTones: ['D', 'F', 'A'],
-      tones: ['', '', 'D', 'A', 'D', 'F'], // Check notes vs tones
-      intervals: ['', '', 'R', '5', 'R', 'b3'], // F is m3. D on B string?
-      formula: ['R', 'b3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'A Major', // First instance of A Major name
-    instrumentName: 'Guitar (Standard Tuning)',
-    positions: {
-      notes: [ // Standard A: X02220. Notes are A E A C# E
-        { string: 3, fret: 2, tone: 'A' },  // G string, 2nd fret = A
-        { string: 2, fret: 2, tone: 'C#' }, // B string, 2nd fret = C#
-        { string: 1, fret: 0, tone: 'E' },  // High E string, open = E
-        { string: 6, fret: 0, muted: true },
-        { string: 5, fret: 0, tone: 'A' },  // A string, open = A
-        { string: 4, fret: 2, tone: 'E' }   // D string, 2nd fret = E
-      ],
-      fingers: [3, 2, 0, null, 0, 1], // Check alignment
-      barres: []
-    },
-    theory: {
-      chordTones: ['A', 'C#', 'E'],
-      tones: ['A', 'E', 'A', 'C#', 'E', ''], // S6 muted, S5 A. Order LowE to HighE. So [null, 'A', 'E', 'A', 'C#', 'E']
-      intervals: ['R', '5', 'R', '3', '5', ''], // Same here: [null, 'R', '5', 'R', '3', '5']
-      formula: ['R', '3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'E Minor', // First instance of E Minor name
-    instrumentName: 'Guitar (Standard Tuning)',
-    positions: { // Standard Em: 022000. Notes E B E G B E
-      notes: [
-        { string: 5, fret: 2, tone: 'E' }, // A string, 2nd fret = B. (User has E)
-        { string: 4, fret: 2, tone: 'B' }, // D string, 2nd fret = E. (User has B)
-        { string: 3, fret: 0, tone: 'G' },
-        { string: 2, fret: 0, tone: 'B' },
-        { string: 1, fret: 0, tone: 'E' },
-        { string: 6, fret: 0, tone: 'E' }
-      ],
-      fingers: [2, 3, 0, 0, 0, 0], // LowE to HighE. 0,2,3,0,0,0 or 0,2,2,0,0,0
-      barres: []
-    },
-    theory: {
-      chordTones: ['E', 'G', 'B'],
-      tones: ['E', 'B', 'E', 'G', 'B', 'E'], // Matches 022000
-      intervals: ['R', '5', 'R', 'b3', '5', 'R'], // G is m3. b3 is fine.
-      formula: ['R', 'b3', '5'],
-      extensions: []
-    },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      showStringNames: true
-    },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'D Minor', // Second D Minor
-    instrumentName: 'Guitar (Standard Tuning)',
-    positions: { // Standard Dm: XX0231. Notes D A F D
-      notes: [
-        { string: 4, fret: 0, tone: 'D' },  // D string, open = D
-        { string: 3, fret: 2, tone: 'A' },  // G string, 2nd fret = A
-        { string: 2, fret: 3, tone: 'D' },  // B string, 3rd fret = D. (Standard Dm has F here: S2,F3)
-        { string: 1, fret: 1, tone: 'F' },  // E string, 1st fret = F. (Standard Dm has D here: S1,F1)
-        { string: 6, fret: 0, muted: true },
-        { string: 5, fret: 0, muted: true }
-      ],
-      fingers: [0, 3, 4, 2, null, null], // Check alignment
-      barres: []
-    },
-    theory: { /* ... */ }, display: { /* ... */ }, tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'Open G', // Third Open G, very different notes
-    instrumentName: 'Guitar (Open G Tuning)', // Added
-    positions: { // Notes Dm: A D F
-      notes: [
-        { string: 3, fret: 2, tone: 'A' }, // G string (of Open G DGDGBD) -> 2nd fret is A
-        { string: 2, fret: 3, tone: 'D' }, // B string (of Open G) -> 3rd fret is D
-        { string: 1, fret: 1, tone: 'F' }, // D string (high D of Open G) -> 1st fret is F
-        { string: 5, fret: 0, muted: true }, // G string (mid G of Open G) -> muted
-        { string: 6, fret: 0, muted: true }  // D string (low D of Open G) -> muted
-        // Missing string 4
-      ],
-      fingers: [3, 4, 1, 0, 0, null], // Check alignment
-      barres: []
-    },
-    theory: { /* ... */ }, display: { /* ... */ }, tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // Should be Open G tuning
-  },
-  // Basso 4 corde
-  {
-    name: 'E minor', // Duplicate name
-    instrumentName: 'Bass (4 strings)',
-    positions: { /* ... */ }, theory: { /* ... */ }, display: { /* ... */ }, tuning: ['E', 'A', 'D', 'G']
-  },
-  // Chitarra 7 corde
-  {
-    name: 'A7', // Duplicate name
-    instrumentName: 'Guitar (7 strings)',
-    positions: { /* ... */ }, theory: { /* ... */ }, display: { /* ... */ }, tuning: ['B', 'E', 'A', 'D', 'G', 'B', 'E']
-  },
-  // These last 5 are direct duplicates from earlier in user's list, remove them.
-  // { name: 'D Minor', ... },
-  // { name: 'A Major', ... },
-  // { name: 'E Minor', ... },
-  // { name: 'F Major', ... },
-  // { name: 'Open G', ... }
-=======
-    positions: [
-      {
-        baseFret: 1,
-        notes: [
-          { position: { string: 6, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } },
-          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: '5' } },
-          { position: { string: 4, fret: 3 }, annotation: { finger: 4, tone: 'F', interval: 'R' } },
-          { position: { string: 3, fret: 2 }, annotation: { finger: 2, tone: 'A', interval: '3' } },
-          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: '5' } },
-          { position: { string: 1, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } }
-        ],
-        barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }] // HighE=1, LowE=6 for string range
-      }
-    ],
-    theory: {
-      chordTones: ['F', 'A', 'C'],
-      formula: 'R 3 5'
-    },
-    display: { labelType: 'finger' /* startFret removed, uses baseFret */ },
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  // Example 3: E7 (Open) - v2 Format
   {
     name: 'E7 (Open) v2',
     instrumentName: 'Guitar (Standard Tuning)',
@@ -330,42 +62,38 @@ const testChords: ChordDiagramData[] = [
         barres: []
       }
     ],
-    theory: {
-      chordTones: ['E', 'G#', 'B', 'D'],
-      formula: 'R 3 5 m7'
-    },
+    theory: { chordTones: ['E', 'G#', 'B', 'D'], formula: 'R 3 5 m7' },
     display: { labelType: 'interval' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   }
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 ];
 
-// The rest of the React component code as provided by the user, with my minor adjustments from previous thought block
-// (e.g., useEffect, handleChordChange, JSX for controls and ChordDiagram rendering)
-// For brevity, not pasting the full React component code again here, but it's part of the string.
-// Ensure the 'export default ChordTestPage;' is present.
-
-<<<<<<< HEAD
-export function ChordTestPage() { 
-=======
-export function ChordTestPage() {
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
+const ChordTestPage: React.FC = () => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 250, height: 350 });
-  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
+  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval' | 'degree'>('finger');
   const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
   const [showTuningEditor, setShowTuningEditor] = useState(false);
   const [numFrets, setNumFrets] = useState<number>(5);
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
 
   const detectNumStrings = useCallback((chord: ChordDiagramData | undefined | null): number => {
-    if (!chord || !chord.positions?.notes || chord.positions.notes.length === 0) {
-      return chord?.tuning?.length || 6;
+    if (!chord || !chord.positions || chord.positions.length === 0 ) {
+      return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
+             (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
-    const validNotes = chord.positions.notes.filter(note => typeof note.string === 'number');
-    if (validNotes.length === 0) return chord?.tuning?.length || 6;
-    return Math.max(...validNotes.map(note => note.string));
+    const currentPositionNotes = chord.positions[0].notes;
+    if (!currentPositionNotes || currentPositionNotes.length === 0) {
+        return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
+               (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
+    }
+    const validNotes = currentPositionNotes.filter(note => typeof note.position.string === 'number');
+    if (validNotes.length === 0) {
+        return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
+               (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
+    }
+    return Math.max(...validNotes.map(note => note.position.string));
   }, []);
 
   const [numStrings, setNumStrings] = useState(() => detectNumStrings(testChords[0]));
@@ -374,18 +102,20 @@ export function ChordTestPage() {
     if (selectedChord) {
         const newNumStrings = detectNumStrings(selectedChord);
         setNumStrings(newNumStrings);
-        const currentChordTuning = selectedChord.tuning ||
-          (newNumStrings === 7 ? ['B', 'E', 'A', 'D', 'G', 'B', 'E'] :
-           newNumStrings === 6 ? ['E', 'A', 'D', 'G', 'B', 'E'] :
-<<<<<<< HEAD
-           newNumStrings === 5 ? ['A', 'D', 'G', 'B', 'E'] : 
-           newNumStrings === 4 ? ['E', 'A', 'D', 'G'] : 
-=======
-           newNumStrings === 5 ? ['A', 'D', 'G', 'B', 'E'] :
-           newNumStrings === 4 ? ['E', 'A', 'D', 'G'] :
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
-           ['E', 'A', 'D', 'G', 'B', 'E']);
-        setCustomTuning(currentChordTuning);
+
+        let defaultTuningForStrings: string[];
+        if (typeof selectedChord.tuning === 'object' && selectedChord.tuning !== null && !Array.isArray(selectedChord.tuning) && selectedChord.tuning.notes) {
+            defaultTuningForStrings = selectedChord.tuning.notes;
+        } else if (Array.isArray(selectedChord.tuning)) {
+            defaultTuningForStrings = selectedChord.tuning;
+        } else {
+            if (newNumStrings === 7) defaultTuningForStrings = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+            else if (newNumStrings === 6) defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
+            else if (newNumStrings === 5) defaultTuningForStrings = ['A', 'D', 'G', 'B', 'E'];
+            else if (newNumStrings === 4) defaultTuningForStrings = ['E', 'A', 'D', 'G'];
+            else defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
+        }
+        setCustomTuning(defaultTuningForStrings);
     }
   }, [selectedChord, detectNumStrings]);
 
@@ -396,30 +126,15 @@ export function ChordTestPage() {
       setSelectedChord(chord);
     }
   };
-<<<<<<< HEAD
-=======
 
-  if (!selectedChord && testChords.length > 0) {
-      // This case should ideally not be hit if testChords is non-empty and selectedChord is initialized.
-      // However, as a safeguard:
+  if (!selectedChord && testChords.length > 0 && testChords[0]) { // Added testChords[0] check
       setSelectedChord(testChords[0]);
-      return <div>Initializing chord...</div>;
+      return <div>Initializing chord...</div>; // Should not be hit if testChords is pre-filled
   }
-  if (!selectedChord) {
+  if (!selectedChord) { // If testChords is empty or selectedChord is somehow still null
     return <div>No chord selected or no chords available.</div>;
   }
->>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 
-  if (!selectedChord && testChords.length > 0) {
-      // This case should ideally not be hit if testChords is non-empty and selectedChord is initialized.
-      // However, as a safeguard:
-      setSelectedChord(testChords[0]); 
-      return <div>Initializing chord...</div>;
-  }
-  if (!selectedChord) {
-    return <div>No chord selected or no chords available.</div>;
-  }
-  
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Chord Diagram Tester</h1>
@@ -441,11 +156,11 @@ export function ChordTestPage() {
         <div>
           <label className="font-medium block mb-2">Number of Frets: {numFrets}</label>
           <input
-            type="range" min="4" max="12" value={numFrets}
+            type="range" min="3" max="15" value={numFrets}
             onChange={(e) => setNumFrets(parseInt(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
           />
-          <div className="flex justify-between text-xs text-gray-500 mt-1"><span>4</span><span>12</span></div>
+          <div className="flex justify-between text-xs text-gray-500 mt-1"><span>3</span><span>15</span></div>
         </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -466,7 +181,7 @@ export function ChordTestPage() {
           </div>
           <h3 className="text-lg font-medium mb-2">Label Type</h3>
           <div className="space-y-2 mb-4">
-            {(['none', 'finger', 'tone', 'interval'] as const).map((type) => (
+            {(['none', 'finger', 'tone', 'interval', 'degree'] as const).map((type) => (
               <label key={type} className="flex items-center">
                 <input type="radio" name="labelType" className="mr-2" checked={labelType === type} onChange={() => setLabelType(type)} />
                 {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -479,13 +194,13 @@ export function ChordTestPage() {
           <div className="space-y-4">
             <div>
               <label className="block mb-1">Width</label>
-              <input type="range" min="200" max="600" step="10" value={diagramSize.width}
+              <input type="range" min="150" max="600" step="10" value={diagramSize.width}
                 onChange={(e) => setDiagramSize(prev => ({ ...prev, width: parseInt(e.target.value) }))} className="w-full" />
               <span className="text-sm">{diagramSize.width}px</span>
             </div>
             <div>
               <label className="block mb-1">Height</label>
-              <input type="range" min="250" max="800" step="10" value={diagramSize.height}
+              <input type="range" min="200" max="800" step="10" value={diagramSize.height}
                 onChange={(e) => setDiagramSize(prev => ({ ...prev, height: parseInt(e.target.value) }))} className="w-full" />
               <span className="text-sm">{diagramSize.height}px</span>
             </div>
@@ -519,10 +234,10 @@ export function ChordTestPage() {
                 </div>
                 <button onClick={() => {
                     let standardTuning: string[];
-                    if (numStrings === 4) standardTuning = ['E', 'A', 'D', 'G']; // Bass EADG (Low to High)
-                    else if (numStrings === 5) standardTuning = ['A', 'D', 'G', 'B', 'E']; // Example 5-string ADGBE
-                    else if (numStrings === 7) standardTuning = ['B', 'E', 'A', 'D', 'G', 'B', 'E']; // 7-string BEADGBE
-                    else standardTuning = ['E', 'A', 'D', 'G', 'B', 'E']; // 6 string default
+                    if (numStrings === 4) standardTuning = ['E', 'A', 'D', 'G'];
+                    else if (numStrings === 5) standardTuning = ['A', 'D', 'G', 'B', 'E'];
+                    else if (numStrings === 7) standardTuning = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+                    else standardTuning = ['E', 'A', 'D', 'G', 'B', 'E'];
                     setCustomTuning(standardTuning);
                   }} className="text-xs text-blue-500 hover:underline">
                   Reimposta accordatura standard (per {numStrings} corde)
@@ -535,21 +250,17 @@ export function ChordTestPage() {
       <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl mx-auto">
         <div className="space-y-6">
           <div className="flex justify-center">
-            <div style={{ width: diagramSize.width, height: diagramSize.height }}>
+            <div style={{ width: diagramSize.width, height: diagramSize.height, maxWidth: '100%', overflow: 'hidden' }}>
               <ChordDiagram
                 key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
                 data={selectedChord}
-                numStrings={numStrings}
                 numFrets={numFrets}
                 width={diagramSize.width}
                 height={diagramSize.height}
                 labelType={labelType}
                 showFretNumbers={showFretNumbers}
-                showStringNames={selectedChord.display?.showStringNames}
                 tuning={customTuning}
                 className="border border-gray-200 rounded p-4"
-                onNoteClick={(note) => console.log('Note clicked:', note)}
-                onBarreClick={(barre) => console.log('Barre clicked:', barre)}
               />
             </div>
           </div>
@@ -563,6 +274,6 @@ export function ChordTestPage() {
       </div>
     </div>
   );
-}
+};
 
 export default ChordTestPage;
