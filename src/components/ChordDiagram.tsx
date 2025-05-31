@@ -1,86 +1,122 @@
 import { forwardRef, useMemo } from 'react';
 import type { ForwardedRef } from 'react';
-import type { 
-  NotePosition,
-  Barre,
-  ChordDiagramData,
-  FretNumberPosition
+import type {
+  ChordDiagramData, // v2
+  ChordPositionData,
+  PositionedNote,
+  // FretPosition, // Not directly used, part of PositionedNote
+  // NoteAnnotation, // Not directly used, part of PositionedNote
+  // FingerDesignator, // Not directly used, part of NoteAnnotation
+  Tuning,
+  Barre, // v2
+  FretNumberPosition // Still used
 } from '../types';
+// type LabelType = 'none' | 'finger' | 'tone' | 'interval'; // Now part of ChordDiagramProps & types.ts display options
 
-type LabelType = 'none' | 'finger' | 'tone' | 'interval';
-import { 
-  DEFAULT_NUM_FRETS, 
-  DEFAULT_WIDTH, 
-  DEFAULT_HEIGHT,
-  DEFAULT_TUNING
-} from '../types';
+// Local defaults (as DEFAULT constants are no longer in types.ts)
+const DEFAULT_NUM_FRETS = 5;
+const DEFAULT_WIDTH = 200;
+const DEFAULT_HEIGHT = 250;
+const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
+
 import { FretboardBase } from './FretboardBase';
 import { NotesLayer } from './NotesLayer';
 import { ChordInfo } from './ChordInfo';
 
+// Updated ChordDiagramProps
 interface ChordDiagramProps {
-  data: ChordDiagramData;
-  labelType?: LabelType;
+  data: ChordDiagramData; // Uses the new data structure
+  positionIndex?: number; // Defaults to 0
+
+  // Overrides for display settings from ChordDiagramData.display
+  labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree';
   showFretNumbers?: boolean;
   fretNumberPosition?: FretNumberPosition;
   showStringNames?: boolean;
+
+  // Sizing and other direct component props
   width?: number;
   height?: number;
-  numStrings?: number;
-  numFrets?: number;
-  tuning?: string[];
+  numStrings?: number; // Prop override
+  numFrets?: number;   // Number of frets to draw on the diagram
+  tuning?: string[];   // Prop override for tuning string array
+
   className?: string;
-  onNoteClick?: (note: NotePosition, index: number) => void;
-  onBarreClick?: (barre: Barre) => void;
+  // Temporarily simplify callbacks, to be fully refactored with NotesLayer update
+  onNoteClick?: (note: any, positionData: ChordPositionData | null, event?: React.MouseEvent) => void;
+  onBarreClick?: (barre: Barre, positionData: ChordPositionData | null, event?: React.MouseEvent) => void;
 }
+
 
 const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // Data
   data,
+  positionIndex = 0, // Default to first position
   
-  // Display settings (can be overridden by data.display)
+  // Display settings (can be overridden by data.display or component props)
   labelType: labelTypeProp,
-  showFretNumbers: showFretNumbersProp,
-  fretNumberPosition: fretNumberPositionProp,
-  showStringNames: showStringNamesProp,
+  showFretNumbers: showFretNumbersProp, // Prop override
+  fretNumberPosition: fretNumberPositionProp, // Prop override
+  showStringNames: showStringNamesProp, // Prop override
   
   // Sizing
-  width,
-  height,
-  numStrings: numStringsProp,
-  numFrets: numFretsProp,
-  tuning,
+  width: widthProp, // Renamed to avoid conflict with calculated width
+  height: heightProp, // Renamed to avoid conflict with calculated height
+  numStrings: numStringsProp, // Prop override
+  numFrets: numFretsProp, // Prop override for number of frets to draw
+  tuning: tuningProp, // Prop override for tuning string array
   
   // Callbacks
-  onNoteClick,
-  onBarreClick,
+  onNoteClick: onNoteClickCallback, // Renamed
+  onBarreClick: onBarreClickCallback, // Renamed
   
   // Class name
   className = '',
 }: ChordDiagramProps, ref: ForwardedRef<SVGSVGElement>) => {
-  // Use display settings from data or from props (props take precedence)
-  const labelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
-  const showFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
-  const fretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
-  const showStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
-  const numStrings = numStringsProp ?? data.positions.notes.length;
-  
-  // Extract data from the chord object
-  const { positions, theory } = data;
-  const { notes, fingers } = positions;
-  
 
+  const positionToDisplay = data.positions && data.positions.length > 0
+                            ? data.positions[positionIndex ?? 0]
+                            : null;
+
+  if (!positionToDisplay) {
+    console.error("ChordDiagram: No valid position data to display for index.", positionIndex);
+    // Optionally render a placeholder or error message
+    return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
+  }
   
-  // Usa il tasto di partenza specificato o 1 come default
-  const startFret = data.display?.startFret ?? 1;
+  // Resolve display settings: Prop > data.display > component default
+  const currentLabelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
+  const currentShowFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
+  const currentFretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
+  const currentShowStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
+
+  const currentBaseFret = positionToDisplay.baseFret;
+
+  const derivedNumStrings = useMemo(() => {
+    if (numStringsProp) return numStringsProp;
+    if (data.tuning && typeof data.tuning !== 'string' && data.tuning.notes) return data.tuning.notes.length;
+    if (data.tuning && Array.isArray(data.tuning)) return data.tuning.length;
+    // Infer from notes if possible, ensuring all strings are accounted for up to the max string number.
+    if (positionToDisplay.notes && positionToDisplay.notes.length > 0) {
+      return Math.max(...positionToDisplay.notes.map(pn => pn.position.string), 0);
+    }
+    return 6; // Fallback default
+  }, [numStringsProp, data.tuning, positionToDisplay.notes]);
+
+  const derivedActualTuning = useMemo(() => {
+    if (tuningProp) return tuningProp;
+    if (data.tuning && typeof data.tuning !== 'string' && data.tuning.notes) return data.tuning.notes;
+    if (data.tuning && Array.isArray(data.tuning)) return data.tuning;
+    return DEFAULT_TUNING.slice(0, derivedNumStrings); // Ensure tuning matches string count
+  }, [tuningProp, data.tuning, derivedNumStrings]);
 
   // Calculate dimensions with minimums and scale proportionally
-  const minWidth = 250; // Minimum width in pixels
-  const minHeight = 300; // Minimum height in pixels
+  const minWidth = 250;
+  const minHeight = 300;
   
   // Get base dimensions from props or data, fallback to defaults
-  const baseWidth = typeof width === 'number' ? width : (data.display?.width ?? DEFAULT_WIDTH);
-  const baseHeight = typeof height === 'number' ? height : (data.display?.height ?? DEFAULT_HEIGHT);
+  const baseWidth = typeof widthProp === 'number' ? widthProp : (data.display?.width ?? DEFAULT_WIDTH);
+  const baseHeight = typeof heightProp === 'number' ? heightProp : (data.display?.height ?? DEFAULT_HEIGHT);
   
   // Calculate aspect ratio based on minimum dimensions
   const minAspectRatio = minWidth / minHeight;
@@ -91,10 +127,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   
   // Ensure the aspect ratio is maintained if one dimension is fixed
   if (diagramWidth / diagramHeight > minAspectRatio) {
-    // If too wide for the height, adjust height
     diagramHeight = diagramWidth / minAspectRatio;
   } else {
-    // If too tall for the width, adjust width
     diagramWidth = diagramHeight * minAspectRatio;
   }
   
@@ -107,105 +141,69 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   }
   
   // Calculate dimensions and padding
-  const sidePadding = 40; // Spazio per i numeri dei tasti a sinistra/destra
-  const topPadding = 30; // Aumentato da 15 a 30 per dare più spazio ai pallini delle corde a vuoto
-  const bottomPadding = 15; // Spazio inferiore per le etichette delle corde
+  const sidePadding = 40;
+  const topPadding = 30;
+  const bottomPadding = 15;
   
-  // Calcola lo spostamento orizzontale in base alla larghezza (10% della larghezza, massimo 80px)
-  // Usiamo un valore negativo per spostare a sinistra
   const horizontalOffset = -Math.min(diagramWidth * 0.1, 80);
-  const paddedWidth = diagramWidth - sidePadding * 2; // Larghezza effettiva della tastiera
-  const paddedHeight = diagramHeight - topPadding - bottomPadding; // Altezza effettiva della tastiera
+  const paddedWidth = diagramWidth - sidePadding * 2;
+  const paddedHeight = diagramHeight - topPadding - bottomPadding;
   
-  // Usa il numero di tasti specificato o il valore di default
-  // Non ricalcoliamo in base alle note per mantenere la posizione esatta
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
   
-  // Use provided tuning or default
-  const actualTuning = tuning ?? DEFAULT_TUNING;
-  
-  // Get barres from data
-  const barres = data.positions.barres || [];
-  
-  // Map notes to include finger positions and other metadata
-  const notesWithMetadata = useMemo(() => {
-    // Create a map of string number to note data
-    const noteMap = new Map<number, any>();
-    
-    // First, map all notes by their string number
-    notes.forEach(note => {
-      noteMap.set(note.string, {
-        ...note,
-        finger: null,
-        tone: '',
-        interval: ''
-      });
+  const barresForLayer = positionToDisplay.barres || [];
+
+  const processedNotesForLayer = useMemo(() => {
+    if (!positionToDisplay) return [];
+    return positionToDisplay.notes.map(pn => {
+      return {
+        string: pn.position.string,
+        fret: pn.position.fret,
+        muted: pn.position.fret === -1, // Muted if fret is -1
+        finger: pn.annotation?.finger || null,
+        tone: pn.annotation?.tone || '',
+        interval: pn.annotation?.interval || '',
+        degree: pn.annotation?.degree || '',
+        highlight: pn.annotation?.highlight || false
+      };
     });
-    
-    // Then apply fingers, tones, and intervals based on their positions
-    if (fingers) {
-      fingers.forEach((finger, index) => {
-        const stringNum = index + 1; // Convert 0-based to 1-based string number
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.finger = finger;
-        }
-      });
-    }
-    
-    if (theory?.tones) {
-      theory.tones.forEach((tone, index) => {
-        const stringNum = index + 1; // Convert 0-based to 1-based string number
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.tone = tone;
-        }
-      });
-    }
-    
-    if (theory?.intervals) {
-      // Inverti l'ordine degli intervalli per far corrispondere le corde dal basso verso l'alto
-      // (indice 0 = corda 6, indice 1 = corda 5, ecc.)
-      const reversedIntervals = [...theory.intervals].reverse();
-      
-      reversedIntervals.forEach((interval, index) => {
-        const stringNum = index + 1; // 1-based string number (1 = 6th string, 2 = 5th, etc.)
-        if (noteMap.has(stringNum)) {
-          noteMap.get(stringNum)!.interval = interval;
-        }
-      });
-    }
-    
-    // Convert map back to array of notes
-    return Array.from(noteMap.values());
-  }, [notes, fingers, theory?.tones, theory?.intervals]);
-  
-  // Generate note labels based on label type
+  }, [positionToDisplay]);
+
   const noteLabels = useMemo(() => {
-    // Create an array filled with spaces for all strings
-    const labels = Array(numStrings).fill(' ');
-    
-    if (labelType === 'none') return labels;
-    
-    // Map notes to their string positions
-    notesWithMetadata.forEach(note => {
-      const stringIndex = note.string - 1; // Convert from 1-based to 0-based
-      
-      if (stringIndex < 0 || stringIndex >= numStrings) return;
-      
-      if (labelType === 'finger' && note.finger !== null && note.finger !== undefined) {
-        labels[stringIndex] = note.finger.toString();
-      } else if (labelType === 'tone' && note.tone) {
-        labels[stringIndex] = note.tone;
-      } else if (labelType === 'interval' && note.interval) {
-        labels[stringIndex] = note.interval;
+    const labels = Array(derivedNumStrings).fill(' ');
+    if (!positionToDisplay) return labels;
+
+    const currentLabelTypeForLogic = labelTypeProp ?? data.display?.labelType ?? 'finger';
+
+    if (currentLabelTypeForLogic === 'none') {
+        processedNotesForLayer.forEach(note => {
+            if (note.muted) { // Use the 'muted' flag from processedNotesForLayer
+                const stringIndex = note.string - 1;
+                if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
+                    labels[stringIndex] = 'X';
+                }
+            }
+        });
+        return labels;
+    }
+
+    processedNotesForLayer.forEach(note => {
+      const stringIndex = note.string - 1;
+      if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
+
+      if (note.muted) { // Use the 'muted' flag
+        labels[stringIndex] = 'X';
+      } else {
+        let labelContent: string | null = null;
+        if (currentLabelTypeForLogic === 'finger') labelContent = note.finger?.toString() ?? null;
+        else if (currentLabelTypeForLogic === 'tone') labelContent = note.tone ?? null;
+        else if (currentLabelTypeForLogic === 'interval') labelContent = note.interval ?? null;
+        else if (currentLabelTypeForLogic === 'degree') labelContent = note.degree ?? null;
+        labels[stringIndex] = labelContent ?? ' ';
       }
     });
-    
-    // Replace any 'x' or 'X' with spaces
-    return labels.map(label => {
-      if (label === 'x' || label === 'X') return ' ';
-      return label || ' ';
-    });
-  }, [labelType, notesWithMetadata, numStrings]);
+    return labels;
+  }, [derivedNumStrings, positionToDisplay, processedNotesForLayer, labelTypeProp, data.display?.labelType]);
   
   return (
     <div className="flex flex-col items-center w-full">
@@ -218,52 +216,53 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
       >
         {/* Chord Info Section */}
         <div className="w-full px-4 mb-2">
-          <ChordInfo data={data} className="text-sm" />
+          <ChordInfo data={data} className="text-sm" /> {/* ChordInfo will need update for v2 data */}
         </div>
         
         {/* Diagram Section */}
         <div 
           className={`chord-diagram relative ${className || ''}`}
           style={{ 
-            width: diagramWidth + 30,
-            height: diagramHeight + 20,
+            width: diagramWidth + 30, // Consider if this +30 is still needed or part of overall sizing
+            height: diagramHeight + 20, // Same for +20
           }}
         >
           <div className="relative w-full h-full">
             <svg
               ref={ref}
               className="w-full h-full"
-              viewBox={`${fretNumberPosition === 'left' ? -sidePadding : 0} 0 ${diagramWidth + (fretNumberPosition === 'right' ? sidePadding : 0)} ${diagramHeight}`}
+              viewBox={`${currentFretNumberPosition === 'left' ? -sidePadding : 0} 0 ${diagramWidth + (currentFretNumberPosition === 'right' ? sidePadding : 0)} ${diagramHeight}`}
               preserveAspectRatio="xMidYMid meet"
               style={{ overflow: 'visible' }}
             >
-              <g transform={`translate(${(fretNumberPosition === 'left' ? sidePadding : 0) - 30}, ${topPadding})`}>
+              <g transform={`translate(${(currentFretNumberPosition === 'left' ? sidePadding : 0) - 30}, ${topPadding})`}>
                 <FretboardBase
                   width={paddedWidth}
                   height={paddedHeight}
-                  numStrings={numStrings}
+                  numStrings={derivedNumStrings}
                   numFrets={actualNumFrets}
-                  startFret={startFret}
-                  showFretNumbers={showFretNumbers}
-                  fretNumberPosition={fretNumberPosition}
-                  showStringNames={showStringNames}
-                  tuning={actualTuning}
-                  labelType={labelType}
-                  labels={labelType !== 'none' ? noteLabels : []}
-                  theory={data.theory}
+                  startFret={currentBaseFret}
+                  showFretNumbers={currentShowFretNumbers}
+                  fretNumberPosition={currentFretNumberPosition}
+                  showStringNames={currentShowStringNames}
+                  tuning={derivedActualTuning}
+                  labelType={currentLabelType} // Pass resolved labelType
+                  labels={noteLabels} // Pass generated labels
+                  theory={data.theory} // Pass global theory for now
                 >
                   <NotesLayer
                     width={paddedWidth}
                     height={paddedHeight}
-                    notes={notesWithMetadata}
-                    barres={barres}
-                    numStrings={numStrings}
+                    notes={processedNotesForLayer} // Pass new processed notes
+                    barres={barresForLayer} // Pass new barres
+                    numStrings={derivedNumStrings}
                     numFrets={actualNumFrets}
-                    startFret={startFret}
-                    labelType={labelType}
-                    labels={noteLabels}
-                    onNoteClick={onNoteClick ? (note) => onNoteClick(note, 0) : undefined}
-                    onBarreClick={onBarreClick}
+                    startFret={currentBaseFret}
+                    labelType={currentLabelType} // Pass resolved labelType
+                    labels={noteLabels} // Pass generated labels
+                    // Temporarily simplified onNoteClick and onBarreClick
+                    onNoteClick={onNoteClickCallback ? (note) => onNoteClickCallback(note, positionToDisplay) : undefined}
+                    onBarreClick={onBarreClickCallback ? (barre) => onBarreClickCallback(barre, positionToDisplay) : undefined}
                   />
                 </FretboardBase>
               </g>
@@ -277,7 +276,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
 ChordDiagram.displayName = 'ChordDiagram';
 
-// Add error boundary
+// Add error boundary (no change here)
 const ChordDiagramWithErrorBoundary = forwardRef<SVGSVGElement, ChordDiagramProps>((props, ref) => {
   try {
     return <ChordDiagram ref={ref} {...props} />;

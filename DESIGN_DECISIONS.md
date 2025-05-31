@@ -11,50 +11,83 @@ Questo documento registra le decisioni di progettazione chiave prese durante lo 
 - `src/index.ts`: Punto di ingresso principale della libreria
 
 ### Convenzioni API
-1. **Numerazione delle Corde**:
-   - La corda 1 è il Mi cantino (la più sottile), visualizzata come la più a destra
-   - Le corde sono numerate in ordine crescente da destra a sinistra
+1. **Numerazione delle Corde (String Numbering)**:
+   - La **Corda 1** (`string: 1` in `NotePosition`) si riferisce alla corda con il pitch più alto (es. Mi cantino / High E su una chitarra standard). Nel diagramma, questa corda è visualizzata come la più **a destra**.
+   - La **Corda N** (dove N è il numero totale di corde, es. `string: 6` per una chitarra standard) si riferisce alla corda con il pitch più basso (es. Mi basso / Low E). Nel diagramma, questa corda è visualizzata come la più **a sinistra**.
+   - Le etichette testuali delle corde (se mostrate) seguono questa convenzione visiva (da sinistra a destra: Low E, A, D, G, B, High E per una chitarra standard).
+   - Questa convenzione si applica a `FretPosition.string` e `Barre.fromString/toString`.
 
-2. **Gestione dei Tasti**:
-   - `fret`: Il numero assoluto del tasto (0 per corde aperte)
-   - `startFret`: Offset che indica da quale tasto iniziare la visualizzazione
-   - La posizione effettiva è calcolata come `fret - startFret + 1`
+2. **Gestione dei Tasti (v2)**:
+   - `FretPosition.fret`: Rappresenta sempre il numero **assoluto** del tasto sul manico. `0` indica una corda a vuoto. `-1` indica una corda muta o non suonata, che sarà marcata con 'X' nel diagramma.
+   - `ChordPositionData.baseFret`: Determina quale tasto appare in cima al diagramma per una specifica diteggiatura/posizione. Se `1`, viene mostrato il capotasto (o il primo tasto). Se maggiore di `1`, la numerazione dei tasti si adegua di conseguenza.
 
-3. **Validazione**:
-   - Tutte le props vengono validate utilizzando Zod
-   - I messaggi di errore sono descrittivi e utili per il debugging
+3. **Convenzioni per Dati Strutturati (v2)**:
+   - **`Tuning.notes`**: Questo array di stringhe (nomi delle note) per l'accordatura deve essere fornito con gli elementi ordinati dalla corda con il **pitch più basso** (es. Low E, corda N) alla corda con il **pitch più alto** (es. High E, corda 1). Esempio per chitarra standard: `['E', 'A', 'D', 'G', 'B', 'E']`.
+   - **`ChordPositionData.notes`**: Questo è un array di oggetti `PositionedNote`. Per una completa annotazione, si raccomanda di fornire un elemento `PositionedNote` per ogni corda dello strumento. L'ordine di questi elementi nell'array non è strettamente imposto per la logica di base, ma per chiarezza e processamento completo, è consigliabile ordinarli per numero di corda (da 1, high-pitch, a N, low-pitch). Ogni `PositionedNote` contiene `position.string` che definisce a quale corda si riferisce.
+   - La precedente gestione interna di inversione di array separati per `fingers`, `tones`, `intervals` non è più necessaria in `ChordDiagram.tsx`, poiché queste informazioni sono ora incapsulate per ciascuna nota in `PositionedNote.annotation`.
 
-## Struttura dei Dati degli Accordi
+4. **`FingerDesignator` (Nuovo Tipo)**:
+   - Per specificare la diteggiatura in `NoteAnnotation.finger`, si usa il tipo `FingerDesignator`.
+   - Valori possibili:
+     - Numeri `1, 2, 3, 4`: Dita della mano (indice, medio, anulare, mignolo).
+     - `'T'` o `'P'`: Pollice (Thumb).
+     - `'O'`: Corda suonata a vuoto (Open), quando si vuole indicare esplicitamente che è aperta nel contesto di una diteggiatura.
+     - `'X'`: Corda non suonata o muta, nel contesto di una diteggiatura specifica (complementare a `FretPosition.fret = -1`).
+     - `null`: Nessuna diteggiatura specifica fornita per quella nota.
 
-### Formato dell'oggetto accordo
+5. **Validazione**:
+   - Tutte le props vengono validate utilizzando Zod (Nota: le definizioni Zod dovranno essere aggiornate per i nuovi tipi v2).
+   - I messaggi di errore sono descrittivi e utili per il debugging.
+
+## Struttura dei Dati degli Accordi (v2)
+
+La struttura `ChordDiagramData` è stata significativamente rivista per migliorare la separazione delle responsabilità, supportare diteggiature multiple per accordo, e standardizzare la rappresentazione dell'accordatura. Questa evoluzione si basa sul feedback degli utenti e sull'obiettivo di una maggiore flessibilità.
+
+### Formato Principale: `ChordDiagramData` (v2)
 ```typescript
-{
-  name: string;                    // Nome dell'accordo (es. 'C major')
-  positions: {
-    notes: Array<{
-      string: number;              // Numero della corda (1-based)
-      fret: number;                // Tasto (0 per corde aperte)
-      tone?: string;               // Nome della nota (opzionale)
-      muted?: boolean;             // Se true, la corda è muta
-    }>;
-    fingers?: (number | null)[];   // Diteggiature (0 per corde aperte, null per mute)
-    barres?: Barre[];             // Barre (se presenti)
-  };
-  theory?: {
-    tones: string[];              // Nomi delle note per ogni corda
-    intervals: string[];           // Intervalli armonici per ogni corda
-    description?: string;          // Descrizione opzionale dell'accordo
-  };
-  display?: {
-    labelType?: 'none' | 'finger' | 'tone' | 'interval';
-    showFretNumbers?: boolean;
-    showStringNames?: boolean;
-    width?: number;
-    height?: number;
-  };
-  tuning?: string[];              // Accordatura personalizzata (es. ['E', 'A', 'D', 'G', 'B', 'E'])
+// Riepilogo della struttura v2. Fare riferimento a src/types.ts per i dettagli completi.
+interface ChordDiagramData {
+  name: string;                 // Nome primario dell'accordo (es. "Am7")
+  fullName?: string;            // Nome descrittivo completo (opzionale)
+  aliases?: string[];           // Nomi alternativi (opzionale)
+
+  positions: ChordPositionData[]; // Array di diteggiature/posizioni
+
+  theory?: { /* ... info teoriche globali ... */ };
+  tuning?: Tuning | string[];   // Accordatura (oggetto Tuning o array di stringhe)
+  display?: { /* ... impostazioni di visualizzazione globali ... */ };
+  instrument?: InstrumentType;
+  comments?: string;
 }
 ```
+
+### Sotto-Strutture Chiave:
+-   **`ChordPositionData`**: Rappresenta una singola diteggiatura o posizione.
+    -   `baseFret: number`: Tasto visualizzato in cima al diagramma per questa posizione.
+    -   `notes: PositionedNote[]`: Array delle note in questa posizione.
+    -   `barres?: Barre[]`: Array di barrè.
+-   **`PositionedNote`**: Una nota specifica sulla tastiera.
+    -   `position: FretPosition`: Definisce la corda e il tasto.
+    -   `annotation?: NoteAnnotation`: Dettagli opzionali (dito, tono, intervallo).
+-   **`FretPosition`**:
+    -   `string: number`: Numero della corda (1 = più acuta).
+    -   `fret: number`: Tasto assoluto (`0` = corda a vuoto, `-1` = muta/non suonata).
+-   **`NoteAnnotation`**:
+    -   `finger?: FingerDesignator`: Diteggiatura.
+    -   `tone?: string`: Nota (es. 'C#').
+    -   `interval?: string`: Intervallo (es. 'm3').
+    -   `degree?: string`: Grado della scala.
+    -   `highlight?: boolean`.
+-   **`FingerDesignator`**: `1 | 2 | 3 | 4 | 'T' | 'P' | 'O' | 'X' | null`. Vedi spiegazione in "Convenzioni API".
+-   **`Tuning`**: Oggetto `{ name: string; notes: string[] }` o semplice array `string[]` (note da corda più grave a più acuta).
+-   **`Barre`**: (v2) Include `fromString` (corda più acuta, es. 1), `toString` (corda più grave, es. 6), `fret`, e `finger?` opzionale.
+
+### Motivazioni per la Ristrutturazione v2:
+-   **Supporto Multi-Posizione**: La modifica principale è l'introduzione di `positions: ChordPositionData[]`, che permette di definire più diteggiature o voicings per lo stesso accordo logico all'interno di un singolo oggetto `ChordDiagramData`.
+-   **Chiarezza Dati Nota**: Separazione tra `FretPosition` (dove si trova la nota) e `NoteAnnotation` (cos'è la nota e come suonarla).
+-   **Standardizzazione `baseFret`**: `baseFret` è ora per posizione, eliminando ambiguità con un `startFret` globale quando si hanno più diteggiature.
+-   **Miglioramento Diteggiature**: Introduzione di `FingerDesignator` per una specifica più ricca delle dita e dello stato delle corde (aperta 'O', muta 'X').
+-   **Definizione Accordatura Flessibile**: `tuning` può essere un oggetto `Tuning` completo o un semplice array di note.
 
 ## Componente LabelsLayer
 
@@ -79,11 +112,19 @@ La libreria si limita a visualizzare i dati forniti dall'utente senza eseguire c
 
 ### Comportamento
 1. Le etichette sono centrate perfettamente nei cerchi delle note
-2. Le corde mute mostrano sempre una 'X' in colore grigio scuro
+2. Le corde mute mostrano sempre una 'X' in colore grigio scuro (simbolo grafico sul tasto zero in `NotesLayer`)
 3. Le corde aperte hanno testo nero su sfondo bianco
 4. Le corde premute hanno testo bianco su sfondo nero
-5. Le etichette vengono mostrate solo se presenti nell'array `labels`
-6. I valori null/undefined vengono gestiti correttamente
+5. Le etichette vengono mostrate solo se presenti nell'array `labels` (passato a `FretboardBase`)
+6. I valori null/undefined vengono gestiti correttamente per non visualizzare "null" o "undefined" come etichette.
+7. **Etichettatura delle Corde Mute (Muted String Labeling)**:
+   - Le corde contrassegnate come mute (`note.muted: true`) riceveranno un'etichetta 'X' nella riga delle etichette visualizzata sotto la tastiera (a condizione che `display.labelType` non sia `'none'` e venga generata tramite `noteLabels`).
+   - Questa etichetta 'X' per le corde mute ha la precedenza su qualsiasi altra etichetta derivante da `finger`, `tone`, o `interval` per quella specifica corda quando si generano le `noteLabels`.
+   - La visualizzazione del simbolo 'X' direttamente sulla corda all'altezza del capotasto (o al tasto zero) è gestita separatamente dal componente `NotesLayer` e non dipende da `noteLabels`.
+8. **Visualizzazione Condizionale del `startFret`**:
+   - Anche quando la prop `showFretNumbers` è impostata a `false`, se `startFret` è maggiore di 1 (ad esempio, il diagramma inizia dal 3° tasto), il numero di `startFret` (es. "3") verrà comunque visualizzato accanto al primo tasto visibile sul diagramma.
+   - Questa decisione è stata presa per garantire che l'utente abbia sempre un riferimento di posizione sulla tastiera quando il diagramma non parte dal capotasto o dal primo tasto.
+   - Se `showFretNumbers` è `false` e `startFret` è `1` (o un valore non maggiore di 1), nessun numero di tasto viene visualizzato.
 
 ## Convenzioni di Codice
 

@@ -1,4 +1,4 @@
-import { ChordTestPage } from './ChordTestPage';
+import ChordTestPage from './ChordTestPage';
 
 function App() {
   return (
