@@ -3,41 +3,37 @@ import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 
 const testChords: ChordDiagramData[] = [
-  // Chitarra standard (6 corde) - C Major con barrè all'ottavo tasto
+  // Example 1: C Major (Open) - v2 Format
   {
-    name: 'C Major (8th position)',
+    name: 'C Major (Open) v2',
     instrumentName: 'Guitar (Standard Tuning)',
-    positions: {
-      notes: [
-        { string: 6, fret: 8, tone: 'C' },
-        { string: 5, fret: 10, tone: 'G' },
-        { string: 4, fret: 10, tone: 'C' },
-        { string: 3, fret: 9, tone: 'E' },
-        { string: 2, fret: 8, tone: 'G' },
-        { string: 1, fret: 8, tone: 'C' }
-      ],
-      fingers: [1, 3, 4, 2, 1, 1],
-      barres: [
-        { fromString: 1, toString: 6, fret: 8, finger: 1 }
-      ]
-    },
+    positions: [
+      {
+        baseFret: 1,
+        notes: [ // Must cover all strings for full annotation
+          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: null, interval: null } }, // Low E Muted
+          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
+          { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
+          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } }, // O for open finger
+          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
+          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }  // High E Open
+        ],
+        barres: []
+      }
+    ],
     theory: {
       chordTones: ['C', 'E', 'G'],
-      tones: ['C', 'G', 'C', 'E', 'G', 'C'],
-      intervals: ['R', '5', 'R', '3', '5', 'R'],
-      formula: ['R', '3', '5'],
-      extensions: []
+      formula: 'R 3 5'
+      // Global intervals/tones arrays are less critical if annotations are per note
     },
-    display: {
-      labelType: 'finger',
-      showFretNumbers: true,
-      startFret: 8
-    }
+    display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // LowE to HighE
   },
-  // Chitarra standard (6 corde) - C Major in prima posizione
+  // Example 2: F Major (Barre) - v2 Format
   {
-    name: 'C Major',
+    name: 'F Major (Barre) v2',
     instrumentName: 'Guitar (Standard Tuning)',
+<<<<<<< HEAD
     positions: {
       notes: [
         { string: 5, fret: 3, tone: 'C' },
@@ -293,6 +289,54 @@ const testChords: ChordDiagramData[] = [
   // { name: 'E Minor', ... },
   // { name: 'F Major', ... },
   // { name: 'Open G', ... }
+=======
+    positions: [
+      {
+        baseFret: 1,
+        notes: [
+          { position: { string: 6, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } },
+          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: '5' } },
+          { position: { string: 4, fret: 3 }, annotation: { finger: 4, tone: 'F', interval: 'R' } },
+          { position: { string: 3, fret: 2 }, annotation: { finger: 2, tone: 'A', interval: '3' } },
+          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: '5' } },
+          { position: { string: 1, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } }
+        ],
+        barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }] // HighE=1, LowE=6 for string range
+      }
+    ],
+    theory: {
+      chordTones: ['F', 'A', 'C'],
+      formula: 'R 3 5'
+    },
+    display: { labelType: 'finger' /* startFret removed, uses baseFret */ },
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+  },
+  // Example 3: E7 (Open) - v2 Format
+  {
+    name: 'E7 (Open) v2',
+    instrumentName: 'Guitar (Standard Tuning)',
+    positions: [
+      {
+        baseFret: 1,
+        notes: [
+          { position: { string: 6, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: 'R' } },
+          { position: { string: 5, fret: 2 }, annotation: { finger: 2, tone: 'B', interval: '5' } },
+          { position: { string: 4, fret: 0 }, annotation: { finger: 'O', tone: 'D', interval: 'm7' } },
+          { position: { string: 3, fret: 1 }, annotation: { finger: 1, tone: 'G#', interval: '3' } },
+          { position: { string: 2, fret: 0 }, annotation: { finger: 'O', tone: 'B', interval: '5' } },
+          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: 'R' } }
+        ],
+        barres: []
+      }
+    ],
+    theory: {
+      chordTones: ['E', 'G#', 'B', 'D'],
+      formula: 'R 3 5 m7'
+    },
+    display: { labelType: 'interval' },
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+  }
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 ];
 
 // The rest of the React component code as provided by the user, with my minor adjustments from previous thought block
@@ -300,7 +344,11 @@ const testChords: ChordDiagramData[] = [
 // For brevity, not pasting the full React component code again here, but it's part of the string.
 // Ensure the 'export default ChordTestPage;' is present.
 
+<<<<<<< HEAD
 export function ChordTestPage() { 
+=======
+export function ChordTestPage() {
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 250, height: 350 });
@@ -328,8 +376,13 @@ export function ChordTestPage() {
         const currentChordTuning = selectedChord.tuning ||
           (newNumStrings === 7 ? ['B', 'E', 'A', 'D', 'G', 'B', 'E'] :
            newNumStrings === 6 ? ['E', 'A', 'D', 'G', 'B', 'E'] :
+<<<<<<< HEAD
            newNumStrings === 5 ? ['A', 'D', 'G', 'B', 'E'] : 
            newNumStrings === 4 ? ['E', 'A', 'D', 'G'] : 
+=======
+           newNumStrings === 5 ? ['A', 'D', 'G', 'B', 'E'] :
+           newNumStrings === 4 ? ['E', 'A', 'D', 'G'] :
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
            ['E', 'A', 'D', 'G', 'B', 'E']);
         setCustomTuning(currentChordTuning);
     }
@@ -342,6 +395,19 @@ export function ChordTestPage() {
       setSelectedChord(chord);
     }
   };
+<<<<<<< HEAD
+=======
+
+  if (!selectedChord && testChords.length > 0) {
+      // This case should ideally not be hit if testChords is non-empty and selectedChord is initialized.
+      // However, as a safeguard:
+      setSelectedChord(testChords[0]);
+      return <div>Initializing chord...</div>;
+  }
+  if (!selectedChord) {
+    return <div>No chord selected or no chords available.</div>;
+  }
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
 
   if (!selectedChord && testChords.length > 0) {
       // This case should ideally not be hit if testChords is non-empty and selectedChord is initialized.

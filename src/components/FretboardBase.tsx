@@ -12,11 +12,13 @@ interface FretboardBaseProps extends React.PropsWithChildren {
   showStringNames?: boolean;
   className?: string;
   tuning?: string[];
-  labelType?: 'none' | 'finger' | 'tone' | 'interval';
-  labels?: (string | number | null)[];
+  labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Added 'degree'
+  labels?: (string | number | null)[]; // These are the noteLabels from ChordDiagram
+  // Updated theory type to match new ChordDiagramData.theory
   theory?: {
-    tones?: (string | null)[];
-    intervals?: (string | null)[];
+    formula?: string;
+    intervals?: string[];
+    chordTones?: string[];
   };
   startFret?: number;
 }
@@ -29,12 +31,12 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   height,
   showFretNumbers = true,
   fretNumberPosition = 'left',
-  showStringNames = true,
+  showStringNames = true, // This prop now primarily controls fallback to tuning notes
   className = '',
   tuning,
-  labelType = 'finger',
-  labels = [],
-  theory,
+  labelType = 'finger', // labelType is used for styling text in current code, not for choosing content here.
+  labels = [], // These are the pre-processed noteLabels from ChordDiagram
+  theory, // Not directly used by FretboardBase for its own rendering, but could be passed to children if any
   startFret = 1,
 }) => {
   // Calculate dimensions with padding for labels
@@ -80,6 +82,7 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   };
   
   // Calculate fret number to display
+<<<<<<< HEAD
   // Calculates the fret number to display alongside the fretboard.
   // If startFret is 1 (default), displayed numbers are 1, 2, 3, ...
   // If startFret is, e.g., 3, displayed numbers will be 3, 4, 5, ...
@@ -87,9 +90,22 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   const getStringLabel = (index: number, totalStrings: number) => {
     if (labels && index >= 0 && index < labels.length) {
       return String(labels[labels.length - 1 - index] || '');
+=======
+  // Get the label for a specific string.
+  // stringVisualIndex: 0 for leftmost string (e.g., Low E on guitar, which is string N)
+  //                    N-1 for rightmost string (e.g., High E on guitar, which is string 1)
+  const getStringLabel = (stringVisualIndex: number, totalStrings: number): string => {
+    // props.labels (noteLabels from ChordDiagram) is ordered: index 0 for string 1 (High E) to N-1 for string N (Low E)
+    const labelFromNoteLabel = labels?.[totalStrings - 1 - stringVisualIndex];
+    if (labelFromNoteLabel !== undefined && labelFromNoteLabel !== null && String(labelFromNoteLabel).trim() !== '') {
+      return String(labelFromNoteLabel);
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
     }
-    if (tuning && tuning.length === totalStrings) {
-      return tuning[totalStrings - 1 - index];
+
+    // Fallback to tuning note if showStringNames is true and no specific label from props.labels
+    if (showStringNames && tuning && tuning.length === totalStrings) {
+      // props.tuning is ordered: index 0 for Low E string, up to N-1 for High E string
+      return tuning[stringVisualIndex] || '';
     }
     return '';
   };
@@ -98,31 +114,19 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
     <g className={`fretboard-base ${className}`}>
       {/* Strings */}
       {Array.from({ length: numStrings }).map((_, i) => {
-        const stringNumber = i + 1;
+        // i is the visual index from left (0) to right (numStrings - 1)
+        // 0 = Low E string (string N), numStrings - 1 = High E string (string 1)
         const x = i * stringSpacing;
-        const noteForString = labels[i];
-        const isMuted = noteForString === 'x' || noteForString === 'X';
         
-        let labelText = '';
-        if (isMuted) {
-          labelText = 'X';
-        } else {
-          const mutedStringsBefore = labels.slice(0, i).filter(n => n === 'x' || n === 'X').length;
-          const noteIndex = i - mutedStringsBefore;
-          
-          if (labelType === 'tone') {
-            labelText = (theory?.intervals?.[noteIndex] || '') as string;
-          } else if (['interval', 'finger', 'none'].includes(labelType)) {
-            labelText = (theory?.tones?.[noteIndex] || '') as string;
-          } else {
-            labelText = getStringLabel(i, numStrings);
-          }
-        }
-        
-        const shouldShowLabel = (!!labelText && !isMuted) || isMuted;
+        let labelText = getStringLabel(i, numStrings); // Get label from props.labels or tuning
+        labelText = labelText || ' '; // Ensure it's at least a space if empty string was returned
+
+        const displayMutedX = labelText === 'X'; // If 'X' was passed in labels, treat as muted for display
+        // Show label if showStringNames is true and there's content, OR if it's an X (muted marker)
+        const shouldShowLabel = (showStringNames && !!labelText.trim()) || displayMutedX;
         
         return (
-          <g key={`string-${stringNumber}`}>
+          <g key={`string-group-${i}`}>
             <line
               x1={x}
               y1={0}
@@ -137,19 +141,23 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
             {shouldShowLabel && (
               <text
                 x={x}
-                y={paddedHeight + 20}
+                y={paddedHeight + 20} // Position below the fretboard
                 textAnchor="middle"
+                dominantBaseline="middle" // Better for vertical centering
+                // Styling for labels (X for muted, or tuning notes)
+                // labelType prop is still passed, can be used for more specific styling if needed
                 className={`fill-current ${
-                  labelType === 'finger' 
-                    ? 'text-gray-600 dark:text-gray-300' 
-                    : 'text-blue-600 dark:text-blue-400 font-bold'
+                  displayMutedX
+                    ? 'text-gray-500 dark:text-gray-400' // Style for 'X'
+                    : (labelType === 'tone' || labelType === 'interval' || labelType === 'degree')
+                        ? 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels
+                        : 'text-gray-700 dark:text-gray-300' // Default style for tuning notes/finger numbers
                 }`}
                 style={{
-                  fontSize: '16px',
+                  fontSize: '14px', // Slightly smaller for string names/tuning
                   fontFamily: 'Arial, sans-serif',
                   userSelect: 'none',
                   pointerEvents: 'none',
-                  fontWeight: labelType === 'tone' || labelType === 'interval' ? 'bold' : 'normal'
                 }}
               >
                 {labelText}
@@ -191,8 +199,13 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
                 fretLabelToShow = (startFret + i - 1).toString();
               } else {
                 // If showFretNumbers is false, only show startFret if startFret > 1 and it's the first fret position
+<<<<<<< HEAD
                 if (startFret > 1 && i === 1) { 
                   fretLabelToShow = startFret.toString(); 
+=======
+                if (startFret > 1 && i === 1) {
+                  fretLabelToShow = startFret.toString();
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
                   // Optional: add "fr." suffix, e.g., `${startFret}fr.`
                   // For now, just the number as per user's initial example.
                 }
@@ -201,10 +214,17 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
               if (!fretLabelToShow) return null; // Don't render if no label determined for this fret index
 
               const y = (i - 0.5) * fretSpacing; // Position in the middle of the fret space
+<<<<<<< HEAD
               const x = fretNumberPosition === 'left' 
                 ? -fretNumberSpacing + fretNumberOffset 
                 : width + fretNumberSpacing;
               
+=======
+              const x = fretNumberPosition === 'left'
+                ? -fretNumberSpacing + fretNumberOffset
+                : width + fretNumberSpacing;
+
+>>>>>>> 7ce2340662a65011446821003aea60254626e7d0
               return (
                 <text
                   key={`fret-number-${i}`}

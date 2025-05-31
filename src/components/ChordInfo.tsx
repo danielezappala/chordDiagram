@@ -1,14 +1,22 @@
 import React from 'react';
 import type { ChordDiagramData } from '../types';
 
+import type { ChordDiagramData, ChordPositionData } from '../types'; // Ensure ChordPositionData is imported if used explicitly
+
 interface ChordInfoProps {
-  data: ChordDiagramData;
+  data: ChordDiagramData; // This is now ChordDiagramData v2
   className?: string;
-  // labelType rimosso in quanto non utilizzato nel componente
+  positionIndex?: number; // Optional: to specify which position's info to show, defaults to 0
 }
 
-const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '' }) => {
-  const { name, theory, positions } = data;
+const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionIndex = 0 }) => {
+  const { name, theory, instrumentName } = data; // instrumentName was called instrument before
+
+  // Select the current position to display, defaulting to the first one
+  const currentPosition: ChordPositionData | null =
+    data.positions && data.positions.length > positionIndex
+      ? data.positions[positionIndex]
+      : null;
   
   // Mappa degli stili per ogni tipo di intervallo
   const getIntervalStyle = (interval: string) => {
@@ -52,14 +60,15 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '' }) => {
         : theory.formula.split('-'))
     : [];
   
-  const instrument = data.instrumentName || '';
+  const instrument = instrumentName || ''; // Use the destructured instrumentName
   const showFormula = formulaParts.length > 0;
   
-  // Estrai le note suonate (dalla posizione delle dita)
-  const playedNotes = positions.notes
-    .filter(note => !note.muted)
-    .map(note => note.tone)
-    .filter((tone, index, self) => tone && self.indexOf(tone) === index);
+  // Estrai le note suonate (dalla posizione delle dita for the current position)
+  const playedNotes = currentPosition ? currentPosition.notes
+    .filter(pn => pn.position.fret !== -1 && pn.annotation?.tone) // Note is played and has a tone
+    .map(pn => pn.annotation!.tone)
+    .filter((tone, index, self) => self.indexOf(tone) === index) // Unique tones
+    : [];
 
   return (
     <div className={`chord-info ${className} flex flex-col items-center`}>
@@ -74,7 +83,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '' }) => {
         </div>
       )}
 
-      {/* Played Notes - Mostrato solo se diverso dai chord tones */}     
+      {/* Played Notes - Display unique tones from the current position */}
       {playedNotes.length > 0 && (
         <div className="mt-2">
           <div className="text-center space-x-2">
