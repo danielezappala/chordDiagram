@@ -235,9 +235,10 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
           style={{ 
             width: diagramWidth,
             height: diagramHeight,
+            marginLeft: '-25px'
           }}
         >
-          <div className="relative w-full h-full">
+          <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
             <svg
               ref={ref}
               className="w-full h-full"

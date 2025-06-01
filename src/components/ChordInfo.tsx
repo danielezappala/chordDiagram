@@ -59,7 +59,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
   // No need for complex data processing since we receive the data directly
   
   return (
-    <div className={`chord-info ${className} flex flex-col items-center`}>
+    <div className={`chord-info ${className} flex flex-col items-center pb-6`}>
       {/* Nome accordo e strumento */}
       <h2 className="text-2xl font-bold text-center my-2 whitespace-nowrap">{name}</h2>
       

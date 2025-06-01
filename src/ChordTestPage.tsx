@@ -113,7 +113,7 @@ const testChords: ChordDiagramData[] = [
 const ChordTestPage: React.FC = () => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
-  const [diagramSize, setDiagramSize] = useState({ width: 220, height: 400 });
+  const [diagramSize, setDiagramSize] = useState({ width: 250, height: 500 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
   const [showTuningEditor, setShowTuningEditor] = useState(false);
@@ -233,16 +233,26 @@ const ChordTestPage: React.FC = () => {
           <h2 className="text-xl font-semibold mb-3">Diagram Size</h2>
           <div className="space-y-4">
             <div>
-              <label className="block mb-1">Width</label>
-              <input type="range" min="150" max="600" step="10" value={diagramSize.width}
-                onChange={(e) => setDiagramSize(prev => ({ ...prev, width: parseInt(e.target.value) }))} className="w-full" />
+              <label className="block mb-1">Width (max 250px)</label>
+              <input type="range" min="150" max="250" step="5" value={diagramSize.width}
+                onChange={(e) => {
+                  const newWidth = parseInt(e.target.value);
+                  setDiagramSize({ width: newWidth, height: newWidth * 2 });
+                }} className="w-full" />
               <span className="text-sm">{diagramSize.width}px</span>
             </div>
             <div>
-              <label className="block mb-1">Height</label>
-              <input type="range" min="200" max="800" step="10" value={diagramSize.height}
-                onChange={(e) => setDiagramSize(prev => ({ ...prev, height: parseInt(e.target.value) }))} className="w-full" />
-              <span className="text-sm">{diagramSize.height}px</span>
+              <label className="block mb-1">Height (auto: 2× width)</label>
+              <input type="range" min="200" max="500" step="10" 
+                value={diagramSize.width * 2} 
+                onChange={(e) => {
+                  const newHeight = parseInt(e.target.value);
+                  setDiagramSize({ width: Math.round(newHeight / 2), height: newHeight });
+                }} 
+                className="w-full" 
+                disabled
+              />
+              <span className="text-sm">{diagramSize.width * 2}px (auto)</span>
             </div>
           </div>
         </div>
@@ -287,31 +297,43 @@ const ChordTestPage: React.FC = () => {
           </div>
         </div>
       </div>
-     {/* Centered content area */}
-    <div className="flex flex-col items-center w-full">
-      {/* Chord diagram container */}
-      <div className="w-full flex justify-center mb-8">
-        <div style={{ 
-          width: diagramSize.width, 
-          height: diagramSize.height, 
-          maxWidth: '100%' 
-        }}>
-          <ChordDiagram
-            key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
-            data={selectedChord}
-            numFrets={numFrets}
-            width={diagramSize.width}
-            height={diagramSize.height}
-            labelType={labelType}
-            showFretNumbers={showFretNumbers}
-            tuning={customTuning}
-            className="border border-gray-200 rounded p-4"
-          />
+    <div className="w-full px-4 mt-6 mb-16">
+      <div className="mx-auto" style={{ maxWidth: 'min(100%, 42rem)' }}>
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-hidden">
+          <div className="relative w-full flex justify-center" style={{ minHeight: '400px', paddingBottom: '2rem' }}>
+            <div style={{
+              position: 'relative',
+              width: '100%',
+              height: '100%',
+              maxWidth: '250px',
+              maxHeight: '500px',
+              minWidth: '150px',
+              minHeight: '300px',
+              margin: '0 auto',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              padding: '1rem'
+            }}>
+              <ChordDiagram
+                key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
+                data={selectedChord}
+                numFrets={numFrets}
+                width={diagramSize.width}
+                height={diagramSize.height}
+                labelType={labelType}
+                showFretNumbers={showFretNumbers}
+                tuning={customTuning}
+                className="w-full h-full"
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Raw data section - centered and styled */}
-      <div className="w-full max-w-4xl mt-8">
+      <div className="w-full max-w-4xl mt-16 mb-8">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
           <h2 className="text-xl font-semibold mb-4 text-gray-800">Selected Chord Data (Raw):</h2>
           <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
