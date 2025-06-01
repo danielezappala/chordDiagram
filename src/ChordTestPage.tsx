@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
-
+import { ChordInfo } from './components/ChordInfo';
 const testChords: ChordDiagramData[] = [
   {
     name: 'C Major (Open) v2',
@@ -113,7 +113,7 @@ const testChords: ChordDiagramData[] = [
 const ChordTestPage: React.FC = () => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
-  const [diagramSize, setDiagramSize] = useState({ width: 250, height: 350 });
+  const [diagramSize, setDiagramSize] = useState({ width: 220, height: 400 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
   const [showTuningEditor, setShowTuningEditor] = useState(false);
@@ -121,19 +121,19 @@ const ChordTestPage: React.FC = () => {
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
 
   const detectNumStrings = useCallback((chord: ChordDiagramData | undefined | null): number => {
-    if (!chord || !chord.positions || chord.positions.length === 0 ) {
+    if (!chord || !chord.positions || chord.positions.length === 0) {
       return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
-             (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
+        (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
     const currentPositionNotes = chord.positions[0].notes;
     if (!currentPositionNotes || currentPositionNotes.length === 0) {
-        return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
-               (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
+      return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
+        (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
     const validNotes = currentPositionNotes.filter(note => typeof note.position.string === 'number');
     if (validNotes.length === 0) {
-        return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
-               (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
+      return chord?.tuning && !Array.isArray(chord.tuning) ? chord.tuning.notes.length :
+        (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
     return Math.max(...validNotes.map(note => note.position.string));
   }, []);
@@ -142,22 +142,22 @@ const ChordTestPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedChord) {
-        const newNumStrings = detectNumStrings(selectedChord);
-        setNumStrings(newNumStrings);
+      const newNumStrings = detectNumStrings(selectedChord);
+      setNumStrings(newNumStrings);
 
-        let defaultTuningForStrings: string[];
-        if (typeof selectedChord.tuning === 'object' && selectedChord.tuning !== null && !Array.isArray(selectedChord.tuning) && selectedChord.tuning.notes) {
-            defaultTuningForStrings = selectedChord.tuning.notes;
-        } else if (Array.isArray(selectedChord.tuning)) {
-            defaultTuningForStrings = selectedChord.tuning;
-        } else {
-            if (newNumStrings === 7) defaultTuningForStrings = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
-            else if (newNumStrings === 6) defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
-            else if (newNumStrings === 5) defaultTuningForStrings = ['A', 'D', 'G', 'B', 'E'];
-            else if (newNumStrings === 4) defaultTuningForStrings = ['E', 'A', 'D', 'G'];
-            else defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
-        }
-        setCustomTuning(defaultTuningForStrings);
+      let defaultTuningForStrings: string[];
+      if (typeof selectedChord.tuning === 'object' && selectedChord.tuning !== null && !Array.isArray(selectedChord.tuning) && selectedChord.tuning.notes) {
+        defaultTuningForStrings = selectedChord.tuning.notes;
+      } else if (Array.isArray(selectedChord.tuning)) {
+        defaultTuningForStrings = selectedChord.tuning;
+      } else {
+        if (newNumStrings === 7) defaultTuningForStrings = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+        else if (newNumStrings === 6) defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
+        else if (newNumStrings === 5) defaultTuningForStrings = ['A', 'D', 'G', 'B', 'E'];
+        else if (newNumStrings === 4) defaultTuningForStrings = ['E', 'A', 'D', 'G'];
+        else defaultTuningForStrings = ['E', 'A', 'D', 'G', 'B', 'E'];
+      }
+      setCustomTuning(defaultTuningForStrings);
     }
   }, [selectedChord, detectNumStrings]);
 
@@ -170,8 +170,8 @@ const ChordTestPage: React.FC = () => {
   };
 
   if (!selectedChord && testChords.length > 0 && testChords[0]) { // Added testChords[0] check
-      setSelectedChord(testChords[0]);
-      return <div>Initializing chord...</div>; // Should not be hit if testChords is pre-filled
+    setSelectedChord(testChords[0]);
+    return <div>Initializing chord...</div>; // Should not be hit if testChords is pre-filled
   }
   if (!selectedChord) { // If testChords is empty or selectedChord is somehow still null
     return <div>No chord selected or no chords available.</div>;
@@ -212,13 +212,11 @@ const ChordTestPage: React.FC = () => {
             <span className="text-sm font-medium">Show Fret Numbers</span>
             <button
               onClick={() => setShowFretNumbers(!showFretNumbers)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                showFretNumbers ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 ${showFretNumbers ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                }`}
             >
-              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
-                  showFretNumbers ? 'translate-x-6' : 'translate-x-1'
-                }`}/>
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${showFretNumbers ? 'translate-x-6' : 'translate-x-1'
+                }`} />
             </button>
           </div>
           <h3 className="text-lg font-medium mb-2">Label Type</h3>
@@ -275,13 +273,13 @@ const ChordTestPage: React.FC = () => {
                   ))}
                 </div>
                 <button onClick={() => {
-                    let standardTuning: string[];
-                    if (numStrings === 4) standardTuning = ['E', 'A', 'D', 'G'];
-                    else if (numStrings === 5) standardTuning = ['A', 'D', 'G', 'B', 'E'];
-                    else if (numStrings === 7) standardTuning = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
-                    else standardTuning = ['E', 'A', 'D', 'G', 'B', 'E'];
-                    setCustomTuning(standardTuning);
-                  }} className="text-xs text-blue-500 hover:underline">
+                  let standardTuning: string[];
+                  if (numStrings === 4) standardTuning = ['E', 'A', 'D', 'G'];
+                  else if (numStrings === 5) standardTuning = ['A', 'D', 'G', 'B', 'E'];
+                  else if (numStrings === 7) standardTuning = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+                  else standardTuning = ['E', 'A', 'D', 'G', 'B', 'E'];
+                  setCustomTuning(standardTuning);
+                }} className="text-xs text-blue-500 hover:underline">
                   Reimposta accordatura standard (per {numStrings} corde)
                 </button>
               </div>
@@ -289,32 +287,40 @@ const ChordTestPage: React.FC = () => {
           </div>
         </div>
       </div>
-      <div className="bg-white p-6 rounded-lg shadow-md w-full max-w-2xl mx-auto">
-        <div className="space-y-6">
-          <div className="flex justify-center">
-            <div style={{ width: diagramSize.width, height: diagramSize.height, maxWidth: '100%', overflow: 'hidden' }}>
-              <ChordDiagram
-                key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
-                data={selectedChord}
-                numFrets={numFrets}
-                width={diagramSize.width}
-                height={diagramSize.height}
-                labelType={labelType}
-                showFretNumbers={showFretNumbers}
-                tuning={customTuning}
-                className="border border-gray-200 rounded p-4"
-              />
-            </div>
-          </div>
+     {/* Centered content area */}
+    <div className="flex flex-col items-center w-full">
+      {/* Chord diagram container */}
+      <div className="w-full flex justify-center mb-8">
+        <div style={{ 
+          width: diagramSize.width, 
+          height: diagramSize.height, 
+          maxWidth: '100%' 
+        }}>
+          <ChordDiagram
+            key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
+            data={selectedChord}
+            numFrets={numFrets}
+            width={diagramSize.width}
+            height={diagramSize.height}
+            labelType={labelType}
+            showFretNumbers={showFretNumbers}
+            tuning={customTuning}
+            className="border border-gray-200 rounded p-4"
+          />
         </div>
       </div>
-      <div style={{ marginTop: '20px', width: '100%', maxWidth: '800px', maxHeight: '400px', overflowY: 'auto', textAlign: 'left' }}>
-        <h2>Selected Chord Data (Raw):</h2>
-        <pre style={{ backgroundColor: '#f0f0f0', padding: '10px', borderRadius: '5px', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-          {JSON.stringify(selectedChord, null, 2)}
-        </pre>
+
+      {/* Raw data section - centered and styled */}
+      <div className="w-full max-w-4xl mt-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Selected Chord Data (Raw):</h2>
+          <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
+            {JSON.stringify(selectedChord, null, 2)}
+          </pre>
+        </div>
       </div>
     </div>
+  </div> 
   );
 };
 

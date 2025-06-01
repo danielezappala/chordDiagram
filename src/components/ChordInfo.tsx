@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react'; // Added useMemo
-// import type { ChordDiagramData } from '../types'; // This line is duplicated below
 import type { ChordDiagramData, ChordPositionData } from '../types';
+
+
 
 interface ChordInfoProps {
   data: ChordDiagramData; // This is now ChordDiagramData v2
@@ -38,57 +39,29 @@ const getIntervalStyle = (interval: string) => {
   return styleMap[interval] || { bg: 'bg-gray-100', text: 'text-gray-700', shape: 'rounded' };
 };
 
-const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionIndex = 0 }) => {
-  const { name, theory, instrument } = data;
+interface ChordInfoProps {
+  name: string;
+  instrumentLabel?: string;
+  intervals: string[];
+  playedNotes: string[];
+  showFormula: boolean;
+  className?: string;
+}
 
-  // Select the current position to display, defaulting to the first one
-  const currentPosition: ChordPositionData | null =
-    data.positions && data.positions.length > positionIndex
-      ? data.positions[positionIndex]
-      : null;
+const ChordInfo: React.FC<ChordInfoProps> = ({ 
+  name,
+  instrumentLabel = '',
+  intervals = [],
+  playedNotes = [],
+  showFormula = true,
+  className = '' 
+}) => {
+  // No need for complex data processing since we receive the data directly
   
-  // Estrai la formula e crea gli elementi con le forme
-  const hasFormula = theory?.formula && 
-    (Array.isArray(theory.formula) 
-      ? theory.formula.length > 0 
-      : typeof theory.formula === 'string' && theory.formula.length > 0);
-      
-  const formulaParts = hasFormula && theory?.formula
-    ? (Array.isArray(theory.formula) 
-        ? theory.formula 
-        : theory.formula.split('-'))
-    : [];
-  
-  const instrumentLabel = instrument || '';
-  const showFormula = formulaParts.length > 0;
-  
-  const playedNotes = useMemo(() => {
-    if (!currentPosition || !currentPosition.notes) {
-      return [];
-    }
-    const tones: string[] = [];
-    for (const pn of currentPosition.notes) {
-      // Ensure all parts exist and tone is a non-empty string
-      if (pn &&
-          pn.position &&
-          pn.position.fret !== -1 && // Note is not muted
-          pn.annotation &&
-          typeof pn.annotation.tone === 'string' &&
-          pn.annotation.tone.length > 0) {
-        if (!tones.includes(pn.annotation.tone)) {
-          tones.push(pn.annotation.tone);
-        }
-      }
-    }
-    return tones;
-  }, [currentPosition]);
-
   return (
     <div className={`chord-info ${className} flex flex-col items-center`}>
-
-
       {/* Nome accordo e strumento */}
-      <h2 className="text-2xl font-bold text-center my-2">{name}</h2>
+      <h2 className="text-2xl font-bold text-center my-2 whitespace-nowrap">{name}</h2>
       
       {instrumentLabel && instrumentLabel.trim() !== '' && (
         <div className="text-gray-600 text-center text-sm mb-2">
@@ -96,7 +69,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
         </div>
       )}
 
-      {/* Played Notes - Display unique tones from the current position */}
+      {/* Played Notes */}
       {playedNotes.length > 0 && (
         <div className="mt-2">
           <div className="text-center space-x-2">
@@ -112,25 +85,22 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
         </div>
       )}
       
-      {showFormula && (
-        <div className="mt-4 flex justify-center items-center space-x-2 mb-4">
-          <div className="flex flex-nowrap items-center space-x-2 overflow-x-auto py-1">
-            {formulaParts.map((interval, i) => {
-              const { bg, text, shape } = getIntervalStyle(interval);
-              return (
-                <span 
-                  key={`formula-${i}`}
-                  className={`flex items-center justify-center w-8 h-8 ${bg} ${text} ${shape} font-bold text-sm shadow-sm`}
-                  title={`${interval} (${interval === 'R' ? 'Root' : `Interval ${interval}`})`}
-                >
-                  {interval}
-                </span>
-              );
-            })}
+      {/* Formula */}
+      {showFormula && intervals.length > 0 && (
+        <div className="mt-2">
+          <div className="text-center space-x-2">
+            {intervals.map((interval, i) => (
+              <span 
+                key={`formula-${i}`}
+                className="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200"
+                title={`${interval} (${interval === 'R' ? 'Root' : `Interval ${interval}`})`}
+              >
+                {interval}
+              </span>
+            ))}
           </div>
         </div>
       )}
-
     </div>
   );
 };

@@ -11,7 +11,7 @@ import type {
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
 const DEFAULT_NUM_FRETS = 5;
-const DEFAULT_WIDTH = 250; // Adjusted as per prompt
+const DEFAULT_WIDTH = 200; // Adjusted as per prompt
 const DEFAULT_HEIGHT = 300; // Adjusted as per prompt
 const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 
@@ -155,7 +155,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]); // Dependency on positionToDisplay.notes
   
   // New Sizing Logic (can remain here, does not depend on hooks directly)
-  const CONTENT_MIN_WIDTH = 250;
+  const CONTENT_MIN_WIDTH = 200;
   const CONTENT_MIN_HEIGHT = 300;
   const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
 
@@ -183,10 +183,10 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // Calculate dimensions and padding
   const sidePadding = 40;
   const topPadding = 30;
-  const bottomPadding = 15;
+  const bottomPadding = 40;
   
-  const horizontalOffset = -Math.min(diagramWidth * 0.1, 80);
-  const paddedWidth = diagramWidth - sidePadding * 2;
+  const horizontalOffset = -Math.min(diagramWidth * 0.5, 80);
+  const paddedWidth = diagramWidth - sidePadding * 1;
   const paddedHeight = diagramHeight - topPadding - bottomPadding;
   
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
@@ -209,18 +209,26 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
   return (
     <div className="flex flex-col items-center w-full">
-      <div 
-        className="flex flex-col items-center"
-        style={{ 
-          marginLeft: `${horizontalOffset}px`,
-          transition: 'margin-left 0.2s ease-in-out'
-        }}
-      >
-        {/* Chord Info Section */}
-        <div className="w-full px-4 mb-2 order-1">
-          <ChordInfo data={data} className="text-sm" /> {/* ChordInfo will need update for v2 data */}
+    <div 
+      className="flex flex-col items-center w-full" // Added w-full here
+      style={{ 
+        marginLeft: `${horizontalOffset}px`,
+        transition: 'margin-left 0.2s ease-in-out'
+      }}
+    >
+      {/* Chord Info Section */}
+      <div className="w-full flex justify-center mb-2"> {/* Added flex and justify-center */}
+        <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
+          <ChordInfo 
+            name={data.name}
+            instrumentLabel={data.instrumentName}
+            intervals={data.theory?.formula?.split(' ') || []}
+            playedNotes={data.theory?.chordTones || []}
+            showFormula={true}
+            className="text-center"
+          />
         </div>
-        
+      </div>
         {/* Diagram Section */}
         <div 
           className={`chord-diagram relative ${className || ''} order-2`}
