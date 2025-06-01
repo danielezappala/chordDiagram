@@ -1,4 +1,5 @@
-import intervalsData from '../data/intervals.json';
+import intervalsData from '../data/intervals.json' assert { type: 'json' };
+
 
 export interface Interval {
   name: string;

@@ -108,7 +108,8 @@ export interface ChordDiagramProps {
   showFretNumbers?: boolean;
   fretNumberPosition?: 'left' | 'right' | 'none';
   showStringNames?: boolean;
-
+  tuning?: string[];
+  
   // Sizing and other direct component props
   width?: number;
   height?: number;
