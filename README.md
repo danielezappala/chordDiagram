@@ -91,7 +91,7 @@ function App() {
 |------|------|---------|-------------|
 | `data` | `ChordDiagramData` | (required) | The main data object for the chord. See "Data Conventions" and `src/types.ts` for the new v2 structure. Key changes: `data.positions` is now an array, each with `baseFret`, `notes` (as `PositionedNote[]`), and `barres`. |
 | `positionIndex` | `number` | `0` | Index of the position in `data.positions` to display. |
-| `labelType` | `'none' \| 'finger' \| 'tone' \| 'interval' \| 'degree'` | `'finger'` | Type of label to display on notes. Overrides `data.display.labelType`. |
+| `labelType` | `'none' \| 'finger' \| 'tone' \| 'interval'` | `'finger'` | Type of label to display on notes. Overrides `data.display.labelType`. |
 | `showFretNumbers` | `boolean` | `true` | Whether to display fret numbers. If `false` and the position's `baseFret > 1`, the `baseFret` value is still shown. Overrides `data.display.showFretNumbers`. |
 | `fretNumberPosition` | `'left' \| 'right' \| 'none'` | `'left'` | Position of fret numbers. Overrides `data.display.fretNumberPosition`. |
 | `showStringNames` | `boolean` | `true` | Whether to display string names/tuning notes below the diagram. Overrides `data.display.showStringNames`. |

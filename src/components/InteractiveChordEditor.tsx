@@ -153,7 +153,7 @@ export function InteractiveChordEditor({
       </div>
     </div>
   );
-};
+}
 
 // Export the props type for external use
 export type { InteractiveChordEditorProps };

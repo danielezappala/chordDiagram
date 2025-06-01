@@ -65,6 +65,48 @@ const testChords: ChordDiagramData[] = [
     theory: { chordTones: ['E', 'G#', 'B', 'D'], formula: 'R 3 5 m7' },
     display: { labelType: 'interval' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+  },
+  {
+    name: 'G Major (Barre @3rd)',
+    instrumentName: 'Guitar (Standard Tuning)',
+    positions: [
+      {
+        baseFret: 3,
+        notes: [
+          // String numbers are 1 (highest pitch) to 6 (lowest pitch)
+          { position: { string: 1, fret: 3 }, annotation: { finger: 1, tone: 'G', interval: 'R' } }, // High E string
+          { position: { string: 2, fret: 3 }, annotation: { finger: 1, tone: 'D', interval: '5' } }, // B string
+          { position: { string: 3, fret: 4 }, annotation: { finger: 2, tone: 'B', interval: '3' } }, // G string
+          { position: { string: 4, fret: 5 }, annotation: { finger: 4, tone: 'G', interval: 'R' } }, // D string
+          { position: { string: 5, fret: 5 }, annotation: { finger: 3, tone: 'D', interval: '5' } }, // A string
+          { position: { string: 6, fret: 3 }, annotation: { finger: 1, tone: 'G', interval: 'R' } }  // Low E string
+        ],
+        barres: [{ fromString: 1, toString: 6, fret: 3, finger: 1 }]
+      }
+    ],
+    theory: { chordTones: ['G', 'B', 'D'], formula: 'R 3 5' },
+    display: { labelType: 'finger' },
+    tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // Low E to High E
+  },
+  {
+    name: 'C Major (Ukulele)',
+    instrumentName: 'Ukulele (GCEA Tuning)',
+    positions: [
+      {
+        baseFret: 1,
+        notes: [
+          // Ukulele strings: GCEA. String 1 is A (highest pitch), String 4 is G.
+          { position: { string: 1, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } }, // A string, 3rd fret
+          { position: { string: 2, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }, // E string, open
+          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'C', interval: 'R' } }, // C string, open
+          { position: { string: 4, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } }  // G string, open
+        ],
+        barres: []
+      }
+    ],
+    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
+    display: { labelType: 'tone' },
+    tuning: ['G', 'C', 'E', 'A'] // GCEA standard Ukulele tuning (string 4 to string 1)
   }
 ];
 
@@ -72,7 +114,7 @@ const ChordTestPage: React.FC = () => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 250, height: 350 });
-  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval' | 'degree'>('finger');
+  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
   const [showTuningEditor, setShowTuningEditor] = useState(false);
   const [numFrets, setNumFrets] = useState<number>(5);
@@ -181,7 +223,7 @@ const ChordTestPage: React.FC = () => {
           </div>
           <h3 className="text-lg font-medium mb-2">Label Type</h3>
           <div className="space-y-2 mb-4">
-            {(['none', 'finger', 'tone', 'interval', 'degree'] as const).map((type) => (
+            {(['none', 'finger', 'tone', 'interval'] as const).map((type) => (
               <label key={type} className="flex items-center">
                 <input type="radio" name="labelType" className="mr-2" checked={labelType === type} onChange={() => setLabelType(type)} />
                 {type.charAt(0).toUpperCase() + type.slice(1)}

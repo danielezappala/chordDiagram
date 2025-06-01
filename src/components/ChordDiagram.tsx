@@ -147,7 +147,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
         if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
         else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
         else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
-        else if (currentLabelType === 'degree') labelContent = note.annotation?.degree ?? null;
+        // Removed: else if (currentLabelType === 'degree') labelContent = note.annotation?.degree ?? null;
         labels[stringIndex] = labelContent ?? ' ';
       }
     });

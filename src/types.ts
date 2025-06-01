@@ -80,7 +80,7 @@ export interface ChordDiagramData {
 
   // Global Display Settings (can be overridden by component props)
   display?: {
-    labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Type of label to show on notes
+    labelType?: 'none' | 'finger' | 'tone' | 'interval'; // Type of label to show on notes
     showFretNumbers?: boolean;  // Toggle for fret numbers (new conditional logic for startFret applies)
     fretNumberPosition?: 'left' | 'right' | 'none'; // Position of fret numbers, or none
     showStringNames?: boolean;  // Toggle for string names/tuning notes below diagram
@@ -104,7 +104,7 @@ export interface ChordDiagramProps {
   positionIndex?: number;
 
   // Overrides for display settings from ChordDiagramData.display
-  labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree';
+  labelType?: 'none' | 'finger' | 'tone' | 'interval';
   showFretNumbers?: boolean;
   fretNumberPosition?: 'left' | 'right' | 'none';
   showStringNames?: boolean;

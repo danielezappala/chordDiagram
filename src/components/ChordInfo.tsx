@@ -114,7 +114,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
       
       {showFormula && (
         <div className="mt-4 flex justify-center items-center space-x-2 mb-4">
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-nowrap items-center space-x-2 overflow-x-auto py-1">
             {formulaParts.map((interval, i) => {
               const { bg, text, shape } = getIntervalStyle(interval);
               return (

@@ -10,7 +10,7 @@ interface NotesLayerProps {
   width: number;      // Should be required
   height: number;     // Should be required
   startFret?: number;
-  labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Added 'degree'
+  labelType?: 'none' | 'finger' | 'tone' | 'interval';
   labels?: (string | number | null)[]; // This is the noteLabels array from ChordDiagram
   onNoteClick?: (note: PositionedNote, event: React.MouseEvent) => void; // Changed, added event
   onBarreClick?: (barre: Barre, event: React.MouseEvent) => void; // Added event
