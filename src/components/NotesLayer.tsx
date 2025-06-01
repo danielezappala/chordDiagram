@@ -169,7 +169,7 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
         // Render 'X' for muted strings
         if (isMuted) {
           const x = getStringX(note.position.string);
-          const y = -fretSpacing * 0.5; // Position at the top of the neck (nut area)
+          const y = -fretSpacing * 0.75; // Position at the top of the neck (nut area)
           
           return (
             <g key={`muted-${index}`}>
