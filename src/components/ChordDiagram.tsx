@@ -23,32 +23,32 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // Data
   data,
   positionIndex = 0, // Default to first position
-  
+
   // Display settings (can be overridden by data.display or component props)
   labelType: labelTypeProp,
   showFretNumbers: showFretNumbersProp, // Prop override
   fretNumberPosition: fretNumberPositionProp, // Prop override
   showStringNames: showStringNamesProp, // Prop override
-  
+
   // Sizing
   width: widthProp, // Renamed to avoid conflict with calculated width
   height: heightProp, // Renamed to avoid conflict with calculated height
   numStrings: numStringsProp, // Prop override
   numFrets: numFretsProp, // Prop override for number of frets to draw
   tuning: tuningProp, // Prop override for tuning string array
-  
+
   // Callbacks
   onNoteClick: onNoteClickCallback, // Renamed
   onBarreClick: onBarreClickCallback, // Renamed
-  
+
   // Class name
   className = '',
 }: ChordDiagramProps, ref: ForwardedRef<SVGSVGElement>) => {
 
   // All hooks must be called unconditionally at the top level.
   const positionToDisplay = data.positions && data.positions.length > 0 && positionIndex < data.positions.length
-                            ? data.positions[positionIndex]
-                            : null;
+    ? data.positions[positionIndex]
+    : null;
 
   // Resolve display settings: Prop > data.display > component default
   // These need to be resolvable even if positionToDisplay is null for hooks below.
@@ -74,10 +74,10 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     // If positionToDisplay is null, we can't derive from its notes.
     if (positionToDisplay?.notes && positionToDisplay.notes.length > 0) {
       const validStrings = positionToDisplay.notes
-          .filter(pn => pn && pn.position)
-          .map(pn => pn.position.string);
+        .filter(pn => pn && pn.position)
+        .map(pn => pn.position.string);
       if (validStrings.length > 0) {
-          return Math.max(...validStrings);
+        return Math.max(...validStrings);
       }
     }
     const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
@@ -124,15 +124,15 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
     // currentLabelType is already resolved before hooks
     if (currentLabelType === 'none') {
-        positionToDisplay.notes.forEach(note => { // Iterate over PositionedNote
-            if (note.position.fret === -1) { // Check muted state from PositionedNote
-                const stringIndex = note.position.string - 1;
-                if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
-                    labels[stringIndex] = 'X';
-                }
-            }
-        });
-        return labels;
+      positionToDisplay.notes.forEach(note => { // Iterate over PositionedNote
+        if (note.position.fret === -1) { // Check muted state from PositionedNote
+          const stringIndex = note.position.string - 1;
+          if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
+            labels[stringIndex] = 'X';
+          }
+        }
+      });
+      return labels;
     }
 
     positionToDisplay.notes.forEach(note => { // Iterate over PositionedNote
@@ -153,7 +153,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     });
     return labels;
   }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]); // Dependency on positionToDisplay.notes
-  
+
   // New Sizing Logic (can remain here, does not depend on hooks directly)
   const CONTENT_MIN_WIDTH = 200;
   const CONTENT_MIN_HEIGHT = 300;
@@ -176,21 +176,21 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   const ABSOLUTE_MIN_RENDER_HEIGHT = 50;
   calculatedWidth = Math.max(ABSOLUTE_MIN_RENDER_WIDTH, calculatedWidth);
   calculatedHeight = Math.max(ABSOLUTE_MIN_RENDER_HEIGHT, calculatedHeight);
-  
+
   const diagramWidth = calculatedWidth;
   const diagramHeight = calculatedHeight;
-  
+
   // Calculate dimensions and padding
   const sidePadding = 40;
   const topPadding = 30;
   const bottomPadding = 40;
-  
+
   const horizontalOffset = -Math.min(diagramWidth * 0.5, 80);
   const paddedWidth = diagramWidth - sidePadding * 1;
   const paddedHeight = diagramHeight - topPadding - bottomPadding;
-  
+
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
-  
+
   // barresForLayer needs to be defined before the return, and after positionToDisplay might be null
   const barresForLayer = positionToDisplay?.barres || [];
 
@@ -200,7 +200,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     // Optionally render a placeholder or error message
     return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
   }
-  
+
   // All variables that depend on positionToDisplay being non-null and are used in JSX
   // should be defined after this null check, or ensure they have defaults.
   // currentBaseFret is already handled with a default.
@@ -209,30 +209,30 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
   return (
     <div className="flex flex-col items-center w-full">
-    <div 
-      className="flex flex-col items-center w-full" // Added w-full here
-      style={{ 
-        marginLeft: `${horizontalOffset}px`,
-        transition: 'margin-left 0.2s ease-in-out'
-      }}
-    >
-      {/* Chord Info Section */}
-      <div className="w-full flex justify-center mb-2"> {/* Added flex and justify-center */}
-        <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
-          <ChordInfo 
-            name={data.name}
-            instrumentLabel={data.instrumentName}
-            intervals={data.theory?.formula?.split(' ') || []}
-            playedNotes={data.theory?.chordTones || []}
-            showFormula={true}
-            className="text-center"
-          />
+      <div
+        className="flex flex-col items-center w-full" // Added w-full here
+        style={{
+          marginLeft: `${horizontalOffset}px`,
+          transition: 'margin-left 0.2s ease-in-out'
+        }}
+      >
+        {/* Chord Info Section */}
+        <div className="w-full flex justify-center mb-2"> {/* Added flex and justify-center */}
+          <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
+            <ChordInfo
+              data={data}
+              name={data.name}
+              intervals={data.theory?.formula?.split(' ') || []}
+              playedNotes={data.theory?.chordTones || []}
+              showFormula={true}
+              className="text-center"
+            />
+          </div>
         </div>
-      </div>
         {/* Diagram Section */}
-        <div 
+        <div
           className={`chord-diagram relative ${className || ''} order-2`}
-          style={{ 
+          style={{
             width: diagramWidth,
             height: diagramHeight,
             marginLeft: '-25px'

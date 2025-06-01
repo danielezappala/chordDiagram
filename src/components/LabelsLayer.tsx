@@ -47,28 +47,7 @@ export const LabelsLayer: React.FC<LabelsLayerProps> = ({
     <g className={`labels-layer ${className}`}>
       {notes.map((note, index) => {
         // Always show 'X' for muted strings
-        if (note.muted) {
-          const y = -fretSpacing * 0.5; // Posiziona in cima al manico
-          const x = getStringX(note.string);
-          
-          return (
-            <g key={`muted-${index}`}>
-              <text
-                x={x}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="currentColor"
-                style={{
-                  ...textStyle,
-                  opacity: 0.8
-                }}
-              >
-                X
-              </text>
-            </g>
-          );
-        }
+
         
         // Skip if no label for this note or label is null/undefined/empty string
         if (index >= labels.length || !labels[index] && labels[index] !== 0) {

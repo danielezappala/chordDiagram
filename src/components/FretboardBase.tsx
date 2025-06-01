@@ -21,6 +21,7 @@ interface FretboardBaseProps extends React.PropsWithChildren {
   //   chordTones?: string[];
   // };
   startFret?: number;
+  theory?: {formula?: string, intervals?: string[], chordTones?: string[]};
 }
 
 const FretboardBase: React.FC<FretboardBaseProps> = ({

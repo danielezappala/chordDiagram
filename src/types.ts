@@ -1,7 +1,28 @@
 // Note: Zod schemas and default values will need to be updated/re-added later for these new types.
 
 // --- Core Types for Fret Position and Note Annotation ---
+// Aggiungi queste costanti
+export const DEFAULT_NUM_STRINGS = 6;
+export const DEFAULT_NUM_FRETS = 5;
+export const DEFAULT_WIDTH = 300;
 
+// Aggiungi i tipi mancanti
+export interface ChordNote {
+  string: number;
+  fret: number | 'x';
+  muted?: boolean;
+}
+
+export interface Barre {
+  fromString: number;
+  toString: number;
+  fret: number;
+}
+
+export interface NotePosition {
+  string: number;
+  fret: number;
+}
 export type Finger = 1 | 2 | 3 | 4 | 'T' | 'P'; // Fingers that press strings (P for Thumb as per user suggestion)
 export type StringStatusSymbol = 'O' | 'X';   // O for Open, X for Muted/Not Played
 export type FingerDesignator = Finger | StringStatusSymbol | null; // null for unspecified
@@ -109,7 +130,7 @@ export interface ChordDiagramProps {
   fretNumberPosition?: 'left' | 'right' | 'none';
   showStringNames?: boolean;
   tuning?: string[];
-  
+
   // Sizing and other direct component props
   width?: number;
   height?: number;

@@ -5,12 +5,12 @@ import { ChordInfo } from './components/ChordInfo';
 const testChords: ChordDiagramData[] = [
   {
     name: 'C Major (Open) v2',
-    instrumentName: 'Guitar (Standard Tuning)',
+    instrument: 'guitar',
     positions: [
       {
         baseFret: 1,
         notes: [
-          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: null, interval: null } },
+          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
           { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
           { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
           { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
@@ -26,7 +26,7 @@ const testChords: ChordDiagramData[] = [
   },
   {
     name: 'F Major (Barre) v2',
-    instrumentName: 'Guitar (Standard Tuning)',
+    instrument: 'guitar',
     positions: [
       {
         baseFret: 1,
@@ -47,7 +47,7 @@ const testChords: ChordDiagramData[] = [
   },
   {
     name: 'E7 (Open) v2',
-    instrumentName: 'Guitar (Standard Tuning)',
+    instrument: 'guitar',
     positions: [
       {
         baseFret: 1,
@@ -68,7 +68,7 @@ const testChords: ChordDiagramData[] = [
   },
   {
     name: 'G Major (Barre @3rd)',
-    instrumentName: 'Guitar (Standard Tuning)',
+    instrument: 'guitar',
     positions: [
       {
         baseFret: 3,
@@ -90,7 +90,7 @@ const testChords: ChordDiagramData[] = [
   },
   {
     name: 'C Major (Ukulele)',
-    instrumentName: 'Ukulele (GCEA Tuning)',
+    instrument: 'ukulele',
     positions: [
       {
         baseFret: 1,
@@ -190,7 +190,7 @@ const ChordTestPage: React.FC = () => {
           >
             {testChordsState.map((chord, index) => (
               <option key={`${chord.name}-${index}`} value={index}>
-                {chord.name}{chord.instrumentName ? ` (${chord.instrumentName})` : ''}
+                {chord.name}{chord.instrument ? ` (${chord.instrument})` : ''}
               </option>
             ))}
           </select>
