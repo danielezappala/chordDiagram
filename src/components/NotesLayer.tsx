@@ -135,19 +135,36 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
         const y = getFretY(barre.fret);
         
         return (
-          <motion.rect
-            key={`barre-${index}`}
-            x={startX}
-            y={y - noteRadius * 0.5}
-            width={barreWidth}
-            height={noteRadius}
-            rx={noteRadius * 0.5}
-            ry={noteRadius * 0.5}
-            fill="currentColor"
-            className="cursor-pointer"
-            whileHover={{ opacity: 0.8 }}
-            onClick={(e) => handleBarreClick(e, barre)}
-          />
+          <g key={`barre-${index}`}>
+            <motion.rect
+              x={startX}
+              y={y - noteRadius}
+              width={barreWidth}
+              height={noteRadius * 2}
+              rx={noteRadius}
+              ry={noteRadius}
+              fill="currentColor"
+              className="cursor-pointer"
+              whileHover={{ opacity: 0.8 }}
+              onClick={(e) => handleBarreClick(e, barre)}
+            />
+            {barre.finger && (
+              <text
+                x={(startX + endX) / 2}
+                y={y}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                fontSize={noteRadius * 1.2}
+                fontWeight="bold"
+                fill="#fff"
+                stroke="#222"
+                strokeWidth="1.2"
+                style={{ paintOrder: 'stroke', userSelect: 'none' }}
+              >
+                {barre.finger}
+              </text>
+            )}
+          </g>
         );
       })}
 

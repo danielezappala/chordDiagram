@@ -222,16 +222,18 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
         ) : null // If not showFretNumbers AND startFret is 1 (or less), render nothing
       )}
 
-      {/* Nut */}
-      <rect
-        x={0}
-        y={0}
-        width={width}
-        height={fretSpacing * 0.3}
-        fill="currentColor"
-        className="text-gray-700 dark:text-gray-300"
-        opacity="0.5"
-      />
+      {/* Nut (capotasto) solo se startFret === 1 */}
+      {startFret === 1 && (
+        <rect
+          x={0}
+          y={0}
+          width={width}
+          height={fretSpacing * 0.3}
+          fill="currentColor"
+          className="text-gray-700 dark:text-gray-300"
+          opacity="0.5"
+        />
+      )}
       
       {/* Children elements (like NotesLayer) */}
       {children}

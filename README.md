@@ -14,6 +14,16 @@ A customizable and interactive chord diagram library for React, built with TypeS
 
 ## Installation
 
+### Peer Dependencies
+
+This library requires the following peer dependencies in your project:
+
+- react (>=18)
+- react-dom (>=18)
+- framer-motion (>=7)
+- tailwindcss (if you want to customize styles, otherwise the built CSS is included)
+
+
 ```bash
 npm install chord-diagram-library
 # or
@@ -23,13 +33,36 @@ Current version: `0.1.0`
 
 ## Quick Start
 
+> **Note:** Don't forget to import the CSS for correct styling!
+
+
 ```tsx
 import { ChordDiagram } from 'chord-diagram-library';
 import type { ChordDiagramData } from 'chord-diagram-library';
 // Make sure to also import the CSS if your bundler supports it
-// import 'chord-diagram-library/dist/style.css';
+import 'chord-diagram-library/dist/style.css';
 
 const cMajorData: ChordDiagramData = {
+  name: 'C Major (Open)',
+  instrument: 'guitar',
+  positions: [
+    {
+      baseFret: 1,
+      notes: [
+        { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
+        { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
+        { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
+        { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
+        { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
+        { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
+      ],
+      barres: []
+    }
+  ],
+  theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
+  display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
+  tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+};
   name: 'C',
   positions: [
     {
@@ -104,6 +137,31 @@ function App() {
 | `onBarreClick`   | `(barre: Barre, posData: ChordPositionData, event: MouseEvent) => void`       | `undefined` | Callback for when a barre is clicked.                                       |
 | `style`          | `React.CSSProperties`                                                         | `undefined` | Custom inline styles for the main container.                                |
 | `className` | `string` | `''` | Additional CSS class names for the main SVG container. |
+
+## Usage in Another Project (Local Test)
+
+To test your library before publishing:
+
+1. Build the library:
+   ```bash
+   npm run build
+   ```
+2. Pack it:
+   ```bash
+   npm pack
+   ```
+   This will generate a file like `chord-diagram-library-0.1.0.tgz`.
+3. In your test project, run:
+   ```bash
+   npm install /path/to/chord-diagram-library-0.1.0.tgz
+   ```
+4. Import in your React app:
+   ```tsx
+   import { ChordDiagram } from 'chord-diagram-library';
+   import 'chord-diagram-library/dist/style.css';
+   ```
+
+---
 
 ## Data Conventions (v2 Structure)
 
@@ -228,6 +286,12 @@ npm run build
 # or
 yarn build
 ```
+
+## Contributing
+
+Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
+
+---
 
 ## License
 
