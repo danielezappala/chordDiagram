@@ -1,21 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import type { Barre, FingerDesignator, Finger } from '../types'; // Barre is v2, Finger types are new
-
-// Define the structure of the notes prop based on ChordDiagram's processedNotesForLayer
-interface ProcessedLayerNote {
-  string: number;
-  fret: number;   // -1 means muted
-  muted: boolean; // true if fret === -1
-  finger: FingerDesignator | null;
-  tone: string;
-  interval: string;
-  degree: string;
-  highlight: boolean;
-}
+import type { Barre, PositionedNote } from '../types'; // Barre is v2. PositionedNote replaces ProcessedLayerNote.
 
 interface NotesLayerProps {
-  notes: ProcessedLayerNote[];
+  notes: PositionedNote[]; // Changed from ProcessedLayerNote[]
   barres?: Barre[];
   numStrings: number; // Should be required
   numFrets: number;   // Should be required
@@ -24,8 +12,8 @@ interface NotesLayerProps {
   startFret?: number;
   labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Added 'degree'
   labels?: (string | number | null)[]; // This is the noteLabels array from ChordDiagram
-  onNoteClick?: (note: ProcessedLayerNote) => void;
-  onBarreClick?: (barre: Barre) => void;
+  onNoteClick?: (note: PositionedNote, event: React.MouseEvent) => void; // Changed, added event
+  onBarreClick?: (barre: Barre, event: React.MouseEvent) => void; // Added event
   className?: string;
   style?: React.CSSProperties;
 }
@@ -36,7 +24,7 @@ interface NotesLayerProps {
 // const LOCAL_DEFAULT_WIDTH = 200;
 // const LOCAL_DEFAULT_HEIGHT = 250;
 
-export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
+const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   const {
     notes = [],
     barres = [],
@@ -60,14 +48,14 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   const fretSpacing = paddedHeight / (numFrets + 1);
   const noteRadius = Math.min(stringSpacing, fretSpacing) * 0.4;
 
-  const handleNoteClick = (e: React.MouseEvent, note: ProcessedLayerNote) => {
+  const handleNoteClick = (e: React.MouseEvent, note: PositionedNote) => { // note is PositionedNote
     e.stopPropagation();
-    onNoteClick?.(note);
+    onNoteClick?.(note, e); // Pass event
   };
 
   const handleBarreClick = (e: React.MouseEvent, barre: Barre) => {
     e.stopPropagation();
-    onBarreClick?.(barre);
+    onBarreClick?.(barre, e); // Pass event
   };
 
   // Calculate the x position for a given string number.
@@ -110,18 +98,18 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   
   // Create a map of note positions for quick lookup (for animations)
   // This map should probably only contain non-muted notes that are rendered as circles.
-  const notePositions = React.useMemo(() => {
-    const positions = new Map<string, {x: number, y: number}>();
-    notes.forEach((note, index) => {
-      if (note.muted) return; // Don't include muted notes in animation map
+  // const notePositions = React.useMemo(() => { // Removed as notePositions is unused
+  //   const positions = new Map<string, {x: number, y: number}>();
+  //   notes.forEach((note) => { // Removed index from forEach
+  //     if (note.muted) return; // Don't include muted notes in animation map
 
-      const x = getStringX(note.string);
-      const y = note.fret === 0 ? -fretSpacing * 0.75 : getFretY(note.fret);
-      // Use a unique key, e.g., combining string and original fret if available, or index.
-      positions.set(`note-${note.string}-${note.fret_original_or_index}`, { x, y }); // Placeholder for key
-    });
-    return positions;
-  }, [notes, numStrings, startFret, fretSpacing, getStringX]); // getFretY removed as it's stable if its inputs are stable
+  //     const x = getStringX(note.string);
+  //     const y = note.fret === 0 ? -fretSpacing * 0.75 : getFretY(note.fret);
+  //     // Use a unique key, e.g., combining string and original fret if available, or index.
+  //     positions.set(`note-${note.string}-${note.fret_original_or_index}`, { x, y }); // Placeholder for key
+  //   });
+  //   return positions;
+  // }, [notes, numStrings, startFret, fretSpacing, getStringX, getFretY]); // Added getFretY for exhaustive-deps if it were still used
 
   return (
     <g 
@@ -171,15 +159,16 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
           So, fromString <= toString.
           A note is under barre if note.string >= barre.fromString AND note.string <= barre.toString.
        */}
-      {notes.filter(note => !barres.some(barre =>
-        barre.fret > 0 && // Barres are not on open strings
-        note.fret === barre.fret && // Note is on the same fret as the barre
-        note.string >= barre.fromString &&
-        note.string <= barre.toString
+      {notes.filter(note => !barres.some(b =>
+        b.fret > 0 && // Barres are not on open strings
+        note.position.fret === b.fret && // Note is on the same fret as the barre
+        note.position.string >= b.fromString &&
+        note.position.string <= b.toString
       )).map((note, index) => {
+        const isMuted = note.position.fret === -1;
         // Render 'X' for muted strings
-        if (note.muted) {
-          const x = getStringX(note.string);
+        if (isMuted) {
+          const x = getStringX(note.position.string);
           const y = -fretSpacing * 0.5; // Position at the top of the neck (nut area)
           
           return (
@@ -204,14 +193,13 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
             </g>
           );
         }
-        // Legacy note.fret === 'x' block removed as note.muted handles this.
 
-        const isOpenString = note.fret === 0; // Not muted, fret is 0
-        const x = getStringX(note.string);
-        const y = isOpenString ? -fretSpacing * 0.75 : getFretY(note.fret);
+        const isOpenString = note.position.fret === 0; // Not muted, fret is 0
+        const x = getStringX(note.position.string);
+        const y = isOpenString ? -fretSpacing * 0.75 : getFretY(note.position.fret);
         
         const noteCircleStyle = {
-          fill: note.highlight ? 'gold' : (isOpenString ? 'white' : 'currentColor'), // Example highlight
+          fill: note.annotation?.highlight ? 'gold' : (isOpenString ? 'white' : 'currentColor'),
           stroke: 'currentColor',
           strokeWidth: isOpenString ? 1.5 : 1,
         };
@@ -222,16 +210,15 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
             cy={y}
             r={noteRadius * 1.0}
             {...noteCircleStyle}
-            key={`circle-${index}`} // Consider a more stable key if possible
+            key={`circle-${index}`}
           />
         );
         
         // Use the label text directly from props.labels (prepared by ChordDiagram)
-        const labelText = props.labels?.[note.string - 1]?.toString() ?? '';
+        // This labelText is what appears *inside* the note circle.
+        const labelText = props.labels?.[note.position.string - 1]?.toString() ?? '';
         const labelColor = isOpenString ? 'black' : 'white';
-        // If note.highlight, labelColor could also change, e.g., to black if on gold.
-        // const labelColor = note.highlight ? 'black' : (isOpenString ? 'black' : 'white');
-
+        // const labelColor = note.annotation?.highlight ? 'black' : (isOpenString ? 'black' : 'white');
 
         const noteLabel = labelText ? (
           <text
@@ -242,22 +229,20 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
             fill={labelColor}
             fontSize={noteRadius * 1.2}
             fontWeight="bold"
-            className="pointer-events-none select-none" // Keep class for potential global styling
-            key={`label-${index}`} // Consider a more stable key
+            className="pointer-events-none select-none"
+            key={`label-${index}`}
             style={{ fontFamily: 'Arial, sans-serif', userSelect: 'none', pointerEvents: 'none' }}
           >
             {labelText}
           </text>
         ) : null;
 
-        // Key for motion.g needs to be stable. Using string and original fret/index.
-        // The note object itself might be stable if it's from a useMemo in parent.
-        const animationKey = `note-${note.string}-${note.fret_original_or_index_placeholder}`;
-
+        // Use index for animation key if notes array is stable, otherwise a unique ID from note if available.
+        const animationKey = `note-${index}`;
 
         return (
           <motion.g 
-            key={animationKey} // Use a stable key
+            key={animationKey}
             className="cursor-pointer"
             onClick={(e) => handleNoteClick(e, note)}
             // Animation logic might need adjustment if notePositions map keys changed significantly
@@ -286,4 +271,6 @@ export const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   );
 };
 
-export default NotesLayer;
+const MemoizedNotesLayer = React.memo(NotesLayer);
+export { MemoizedNotesLayer as NotesLayer };
+export default MemoizedNotesLayer;

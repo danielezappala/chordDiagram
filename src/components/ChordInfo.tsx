@@ -8,8 +8,38 @@ interface ChordInfoProps {
   positionIndex?: number; // Optional: to specify which position's info to show, defaults to 0
 }
 
+// Mappa degli stili per ogni tipo di intervallo
+const getIntervalStyle = (interval: string) => {
+  const styleMap: Record<string, { bg: string; text: string; shape: string }> = {
+    'R': { bg: 'bg-red-100', text: 'text-red-700', shape: 'rounded-full' },
+    'b2': { bg: 'bg-orange-100', text: 'text-orange-700', shape: 'rounded' },
+    '2': { bg: 'bg-orange-100', text: 'text-orange-700', shape: 'rounded' },
+    'b3': { bg: 'bg-yellow-100', text: 'text-yellow-700', shape: 'rounded' },
+    '3': { bg: 'bg-yellow-100', text: 'text-yellow-700', shape: 'rounded' },
+    '4': { bg: 'bg-green-100', text: 'text-green-700', shape: 'rounded' },
+    'b5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
+    '5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
+    '#5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
+    'b6': { bg: 'bg-indigo-100', text: 'text-indigo-700', shape: 'rounded' },
+    '6': { bg: 'bg-indigo-100', text: 'text-indigo-700', shape: 'rounded' },
+    'bb7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
+    'b7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
+    '7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
+    'maj7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
+    'b9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
+    '9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
+    '#9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
+    '11': { bg: 'bg-amber-100', text: 'text-amber-700', shape: 'rounded' },
+    '#11': { bg: 'bg-amber-100', text: 'text-amber-700', shape: 'rounded' },
+    'b13': { bg: 'bg-teal-100', text: 'text-teal-700', shape: 'rounded' },
+    '13': { bg: 'bg-teal-100', text: 'text-teal-700', shape: 'rounded' },
+  };
+
+  return styleMap[interval] || { bg: 'bg-gray-100', text: 'text-gray-700', shape: 'rounded' };
+};
+
 const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionIndex = 0 }) => {
-  const { name, theory, instrumentName } = data; // instrumentName was called instrument before
+  const { name, theory, instrument } = data;
 
   // Select the current position to display, defaulting to the first one
   const currentPosition: ChordPositionData | null =
@@ -17,36 +47,6 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
       ? data.positions[positionIndex]
       : null;
   
-  // Mappa degli stili per ogni tipo di intervallo
-  const getIntervalStyle = (interval: string) => {
-    const styleMap: Record<string, { bg: string; text: string; shape: string }> = {
-      'R': { bg: 'bg-red-100', text: 'text-red-700', shape: 'rounded-full' },
-      'b2': { bg: 'bg-orange-100', text: 'text-orange-700', shape: 'rounded' },
-      '2': { bg: 'bg-orange-100', text: 'text-orange-700', shape: 'rounded' },
-      'b3': { bg: 'bg-yellow-100', text: 'text-yellow-700', shape: 'rounded' },
-      '3': { bg: 'bg-yellow-100', text: 'text-yellow-700', shape: 'rounded' },
-      '4': { bg: 'bg-green-100', text: 'text-green-700', shape: 'rounded' },
-      'b5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
-      '5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
-      '#5': { bg: 'bg-blue-100', text: 'text-blue-700', shape: 'rounded' },
-      'b6': { bg: 'bg-indigo-100', text: 'text-indigo-700', shape: 'rounded' },
-      '6': { bg: 'bg-indigo-100', text: 'text-indigo-700', shape: 'rounded' },
-      'bb7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
-      'b7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
-      '7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
-      'maj7': { bg: 'bg-purple-100', text: 'text-purple-700', shape: 'rounded' },
-      'b9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
-      '9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
-      '#9': { bg: 'bg-pink-100', text: 'text-pink-700', shape: 'rounded' },
-      '11': { bg: 'bg-amber-100', text: 'text-amber-700', shape: 'rounded' },
-      '#11': { bg: 'bg-amber-100', text: 'text-amber-700', shape: 'rounded' },
-      'b13': { bg: 'bg-teal-100', text: 'text-teal-700', shape: 'rounded' },
-      '13': { bg: 'bg-teal-100', text: 'text-teal-700', shape: 'rounded' },
-    };
-    
-    return styleMap[interval] || { bg: 'bg-gray-100', text: 'text-gray-700', shape: 'rounded' };
-  };
-
   // Estrai la formula e crea gli elementi con le forme
   const hasFormula = theory?.formula && 
     (Array.isArray(theory.formula) 
@@ -59,7 +59,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
         : theory.formula.split('-'))
     : [];
   
-  const instrument = instrumentName || ''; // Use the destructured instrumentName
+  const instrumentLabel = instrument || '';
   const showFormula = formulaParts.length > 0;
   
   const playedNotes = useMemo(() => {
@@ -90,9 +90,9 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
       {/* Nome accordo e strumento */}
       <h2 className="text-2xl font-bold text-center my-2">{name}</h2>
       
-      {instrument && instrument.trim() !== '' && (
+      {instrumentLabel && instrumentLabel.trim() !== '' && (
         <div className="text-gray-600 text-center text-sm mb-2">
-          {instrument}
+          {instrumentLabel}
         </div>
       )}
 
@@ -135,5 +135,6 @@ const ChordInfo: React.FC<ChordInfoProps> = ({ data, className = '', positionInd
   );
 };
 
-export { ChordInfo };
-export default ChordInfo;
+const MemoizedChordInfo = React.memo(ChordInfo);
+export { MemoizedChordInfo as ChordInfo };
+export default MemoizedChordInfo;

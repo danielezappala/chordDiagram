@@ -15,31 +15,52 @@ A customizable and interactive chord diagram library for React, built with TypeS
 ## Installation
 
 ```bash
-npm install @yourusername/chord-diagram-lib
+npm install chord-diagram-library
 # or
-yarn add @yourusername/chord-diagram-lib
+yarn add chord-diagram-library
 ```
+Current version: `0.1.0`
 
 ## Quick Start
 
 ```tsx
-import { ChordDiagram } from '@yourusername/chord-diagram-lib';
+import { ChordDiagram } from 'chord-diagram-library';
+import type { ChordDiagramData } from 'chord-diagram-library';
+// Make sure to also import the CSS if your bundler supports it
+// import 'chord-diagram-library/dist/style.css';
+
+const cMajorData: ChordDiagramData = {
+  name: 'C',
+  positions: [
+    {
+      baseFret: 1,
+      notes: [
+        // String 1 (High E) to String 6 (Low E)
+        // Standard Guitar: E A D G B E (notes in tuning array)
+        // Our string numbers: 1 (High E) ... 6 (Low E)
+        { position: { string: 1, fret: 0 }, annotation: { tone: 'E', finger: 'O' } }, // High E open
+        { position: { string: 2, fret: 1 }, annotation: { tone: 'C', finger: '1' } }, // B string, 1st fret = C
+        { position: { string: 3, fret: 0 }, annotation: { tone: 'G', finger: 'O' } }, // G string open
+        { position: { string: 4, fret: 2 }, annotation: { tone: 'E', finger: '2' } }, // D string, 2nd fret = E
+        { position: { string: 5, fret: 3 }, annotation: { tone: 'C', finger: '3' } }, // A string, 3rd fret = C
+        { position: { string: 6, fret: -1 } }, // Low E string muted
+      ],
+      // Optional barres for this position
+      // barres: [{ fromString: 1, toString: 5, fret: 3, finger: '1' }]
+    }
+  ],
+  tuning: {
+    name: 'Standard Guitar',
+    notes: ['E', 'A', 'D', 'G', 'B', 'E'] // Low E to High E
+  }
+};
 
 function App() {
   return (
     <ChordDiagram
-      strings={6}
-      frets={5}
-      notes={[
-        { string: 5, fret: 3, label: '1' },
-        { string: 4, fret: 2, label: '2' },
-        { string: 3, fret: 0, label: '3' },
-      ]}
-      barres={[
-        { fromString: 2, toString: 1, fret: 1 }
-      ]}
-      width={300}
-      height={400}
+      data={cMajorData}
+      width={250} // Example width
+      height={300} // Example height
     />
   );
 }
@@ -77,8 +98,11 @@ function App() {
 | `numStrings` | `number` | (derived) | Override for the number of strings. If not provided, derived from `data.tuning` or `data.positions[positionIndex].notes`. |
 | `numFrets` | `number` | `5` | Number of frets to draw on the diagram. |
 | `tuning` | `string[]` | (derived) | Override for instrument tuning (array of notes from lowest to highest pitch string). If not provided, derived from `data.tuning`. |
-| `width` | `number` | `200` | Width of the diagram in pixels. |
-| `height` | `number` | `250` | Height of the diagram in pixels. |
+| `width` | `number` | `250` | Width of the diagram in pixels. |
+| `height` | `number` | `300` | Height of the diagram in pixels. |
+| `onNoteClick`    | `(note: PositionedNote, posData: ChordPositionData, event: MouseEvent) => void` | `undefined` | Callback for when a note (dot) is clicked.                                  |
+| `onBarreClick`   | `(barre: Barre, posData: ChordPositionData, event: MouseEvent) => void`       | `undefined` | Callback for when a barre is clicked.                                       |
+| `style`          | `React.CSSProperties`                                                         | `undefined` | Custom inline styles for the main container.                                |
 | `className` | `string` | `''` | Additional CSS class names for the main SVG container. |
 
 ## Data Conventions (v2 Structure)
@@ -138,7 +162,24 @@ type Barre = { ... }; // V1 type, deprecated
 ```
 The type definitions have been significantly refactored in v2. Please refer to `src/types.ts` for the new `ChordDiagramData`, `ChordPositionData`, `PositionedNote`, `FretPosition`, `NoteAnnotation`, `Barre` (v2), and `Tuning` types.
 
-## Styling
+## Importing Styles
+
+The library includes a base stylesheet that you'll need to import for default styling. How you import it depends on your project setup:
+
+**Using a bundler (like Vite, Webpack with CSS loaders):**
+```javascript
+// In your main application file (e.g., App.tsx or main.tsx)
+import 'chord-diagram-library/dist/style.css';
+```
+
+**Using a traditional CSS include:**
+If you're not using a bundler that handles CSS imports in JavaScript, you might need to include the CSS file via a `<link>` tag in your HTML:
+```html
+<link rel="stylesheet" href="node_modules/chord-diagram-library/dist/style.css">
+```
+(Adjust path as necessary depending on how `node_modules` are served).
+
+## Styling Customization
 
 The library uses Tailwind CSS for styling. You can customize the appearance by overriding the default styles:
 

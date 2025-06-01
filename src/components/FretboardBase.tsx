@@ -15,15 +15,15 @@ interface FretboardBaseProps extends React.PropsWithChildren {
   labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Added 'degree'
   labels?: (string | number | null)[]; // These are the noteLabels from ChordDiagram
   // Updated theory type to match new ChordDiagramData.theory
-  theory?: {
-    formula?: string;
-    intervals?: string[];
-    chordTones?: string[];
-  };
+  // theory?: { // Removed as per lint rule no-unused-vars
+  //   formula?: string;
+  //   intervals?: string[];
+  //   chordTones?: string[];
+  // };
   startFret?: number;
 }
 
-export const FretboardBase: React.FC<FretboardBaseProps> = ({
+const FretboardBase: React.FC<FretboardBaseProps> = ({
   children,
   numStrings,
   numFrets,
@@ -36,7 +36,7 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   tuning,
   labelType = 'finger', // labelType is used for styling text in current code, not for choosing content here.
   labels = [], // These are the pre-processed noteLabels from ChordDiagram
-  theory, // Not directly used by FretboardBase for its own rendering, but could be passed to children if any
+  // theory, // Removed as per lint rule no-unused-vars
   startFret = 1,
 }) => {
   // Calculate dimensions with padding for labels
@@ -238,4 +238,6 @@ export const FretboardBase: React.FC<FretboardBaseProps> = ({
   );
 };
 
-export default FretboardBase;
+const MemoizedFretboardBase = React.memo(FretboardBase);
+export { MemoizedFretboardBase as FretboardBase };
+export default MemoizedFretboardBase;
