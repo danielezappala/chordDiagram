@@ -1,5 +1,10 @@
 # React Chord Diagram Library
 
+[![npm version](https://img.shields.io/npm/v/chord-diagram-library?label=npm)](https://www.npmjs.com/package/chord-diagram-library)
+[![npm downloads](https://img.shields.io/npm/dm/chord-diagram-library.svg)](https://www.npmjs.com/package/chord-diagram-library)
+
+**Latest beta published on npm: `0.1.0-beta`**
+
 A customizable and interactive chord diagram library for React, built with TypeScript, Tailwind CSS, and Framer Motion. Perfect for displaying guitar, bass, ukulele, and other stringed instrument chord diagrams in your web applications.
 
 ## Features
@@ -25,22 +30,23 @@ This library requires the following peer dependencies in your project:
 
 
 ```bash
-npm install chord-diagram-library
-# or
-yarn add chord-diagram-library
+npm install chord-diagram-library@beta
+# oppure
+yarn add chord-diagram-library@beta
 ```
-Current version: `0.1.0`
+
+> **Nota:** Usa `@beta` per installare la versione più recente pubblicata se vuoi testare le ultime funzionalità prima della release stabile.
+
+Current version: `0.1.0-beta` (beta)
 
 ## Quick Start
 
-> **Note:** Don't forget to import the CSS for correct styling!
-
+> **Nota:** Ricordati di importare il CSS per uno stile corretto! Se usi un bundler moderno (es. Vite, Webpack), puoi importare direttamente il CSS della libreria.
 
 ```tsx
 import { ChordDiagram } from 'chord-diagram-library';
 import type { ChordDiagramData } from 'chord-diagram-library';
-// Make sure to also import the CSS if your bundler supports it
-import 'chord-diagram-library/dist/style.css';
+import 'chord-diagram-library/dist/style.css'; // Importa sempre il CSS
 
 const cMajorData: ChordDiagramData = {
   name: 'C Major (Open)',
