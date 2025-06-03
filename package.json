@@ -37,7 +37,7 @@
     "url": "https://github.com/danielezappala/chord-diagram-library/issues"
   },
   "dependencies": {
-    "tailwind-scrollbar": "^4.0.2",
+    "tailwind-scrollbar": "^3.0.5",
     "zod": "^3.25.28"
   },
   "peerDependencies": {
@@ -52,7 +52,6 @@
   "devDependencies": {
     "@eslint/js": "^8.56.0",
     "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.29",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
@@ -62,7 +61,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.35",
-    "tailwindcss": "^4.0.0",
+    "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"

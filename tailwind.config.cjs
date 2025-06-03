@@ -1,15 +1,14 @@
 /** @type {import('tailwindcss').Config} */
 const forms = require('@tailwindcss/forms');
-const classic = require('@tailwindcss/preset-classic');
 
 module.exports = {
-  presets: [classic],
   darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
     "./src/**/*.css",
   ],
+
   theme: {
     extend: {
       colors: {

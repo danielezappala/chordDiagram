@@ -43,60 +43,77 @@
   }
   
   .chord-fretboard {
-    @apply stroke-current text-chord-fret;
+    @apply stroke-current;
+    color: var(--chord-fret-color, currentColor);
   }
   
   .chord-nut {
-    @apply stroke-current text-chord-nut;
+    @apply stroke-current;
+    color: var(--chord-nut-color, currentColor);
   }
   
   .chord-string {
-    @apply stroke-current text-chord-string;
+    @apply stroke-current;
+    color: var(--chord-string-color, currentColor);
   }
   
   .chord-fret-marker {
-    @apply fill-current text-chord-fret-marker;
+    @apply fill-current;
+    color: var(--chord-fret-marker-color, currentColor);
   }
   
   .chord-note {
-    @apply fill-current text-chord-note-default hover:text-chord-note-muted transition-colors;
+    @apply fill-current transition-colors;
+    color: var(--chord-note-default-color, currentColor);
+  }
+  
+  .chord-note:hover {
+    color: var(--chord-note-muted-color, currentColor);
   }
   
   .chord-barre {
-    @apply fill-current text-chord-barre opacity-90;
+    @apply fill-current opacity-90;
+    color: var(--chord-barre-color, currentColor);
   }
   
   .chord-finger-label {
-    @apply fill-current text-chord-finger-label text-xs font-bold pointer-events-none;
+    @apply fill-current text-xs font-bold pointer-events-none;
+    color: var(--chord-finger-label-color, currentColor);
   }
   
   /* Tooltip */
   .tooltip {
-    @apply absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 invisible transition-opacity duration-200;
+    @apply absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 invisible;
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
   }
   
   .tooltip-arrow {
-    @apply absolute w-2 h-2 bg-gray-900 transform rotate-45 -translate-x-1/2 -translate-y-1/2;
+    @apply absolute w-2 h-2 bg-gray-900;
+    transform: rotate(45deg) translate(-50%, -50%);
   }
 }
 
 /* Dark mode overrides */
-.dark .chord-fretboard {
-  @apply opacity-80;
-}
-
-.dark .chord-nut {
-  @apply opacity-80;
-}
-
-.dark .chord-string {
-  @apply text-chord-string-muted;
-}
-
-.dark .chord-fret-marker {
-  @apply opacity-60;
-}
-
-.dark .chord-barre {
-  @apply opacity-90;
+@layer utilities {
+  .dark .chord-fretboard {
+    @apply opacity-80;
+  }
+  
+  .dark .chord-nut {
+    @apply opacity-80;
+  }
+  
+  .dark .chord-string {
+    color: var(--chord-string-muted-color, currentColor);
+  }
+  
+  .dark .chord-fret-marker {
+    @apply opacity-60;
+  }
+  
+  .dark .chord-barre {
+    @apply opacity-90;
+  }
 }
