@@ -26,6 +26,8 @@ This library requires the following peer dependencies in your project:
 - react (>=18)
 - react-dom (>=18)
 - framer-motion (>=7)
+- tailwindcss (opzionale, solo se vuoi personalizzare lo stile)
+- framer-motion (>=7)
 - tailwindcss (if you want to customize styles, otherwise the built CSS is included)
 
 
@@ -39,47 +41,46 @@ yarn add chord-diagram-library@beta
 
 Current version: `0.1.0-beta` (beta)
 
+---
+
 ## Quick Start
 
-> **Nota:** Ricordati di importare il CSS per uno stile corretto! Se usi un bundler moderno (es. Vite, Webpack), puoi importare direttamente il CSS della libreria.
+1. **Installa la libreria e le peer dependencies:**
+   ```bash
+   npm install chord-diagram-library@beta react@^18 react-dom@^18 framer-motion@^7
+   # tailwindcss solo se vuoi personalizzare lo stile
+   ```
 
-```tsx
-import { ChordDiagram } from 'chord-diagram-library';
-import type { ChordDiagramData } from 'chord-diagram-library';
-import 'chord-diagram-library/dist/style.css'; // Importa sempre il CSS
+2. **Importa il componente e il CSS:**
+   ```tsx
+   import { ChordDiagram } from 'chord-diagram-library';
+   import type { ChordDiagramData } from 'chord-diagram-library';
+   import 'chord-diagram-library/dist/style.css'; // Importa sempre il CSS
+   ```
 
-const cMajorData: ChordDiagramData = {
-  name: 'C Major (Open)',
-  instrument: 'guitar',
-  positions: [
-    {
-      baseFret: 1,
-      notes: [
-        { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
-        { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
-        { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
-        { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
-        { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
-        { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
-      ],
-      barres: []
-    }
-  ],
-  theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-  display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
-  tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-};
-  name: 'C',
-  positions: [
-    {
-      baseFret: 1,
-      notes: [
-        // String 1 (High E) to String 6 (Low E)
-        // Standard Guitar: E A D G B E (notes in tuning array)
-        // Our string numbers: 1 (High E) ... 6 (Low E)
-        { position: { string: 1, fret: 0 }, annotation: { tone: 'E', finger: 'O' } }, // High E open
-        { position: { string: 2, fret: 1 }, annotation: { tone: 'C', finger: '1' } }, // B string, 1st fret = C
-        { position: { string: 3, fret: 0 }, annotation: { tone: 'G', finger: 'O' } }, // G string open
+3. **Usa il componente in React:**
+   ```tsx
+   const cMajorData: ChordDiagramData = {
+     name: 'C Major (Open)',
+     instrument: 'guitar',
+     positions: [
+       {
+         baseFret: 1,
+         notes: [
+           { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
+           { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
+           { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
+           { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
+           { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
+           { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
+         ],
+         barres: []
+       }
+     ],
+     theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
+     display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
+     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
+   };
         { position: { string: 4, fret: 2 }, annotation: { tone: 'E', finger: '2' } }, // D string, 2nd fret = E
         { position: { string: 5, fret: 3 }, annotation: { tone: 'C', finger: '3' } }, // A string, 3rd fret = C
         { position: { string: 6, fret: -1 } }, // Low E string muted

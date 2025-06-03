@@ -20,6 +20,9 @@ export default defineConfig({
       formats: ['es', 'umd'],
     },
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'src/index.ts')
+      },
       external: ['react', 'react-dom', 'framer-motion'],
       output: {
         globals: {

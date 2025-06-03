@@ -180,6 +180,9 @@ const ChordTestPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Chord Diagram Tester</h1>
+      <div className="bg-red-500 text-white p-8">
+  TEST TAILWIND
+</div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
           <label className="font-medium block mb-2">Select Chord:</label>

@@ -1,6 +1,6 @@
 {
   "name": "chord-diagram-library",
-  "version": "0.1.0",
+  "version": "0.1.12",
   "description": "A React library for beautiful and customizable chord diagrams",
   "type": "module",
   "main": "./dist/chord-diagram-library.umd.js",
@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cp dist/chord-diagram-library.css chord-diagram-library.css",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
@@ -30,11 +30,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tuoutente/chord-diagram-library"
+    "url": "https://github.com/danielezappala/chord-diagram-library"
   },
-  "homepage": "https://github.com/tuoutente/chord-diagram-library#readme",
+  "homepage": "https://github.com/danielezappala/chord-diagram-library#readme",
   "bugs": {
-    "url": "https://github.com/tuoutente/chord-diagram-library/issues"
+    "url": "https://github.com/danielezappala/chord-diagram-library/issues"
   },
   "dependencies": {
     "tailwind-scrollbar": "^4.0.2",
@@ -42,13 +42,17 @@
   },
   "peerDependencies": {
     "framer-motion": "^10.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "resolutions": {
+    "@types/react": "^18.3.23",
+    "framer-motion": "^10.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^8.56.0",
     "@tailwindcss/forms": "^0.5.7",
-    "@tailwindcss/postcss7-compat": "^2.2.17",
+    "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.29",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",
@@ -58,7 +62,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^4.0.0",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"
@@ -69,6 +73,7 @@
       "import": "./dist/chord-diagram-library.es.js",
       "require": "./dist/chord-diagram-library.umd.js"
     },
-    "./style.css": "./dist/style.css"
+    "./dist/chord-diagram-library.css": "./dist/chord-diagram-library.css",
+    "./chord-diagram-library.css": "./dist/chord-diagram-library.css"
   }
 }
