@@ -99,6 +99,13 @@ export interface ChordDiagramData {
   // Tuning: Can be a full Tuning object or a simple array of string names (lowest to highest pitch string)
   tuning?: Tuning | string[];
 
+  // Display options for bottom labels
+  bottomLabels?: {
+    showFingers?: boolean;      // Show finger numbers below the diagram
+    showTones?: boolean;        // Show tone names below the diagram
+    showIntervals?: boolean;    // Show intervals below the diagram
+  };
+
   // Global Display Settings (can be overridden by component props)
   display?: {
     labelType?: 'none' | 'finger' | 'tone' | 'interval'; // Type of label to show on notes

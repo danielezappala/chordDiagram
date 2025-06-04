@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 export type FretNumberPosition = 'left' | 'right' | 'none';
 
@@ -12,16 +12,19 @@ interface FretboardBaseProps extends React.PropsWithChildren {
   showStringNames?: boolean;
   className?: string;
   tuning?: string[];
-  labelType?: 'none' | 'finger' | 'tone' | 'interval' | 'degree'; // Added 'degree'
+  labelType?: 'none' | 'finger' | 'tone' | 'interval';
   labels?: (string | number | null)[]; // These are the noteLabels from ChordDiagram
-  // Updated theory type to match new ChordDiagramData.theory
-  // theory?: { // Removed as per lint rule no-unused-vars
-  //   formula?: string;
-  //   intervals?: string[];
-  //   chordTones?: string[];
-  // };
+  // Bottom labels display settings
+  bottomLabels?: {
+    showFingers?: boolean;
+    showTones?: boolean;
+    showIntervals?: boolean;
+  };
+
   startFret?: number;
   theory?: {formula?: string, intervals?: string[], chordTones?: string[]};
+  // Data needed for multiple bottom label rows
+  positionNotes?: import('../types').PositionedNote[];
 }
 
 const FretboardBase: React.FC<FretboardBaseProps> = ({
@@ -37,11 +40,28 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   tuning,
   labelType = 'finger', // labelType is used for styling text in current code, not for choosing content here.
   labels = [], // These are the pre-processed noteLabels from ChordDiagram
-  // theory, // Removed as per lint rule no-unused-vars
+  bottomLabels = { showFingers: false, showTones: true, showIntervals: false },
+
+  positionNotes = [],
   startFret = 1,
 }) => {
   // Calculate dimensions with padding for labels
-  const labelAreaHeight = 30; // Extra space for labels at the bottom
+  // Bottom label row calculations - determine how many rows to show
+  const bottomRowsCount = useMemo(() => {
+    return [
+      bottomLabels?.showFingers, 
+      bottomLabels?.showTones, 
+      bottomLabels?.showIntervals
+    ].filter(Boolean).length;
+  }, [bottomLabels]);
+
+  // Calculate height needed for bottom labels
+  const bottomLabelsHeight = useMemo(() => {
+    return bottomRowsCount > 0 ? bottomRowsCount * 20 + 8 : 0; // 20px per row plus padding
+  }, [bottomRowsCount]);
+
+  // Allocate space for bottom labels
+  const labelAreaHeight = bottomLabelsHeight > 0 ? bottomLabelsHeight : 30; // Minimum 30px even with no rows
   const paddedHeight = height - labelAreaHeight;
   
   const stringSpacing = width / (numStrings - 1);
@@ -129,6 +149,22 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
     return '';
   };
 
+  // Get information for multiple bottom label rows
+  const getStringInfo = (stringVisualIndex: number, totalStrings: number) => {
+    const stringIndex = totalStrings - 1 - stringVisualIndex;
+    const labelFromNoteLabel = labels?.[stringIndex];
+    const isMuted = labelFromNoteLabel === 'X';
+    const note = positionNotes.find(n => n.position.string === stringIndex + 1);
+    
+    return {
+      isMuted,
+      finger: note?.annotation?.finger ? String(note.annotation.finger) : '',
+      tone: note?.annotation?.tone || '',
+      interval: note?.annotation?.interval || '',
+      tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : ''
+    };
+  };
+
   return (
     <g className={`fretboard-base ${className}`}>
       {/* Strings */}
@@ -136,14 +172,21 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
         // i is the visual index from left (0) to right (numStrings - 1)
         // 0 = Low E string (string N), numStrings - 1 = High E string (string 1)
         const x = i * stringSpacing;
+        const stringIndex = numStrings - 1 - i;
         
-        let labelText = getStringLabel(i, numStrings); // Get label from props.labels or tuning
-        labelText = labelText || ' '; // Ensure it's at least a space if empty string was returned
-
-        const displayMutedX = labelText === 'X'; // If 'X' was passed in labels, treat as muted for display
-        // Show label if showStringNames is true and there's content, OR if it's an X (muted marker)
-        const shouldShowLabel = (showStringNames && !!labelText.trim()) || displayMutedX;
+        // Get the position note data for this string (if it exists)
+        const noteData = positionNotes.find(n => n.position.string === stringIndex + 1);
         
+        // Check if string is muted
+        const isMuted = noteData?.position.fret === -1 || labels?.[stringIndex] === 'X';
+        const mutedLabel = isMuted ? 'X' : '';
+        
+        // Get various possible labels
+        const fingerLabel = noteData?.annotation?.finger?.toString() || '';
+        const toneLabel = noteData?.annotation?.tone || (showStringNames && tuning ? tuning[i] : '');
+        const intervalLabel = noteData?.annotation?.interval || '';
+        
+        // Draw the string line
         return (
           <g key={`string-group-${i}`}>
             <line
@@ -157,33 +200,90 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
               className="text-gray-700 dark:text-gray-300"
             />
             
-            {shouldShowLabel && (
-              <text
-                x={x}
-                y={paddedHeight + 20} // Position below the fretboard
-                textAnchor="middle"
-                dominantBaseline="middle" // Better for vertical centering
-                // Styling for labels (X for muted, or tuning notes)
-                // labelType prop is still passed, can be used for more specific styling if needed
-                className={`fill-current ${
-                  displayMutedX
-                    ? 'text-gray-500 dark:text-gray-400' // Style for 'X'
-                    : (labelType === 'finger')
-                        ? 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels when showing finger numbers in circles
-                        : (labelType === 'tone')
-                          ? 'text-gray-700 dark:text-gray-300' // Style for finger positions when showing tones in circles
-                          : 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels when showing intervals in circles
-                }`}
-                style={{
-                  fontSize: '14px', // Slightly smaller for string names/tuning
-                  fontFamily: 'Arial, sans-serif',
-                  userSelect: 'none',
-                  pointerEvents: 'none',
-                }}
-              >
-                {labelText}
-              </text>
-            )}
+            {/* --- PATCH: Dynamic bottom label rows --- */}
+            {/* Calcola dinamicamente le righe da mostrare e la posizione verticale di ciascuna */}
+            {(() => {
+              // DEBUG LOG
+              console.log('bottomLabels:', bottomLabels);
+              console.log('positionNotes:', positionNotes);
+              // Usa la prop bottomLabels per la sincronizzazione reale
+              const bottomLabelRows: Array<{
+                key: string;
+                getValue: (info: ReturnType<typeof getStringInfo>) => string;
+                colorClass: string;
+              }> = [];
+              if (bottomLabels.showFingers) {
+                bottomLabelRows.push({
+                  key: 'finger',
+                  getValue: info => info.isMuted ? 'X' : (info.finger || ''),
+                  colorClass: 'text-blue-600 font-medium'
+                });
+              }
+              if (bottomLabels.showTones) {
+                bottomLabelRows.push({
+                  key: 'tone',
+                  getValue: info => info.isMuted ? 'X' : (info.tone || info.tuningNote || ''),
+                  colorClass: 'text-gray-900 font-semibold'
+                });
+              }
+              if (bottomLabels.showIntervals) {
+                bottomLabelRows.push({
+                  key: 'interval',
+                  getValue: info => info.isMuted ? 'X' : (info.interval || ''),
+                  colorClass: 'text-purple-700 font-medium'
+                });
+              }
+              return bottomLabelRows.map((row, rowIdx) => {
+  // Determina la label a sinistra
+  let leftLabel = '';
+  if (row.key === 'finger') leftLabel = 'Fingers';
+  if (row.key === 'tone') leftLabel = 'Tones';
+  if (row.key === 'interval') leftLabel = 'Intervals';
+  // Posizione label a sinistra
+  const labelX = -80; // Allineato più a sinistra
+  const y = paddedHeight + 16 + rowIdx * 24;
+  return (
+    <g key={`bottom-label-row-${row.key}`}>
+      {/* Label a sinistra stile badge */}
+      <foreignObject
+        x={labelX}
+        y={y - 15}
+        width={60}
+        height={18}
+        style={{overflow: 'visible'}}
+      >
+        <div
+          className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
+          style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
+        >
+          {leftLabel}
+        </div>
+      </foreignObject>
+      {/* Celle della riga */}
+      {Array.from({ length: numStrings }, (_, j) => {
+        const stringIndex = j;
+        const stringX = j * stringSpacing;
+        const info = getStringInfo(stringIndex, numStrings);
+        const displayValue = row.getValue(info);
+        return (
+          <text
+            key={`bottom-label-${row.key}-${j}`}
+            x={stringX}
+            y={y}
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontSize="12"
+            className={info.isMuted ? 'text-gray-400' : row.colorClass}
+          >
+            {displayValue || ''}
+          </text>
+        );
+      })}
+    </g>
+  );
+});
+            })()}
+            {/* --- END PATCH --- */}
           </g>
         );
       })}

@@ -1,12 +1,11 @@
-import { forwardRef, useMemo, useCallback } from 'react';
-import type { ForwardedRef } from 'react';
+import React, { forwardRef, useState, useMemo, useCallback, ForwardedRef } from 'react';
 import type {
-  // ChordDiagramData, // Not directly used, ChordDiagramProps covers it
-  // ChordPositionData, // Not directly used, ChordDiagramProps covers it
   PositionedNote,
   Barre,
-  // FretNumberPosition, // Not directly used, ChordDiagramProps covers it
-  ChordDiagramProps
+  ChordDiagramData,
+  ChordPositionData,
+  FretNumberPosition,
+  NoteAnnotation
 } from '../types';
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
@@ -18,6 +17,29 @@ const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 import { FretboardBase } from './FretboardBase';
 import { NotesLayer } from './NotesLayer';
 import { ChordInfo } from './ChordInfo';
+
+interface ChordDiagramProps {
+  data: ChordDiagramData;
+  positionIndex?: number;
+  labelType?: 'none' | 'finger' | 'tone' | 'interval';
+  showFretNumbers?: boolean;
+  fretNumberPosition?: 'left' | 'right';
+  showStringNames?: boolean;
+  width?: number;
+  height?: number;
+  numStrings?: number;
+  numFrets?: number;
+  tuning?: string[];
+  onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent) => void;
+  onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent) => void;
+  className?: string;
+  // Bottom labels configuration
+  bottomLabels?: {
+    showFingers?: boolean;
+    showTones?: boolean;
+    showIntervals?: boolean;
+  };
+}
 
 const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // Data
@@ -43,6 +65,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
   // Class name
   className = '',
+  // Bottom labels configuration
+  bottomLabels: propBottomLabels = {
+    showFingers: false,
+    showTones: true,
+    showIntervals: false
+  },
 }: ChordDiagramProps, ref: ForwardedRef<SVGSVGElement>) => {
 
   // All hooks must be called unconditionally at the top level.
@@ -116,16 +144,13 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     }
   }, [onBarreClickCallback, positionToDisplay]);
 
-  // processedNotesForLayer is removed. NotesLayer will receive positionToDisplay.notes directly.
-
   const noteLabels = useMemo(() => {
     const labels = Array(derivedNumStrings).fill(' ');
-    if (!positionToDisplay?.notes) return labels; // Return default if no notes in position
+    if (!positionToDisplay?.notes) return labels;
 
-    // currentLabelType is already resolved before hooks
     if (currentLabelType === 'none') {
-      positionToDisplay.notes.forEach(note => { // Iterate over PositionedNote
-        if (note.position.fret === -1) { // Check muted state from PositionedNote
+      positionToDisplay.notes.forEach((note: PositionedNote) => {
+        if (note.position.fret === -1) {
           const stringIndex = note.position.string - 1;
           if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
             labels[stringIndex] = 'X';
@@ -135,43 +160,41 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
       return labels;
     }
 
-    positionToDisplay.notes.forEach(note => { // Iterate over PositionedNote
+    positionToDisplay.notes.forEach((note: PositionedNote) => {
       const stringIndex = note.position.string - 1;
       if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
 
-      if (note.position.fret === -1) { // Check muted state from PositionedNote
+      if (note.position.fret === -1) {
         labels[stringIndex] = 'X';
       } else {
         let labelContent: string | null = null;
-        // Access annotations from PositionedNote
         if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
         else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
         else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
-        // Removed: else if (currentLabelType === 'degree') labelContent = note.annotation?.degree ?? null;
         labels[stringIndex] = labelContent ?? ' ';
       }
     });
     return labels;
-  }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]); // Dependency on positionToDisplay.notes
-
-  // New Sizing Logic (can remain here, does not depend on hooks directly)
+  }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]);
+  
+  // Layout calculations
   const CONTENT_MIN_WIDTH = 200;
   const CONTENT_MIN_HEIGHT = 300;
   const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
 
   // Start with dimensions from props or defaults
-  const propWidth = widthProp ?? DEFAULT_WIDTH; // widthProp is the 'width' from component props
-  const propHeight = heightProp ?? DEFAULT_HEIGHT; // heightProp is the 'height' from component props
+  const propWidth = widthProp ?? DEFAULT_WIDTH;
+  const propHeight = heightProp ?? DEFAULT_HEIGHT;
 
   let calculatedWidth = propWidth;
-  let calculatedHeight = propWidth / CONTENT_ASPECT_RATIO; // Calculate height based on propWidth and content's aspect ratio
+  let calculatedHeight = propWidth / CONTENT_ASPECT_RATIO;
 
-  if (calculatedHeight > propHeight) { // If calculated height is too much for propHeight
-    calculatedHeight = propHeight; // Limit height to propHeight
-    calculatedWidth = calculatedHeight * CONTENT_ASPECT_RATIO; // Recalculate width based on limited height
+  if (calculatedHeight > propHeight) {
+    calculatedHeight = propHeight;
+    calculatedWidth = calculatedHeight * CONTENT_ASPECT_RATIO;
   }
 
-  // Ensure the calculated dimensions are not less than a very small absolute minimum (e.g., to prevent division by zero or invisible diagram)
+  // Ensure minimum dimensions
   const ABSOLUTE_MIN_RENDER_WIDTH = 50;
   const ABSOLUTE_MIN_RENDER_HEIGHT = 50;
   calculatedWidth = Math.max(ABSOLUTE_MIN_RENDER_WIDTH, calculatedWidth);
@@ -188,7 +211,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   const horizontalOffset = -Math.min(diagramWidth * 0.5, 80);
   const paddedWidth = diagramWidth - sidePadding * 1;
   const paddedHeight = diagramHeight - topPadding - bottomPadding;
-
+  
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
 
   // barresForLayer needs to be defined before the return, and after positionToDisplay might be null
@@ -197,7 +220,6 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // Early return if positionToDisplay is null. This is AFTER all hooks.
   if (!positionToDisplay) {
     console.error("ChordDiagram: No valid position data to display for index.", positionIndex);
-    // Optionally render a placeholder or error message
     return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
   }
 
@@ -207,8 +229,31 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   // processedNotesForLayer and noteLabels return defaults if positionToDisplay was null.
   // barresForLayer is handled with a default.
 
+  // Bottom Labels configuration - use props if provided, otherwise use default state
+  const [bottomLabelsState, setBottomLabelsState] = useState({
+    showFingers: false,
+    showTones: true,
+    showIntervals: false
+  });
+  
+  // Use prop values if provided, otherwise fallback to state
+  const bottomLabels = propBottomLabels !== undefined ? propBottomLabels : bottomLabelsState;
+
+  // Toggle function only used when not controlled through props
+  const toggleBottomLabel = (type: 'showTones' | 'showFingers' | 'showIntervals') => {
+    if (propBottomLabels) {
+      // If props are provided, don't modify state (controlled component)
+      console.log('Bottom labels are controlled via props, toggle ignored');
+      return;
+    }
+    setBottomLabelsState(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
+
   return (
-    <div className="flex flex-col items-center w-full">
+  <div className="flex flex-col items-center w-full">
       <div
         className="flex flex-col items-center w-full" // Added w-full here
         style={{
@@ -226,6 +271,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
               playedNotes={data.theory?.chordTones || []}
               showFormula={true}
               className="text-center"
+              instrument={data.instrument || ''}
+              tuning={derivedActualTuning}
             />
           </div>
         </div>
@@ -260,6 +307,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
                   labelType={currentLabelType} // Pass resolved labelType
                   labels={noteLabels} // Pass generated labels
                   theory={data.theory} // Pass global theory for now
+                  bottomLabels={bottomLabels}
+                  positionNotes={positionToDisplay.notes}
                 >
                   <NotesLayer
                     width={paddedWidth}

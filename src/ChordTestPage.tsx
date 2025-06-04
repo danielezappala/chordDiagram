@@ -2,6 +2,14 @@ import React, { useState, useCallback, useEffect } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 import { ChordInfo } from './components/ChordInfo';
+
+function getStandardTuning(numStrings: number): string[] {
+  if (numStrings === 4) return ['E', 'A', 'D', 'G'];
+  if (numStrings === 5) return ['A', 'D', 'G', 'B', 'E'];
+  if (numStrings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+  return ['E', 'A', 'D', 'G', 'B', 'E'];
+}
+
 const testChords: ChordDiagramData[] = [
   {
     name: 'C Major (Open) v2',
@@ -119,6 +127,15 @@ const ChordTestPage: React.FC = () => {
   const [showTuningEditor, setShowTuningEditor] = useState(false);
   const [numFrets, setNumFrets] = useState<number>(5);
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
+  // Stato per i bottom labels
+  const [bottomLabels, setBottomLabels] = useState({
+    showFingers: false,
+    showTones: true,
+    showIntervals: false
+  });
+  const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
+    setBottomLabels(prev => ({ ...prev, [key]: !prev[key] }));
+  };
 
   const detectNumStrings = useCallback((chord: ChordDiagramData | undefined | null): number => {
     if (!chord || !chord.positions || chord.positions.length === 0) {
@@ -178,14 +195,15 @@ const ChordTestPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Chord Diagram Tester</h1>
-      <div className="bg-red-500 text-white p-8">
-  TEST TAILWIND
-</div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <label className="font-medium block mb-2">Select Chord:</label>
+    <>
+      <div className="max-w-6xl mx-auto">
+        <h1 className="text-2xl font-bold mb-6">Chord Diagram Tester</h1>
+        <div className="bg-red-500 text-white p-8">
+    TEST TAILWIND
+  </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="font-medium block mb-2">Select Chord:</label>
           <select
             value={testChordsState.findIndex(c => c.name === selectedChord.name && JSON.stringify(c.positions) === JSON.stringify(selectedChord.positions))}
             onChange={handleChordChange}
@@ -230,6 +248,39 @@ const ChordTestPage: React.FC = () => {
                 {type.charAt(0).toUpperCase() + type.slice(1)}
               </label>
             ))}
+          </div>
+        </div>
+        {/* UI toggles per le bottom labels */}
+        <div>
+          <h2 className="text-xl font-semibold mb-3">Bottom Labels</h2>
+          <div className="flex flex-col gap-2 bg-gray-100 dark:bg-gray-800 rounded p-3">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={bottomLabels.showFingers}
+                onChange={() => handleToggleBottomLabel('showFingers')}
+                className="accent-blue-500"
+              />
+              <span className="text-sm font-medium">Fingers</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={bottomLabels.showTones}
+                onChange={() => handleToggleBottomLabel('showTones')}
+                className="accent-blue-500"
+              />
+              <span className="text-sm font-medium">Tones</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={bottomLabels.showIntervals}
+                onChange={() => handleToggleBottomLabel('showIntervals')}
+                className="accent-blue-500"
+              />
+              <span className="text-sm font-medium">Intervals</span>
+            </label>
           </div>
         </div>
         <div>
@@ -285,14 +336,7 @@ const ChordTestPage: React.FC = () => {
                     </select>
                   ))}
                 </div>
-                <button onClick={() => {
-                  let standardTuning: string[];
-                  if (numStrings === 4) standardTuning = ['E', 'A', 'D', 'G'];
-                  else if (numStrings === 5) standardTuning = ['A', 'D', 'G', 'B', 'E'];
-                  else if (numStrings === 7) standardTuning = ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
-                  else standardTuning = ['E', 'A', 'D', 'G', 'B', 'E'];
-                  setCustomTuning(standardTuning);
-                }} className="text-xs text-blue-500 hover:underline">
+                <button onClick={() => setCustomTuning(getStandardTuning(numStrings))} className="text-xs text-blue-500 hover:underline">
                   Reimposta accordatura standard (per {numStrings} corde)
                 </button>
               </div>
@@ -300,53 +344,45 @@ const ChordTestPage: React.FC = () => {
           </div>
         </div>
       </div>
-    <div className="w-full px-4 mt-6 mb-16">
-      <div className="mx-auto" style={{ maxWidth: 'min(100%, 42rem)' }}>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 overflow-hidden">
-          <div className="relative w-full flex justify-center" style={{ minHeight: '400px', paddingBottom: '2rem' }}>
-            <div style={{
-              position: 'relative',
-              width: '100%',
-              height: '100%',
-              maxWidth: '250px',
-              maxHeight: '500px',
-              minWidth: '150px',
-              minHeight: '300px',
-              margin: '0 auto',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '1rem'
-            }}>
-              <ChordDiagram
-                key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height}
-                data={selectedChord}
-                numFrets={numFrets}
-                width={diagramSize.width}
-                height={diagramSize.height}
-                labelType={labelType}
-                showFretNumbers={showFretNumbers}
-                tuning={customTuning}
-                className="w-full h-full"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Raw data section - centered and styled */}
-      <div className="w-full max-w-4xl mt-16 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Selected Chord Data (Raw):</h2>
-          <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
-            {JSON.stringify(selectedChord, null, 2)}
-          </pre>
-        </div>
+    </div>
+    <div style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      maxWidth: '250px',
+      maxHeight: '500px',
+      minWidth: '150px',
+      minHeight: '300px',
+      margin: '0 auto',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '1rem'
+    }}>
+      <ChordDiagram
+        key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels)}
+        data={selectedChord}
+        numFrets={numFrets}
+        width={diagramSize.width}
+        height={diagramSize.height}
+        labelType={labelType}
+        showFretNumbers={showFretNumbers}
+        tuning={customTuning}
+        bottomLabels={bottomLabels}
+        className="w-full h-full"
+      />
+    </div>
+    <div className="w-full max-w-4xl mt-16 mb-8">
+      <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">Selected Chord Data (Raw):</h2>
+        <pre className="bg-gray-50 p-4 rounded-md overflow-x-auto text-sm text-gray-700 border border-gray-200">
+          {JSON.stringify(selectedChord, null, 2)}
+        </pre>
       </div>
     </div>
-  </div> 
+  </>
   );
-};
+ };
 
-export default ChordTestPage;
+ export default ChordTestPage;
