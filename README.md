@@ -26,18 +26,17 @@ This library requires the following peer dependencies in your project:
 - react (>=18)
 - react-dom (>=18)
 - framer-motion (>=7)
-- tailwindcss (opzionale, solo se vuoi personalizzare lo stile)
-- framer-motion (>=7)
+- tailwindcss (optional, only if you want to customize styles)
 - tailwindcss (if you want to customize styles, otherwise the built CSS is included)
 
 
 ```bash
 npm install chord-diagram-library@beta
-# oppure
+# or
 yarn add chord-diagram-library@beta
 ```
 
-> **Nota:** Usa `@beta` per installare la versione più recente pubblicata se vuoi testare le ultime funzionalità prima della release stabile.
+> **Note:** Use `@beta` to install the latest published version if you want to test the latest features before the stable release.
 
 Current version: `0.1.0-beta` (beta)
 
@@ -45,17 +44,17 @@ Current version: `0.1.0-beta` (beta)
 
 ## Quick Start
 
-1. **Installa la libreria e le peer dependencies:**
+1. **Install the library and peer dependencies:**
    ```bash
    npm install chord-diagram-library@beta react@^18 react-dom@^18 framer-motion@^7
-   # tailwindcss solo se vuoi personalizzare lo stile
+   # tailwindcss only if you want to customize styles
    ```
 
 2. **Importa il componente e il CSS:**
    ```tsx
    import { ChordDiagram } from 'chord-diagram-library';
    import type { ChordDiagramData } from 'chord-diagram-library';
-   import 'chord-diagram-library/dist/style.css'; // Importa sempre il CSS
+   import 'chord-diagram-library/chord-diagram-library.css'; // Always import the CSS
    ```
 
 3. **Usa il componente in React:**

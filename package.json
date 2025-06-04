@@ -1,8 +1,9 @@
 {
   "name": "chord-diagram-library",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "A React library for beautiful and customizable chord diagrams",
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/chord-diagram-library.umd.js",
   "module": "./dist/chord-diagram-library.es.js",
   "types": "./dist/index.d.ts",
@@ -41,9 +42,20 @@
     "zod": "^3.25.28"
   },
   "peerDependencies": {
-    "framer-motion": "^10.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "framer-motion": "^10.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": false
+    },
+    "react-dom": {
+      "optional": false
+    },
+    "framer-motion": {
+      "optional": false
+    }
   },
   "resolutions": {
     "@types/react": "^18.3.23",
@@ -58,10 +70,12 @@
     "@vitejs/plugin-react": "^4.5.0",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
+    "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.35",
     "tailwindcss": "^3.4.1",
+    "terser": "^5.40.0",
     "typescript": "^5.2.2",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"
