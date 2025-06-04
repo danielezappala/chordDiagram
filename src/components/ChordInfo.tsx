@@ -72,7 +72,8 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Played Notes */}
       {playedNotes.length > 0 && (
         <div className="mt-2">
-          <div className="text-center space-x-2">
+          <div className="text-center space-x-2 whitespace-nowrap flex items-center justify-center">
+            <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Chord tones:</span>
             {playedNotes.map((tone, i) => (
               <span 
                 key={`played-note-${i}`} 
@@ -88,7 +89,8 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Formula */}
       {showFormula && intervals.length > 0 && (
         <div className="mt-2">
-          <div className="text-center space-x-2">
+          <div className="text-center space-x-2 whitespace-nowrap flex items-center justify-center">
+            <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Intervals:</span>
             {intervals.map((interval, i) => (
               <span 
                 key={`formula-${i}`}
