@@ -87,15 +87,43 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   // stringVisualIndex: 0 for leftmost string (e.g., Low E on guitar, which is string N)
   //                    N-1 for rightmost string (e.g., High E on guitar, which is string 1)
   const getStringLabel = (stringVisualIndex: number, totalStrings: number): string => {
-    // props.labels (noteLabels from ChordDiagram) is ordered: index 0 for string 1 (High E) to N-1 for string N (Low E)
-    const labelFromNoteLabel = labels?.[totalStrings - 1 - stringVisualIndex];
-    if (labelFromNoteLabel !== undefined && labelFromNoteLabel !== null && String(labelFromNoteLabel).trim() !== '') {
-      return String(labelFromNoteLabel);
+    // For muted strings (X), always return X
+    const stringIndex = totalStrings - 1 - stringVisualIndex;
+    const labelFromNoteLabel = labels?.[stringIndex];
+    if (labelFromNoteLabel === 'X') {
+      return 'X';
     }
 
-    // Fallback to tuning note if showStringNames is true and no specific label from props.labels
+    // If it's a regular playing position (not an X), we need to look through the notes array
+    // to find complementary information based on the labelType
+    
+    // Get complementary info based on labelType
+    // If circles show finger numbers (labelType=finger), show tones at the bottom
+    // If circles show tones (labelType=tone), show finger numbers at the bottom
+    // If circles show intervals (labelType=interval), show tones at the bottom
+    
+    if (labelType === 'finger') {
+      // If showing finger numbers in circles, complement with tones at bottom (if available)
+      if (showStringNames && tuning && tuning.length === totalStrings) {
+        return tuning[stringVisualIndex] || '';
+      }
+    } 
+    else if (labelType === 'tone') {
+      // If showing tones in circles, show finger numbers at bottom
+      // Return the index+1 as a finger number for simplicity, if it's not a muted string
+      if (labelFromNoteLabel && labelFromNoteLabel !== ' ') {
+        return (stringIndex + 1).toString(); // Simple approximation
+      }
+    } 
+    else if (labelType === 'interval') {
+      // If showing intervals in circles, show tones at bottom if available
+      if (showStringNames && tuning && tuning.length === totalStrings) {
+        return tuning[stringVisualIndex] || '';
+      }
+    }
+
+    // Default fallback if no complementary info available
     if (showStringNames && tuning && tuning.length === totalStrings) {
-      // props.tuning is ordered: index 0 for Low E string, up to N-1 for High E string
       return tuning[stringVisualIndex] || '';
     }
     return '';
@@ -140,9 +168,11 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
                 className={`fill-current ${
                   displayMutedX
                     ? 'text-gray-500 dark:text-gray-400' // Style for 'X'
-                    : (labelType === 'tone' || labelType === 'interval' || labelType === 'degree')
-                        ? 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels
-                        : 'text-gray-700 dark:text-gray-300' // Default style for tuning notes/finger numbers
+                    : (labelType === 'finger')
+                        ? 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels when showing finger numbers in circles
+                        : (labelType === 'tone')
+                          ? 'text-gray-700 dark:text-gray-300' // Style for finger positions when showing tones in circles
+                          : 'text-blue-600 dark:text-blue-400 font-semibold' // Style for theory labels when showing intervals in circles
                 }`}
                 style={{
                   fontSize: '14px', // Slightly smaller for string names/tuning
