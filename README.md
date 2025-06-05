@@ -1,4 +1,5 @@
-published on npm as `music-chords-diagrams`
+ublished on npm as `music-chords-diagrams` on date `2025-06-05`
+
 
 # music-chords-diagrams
 
