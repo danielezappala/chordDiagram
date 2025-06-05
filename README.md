@@ -1,3 +1,5 @@
+published on npm as `music-chords-diagrams`
+
 # music-chords-diagrams
 
 [![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
