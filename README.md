@@ -1,12 +1,11 @@
-# React Chord Diagram Library
+# music-chords-diagrams
 
-[![npm version](https://img.shields.io/npm/v/chord-diagram-library?label=npm)](https://www.npmjs.com/package/chord-diagram-library)
-[![npm downloads](https://img.shields.io/npm/dm/chord-diagram-library.svg)](https://www.npmjs.com/package/chord-diagram-library)
+[![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
+[![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
 
-**Latest beta published on npm: `0.1.0-beta`**
+**Latest version published on npm: `0.1.0`**
 
-A customizable and interactive chord diagram library for React, built with TypeScript, Tailwind CSS, and Framer Motion. Perfect for displaying guitar, bass, ukulele, and other stringed instrument chord diagrams in your web applications.
-
+A customizable and interactive React library for rendering chord diagrams for guitar, bass, ukulele, and other stringed instruments. Built with TypeScript, Tailwind CSS, and Framer Motion.
 ## Features
 
 - 🎸 Render beautiful, responsive chord diagrams
@@ -104,7 +103,6 @@ Current version: `0.1.15` (beta)
            { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
            { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
            { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
-           { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
            { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
          ],
          barres: []
@@ -116,6 +114,7 @@ Current version: `0.1.15` (beta)
    };
         { position: { string: 4, fret: 2 }, annotation: { tone: 'E', finger: '2' } }, // D string, 2nd fret = E
         { position: { string: 5, fret: 3 }, annotation: { tone: 'C', finger: '3' } }, // A string, 3rd fret = C
+{{ ... }}
         { position: { string: 6, fret: -1 } }, // Low E string muted
       ],
       // Optional barres for this position

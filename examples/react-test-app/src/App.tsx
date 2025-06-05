@@ -1,7 +1,7 @@
 // Optional: import './App.css'; if you have specific app styles
-import { ChordDiagram } from 'chord-diagram-library';
-import type { ChordDiagramData } from 'chord-diagram-library';
-import 'chord-diagram-library/style.css'; // Correct CSS import path
+import { ChordDiagram } from 'music-chords-diagrams';
+import type { ChordDiagramData } from 'music-chords-diagrams';
+import 'music-chords-diagrams/style.css'; // Correct CSS import path
 
 const cMajorData: ChordDiagramData = {
   name: 'C Major (Open)',

@@ -1,6 +1,6 @@
 {
-  "name": "chord-diagram-library",
-  "version": "0.1.29",
+  "name": "music-chords-diagrams",
+  "version": "0.1.0",
   "description": "A React library for beautiful and customizable chord diagrams",
   "type": "module",
   "sideEffects": false,

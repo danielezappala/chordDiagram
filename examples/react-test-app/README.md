@@ -1,11 +1,31 @@
 # React + TypeScript + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is an example React app demonstrating how to use the [`music-chords-diagrams`](https://www.npmjs.com/package/music-chords-diagrams) library.
 
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
 - [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Getting Started
+
+```sh
+npm install
+npm run dev
+```
+
+## Basic Import Example
+
+```tsx
+import { ChordDiagram } from 'music-chords-diagrams';
+import type { ChordDiagramData } from 'music-chords-diagrams';
+import 'music-chords-diagrams/style.css';
+```
+
+## Notes
+
+- Edit `src/App.tsx` to try your own chords or customizations.
+- Make sure you have the latest version of the library installed with `npm install music-chords-diagrams@latest`.
 
 ## Expanding the ESLint configuration
 
