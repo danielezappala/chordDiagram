@@ -134,7 +134,11 @@ const ChordTestPage: React.FC = () => {
     showIntervals: false
   });
   const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
-    setBottomLabels(prev => ({ ...prev, [key]: !prev[key] }));
+    // Rendi possibili selezioni multiple
+    setBottomLabels(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const detectNumStrings = useCallback((chord: ChordDiagramData | undefined | null): number => {

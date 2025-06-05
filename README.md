@@ -38,7 +38,23 @@ yarn add chord-diagram-library@beta
 
 > **Note:** Use `@beta` to install the latest published version if you want to test the latest features before the stable release.
 
-Current version: `0.1.0-beta` (beta)
+Current version: `0.1.15` (beta)
+
+---
+
+## What’s New
+
+- **Instrument and Tuning Info:**
+  - The chord info area now displays the instrument name and tuning (as badge-style notes) directly under the chord name, if provided in the data or via props.
+  - The tuning notes are shown in a single horizontal row with the label `Tuning:`.
+- **Bottom Label Toggles & Badges:**
+  - Bottom label rows (Fingers, Tones, Intervals) can be toggled on/off and are always synchronized with their left-side label badges.
+  - Left-side badges for each bottom label row are styled consistently and aligned for clarity.
+- **TypeScript & API:**
+  - New props: `instrument` and `tuning` can be passed to `ChordInfo` and will be displayed if present.
+  - `tuning` can be a `string[]` or derived from `ChordDiagramData`.
+
+---
 
 ---
 
@@ -59,6 +75,24 @@ Current version: `0.1.0-beta` (beta)
 
 3. **Usa il componente in React:**
    ```tsx
+   // Example with instrument and tuning info
+   import { ChordDiagram } from 'chord-diagram-library';
+   import type { ChordDiagramData } from 'chord-diagram-library';
+
+   const cMajorData: ChordDiagramData = {
+     name: 'C Major (Open)',
+     instrument: 'guitar',
+     positions: [ /* ... */ ],
+     tuning: ['E', 'A', 'D', 'G', 'B', 'E'],
+   };
+
+   <ChordDiagram
+     data={cMajorData}
+     width={250}
+     height={300}
+   />
+   // The diagram will show the instrument and tuning badges below the chord name.
+   ```
    const cMajorData: ChordDiagramData = {
      name: 'C Major (Open)',
      instrument: 'guitar',
@@ -133,10 +167,10 @@ function App() {
 | `labelType` | `'none' \| 'finger' \| 'tone' \| 'interval'` | `'finger'` | Type of label to display on notes. Overrides `data.display.labelType`. |
 | `showFretNumbers` | `boolean` | `true` | Whether to display fret numbers. If `false` and the position's `baseFret > 1`, the `baseFret` value is still shown. Overrides `data.display.showFretNumbers`. |
 | `fretNumberPosition` | `'left' \| 'right' \| 'none'` | `'left'` | Position of fret numbers. Overrides `data.display.fretNumberPosition`. |
-| `showStringNames` | `boolean` | `true` | Whether to display string names/tuning notes below the diagram. Overrides `data.display.showStringNames`. |
+| `showStringNames` | `boolean` | `true` | Whether to display string names/tuning notes below the diagram. Overrides `data.display.showStringNames`. (NB: The tuning notes are also shown as badges under the chord name in the info area.) |
 | `numStrings` | `number` | (derived) | Override for the number of strings. If not provided, derived from `data.tuning` or `data.positions[positionIndex].notes`. |
 | `numFrets` | `number` | `5` | Number of frets to draw on the diagram. |
-| `tuning` | `string[]` | (derived) | Override for instrument tuning (array of notes from lowest to highest pitch string). If not provided, derived from `data.tuning`. |
+| `tuning` | `string[]` | (derived) | Override for instrument tuning (array of notes from lowest to highest pitch string). If not provided, derived from `data.tuning`. Displayed as badges in a single row below the chord name with label `Tuning:`. |
 | `width` | `number` | `250` | Width of the diagram in pixels. |
 | `height` | `number` | `300` | Height of the diagram in pixels. |
 | `onNoteClick`    | `(note: PositionedNote, posData: ChordPositionData, event: MouseEvent) => void` | `undefined` | Callback for when a note (dot) is clicked.                                  |
@@ -168,6 +202,20 @@ To test your library before publishing:
    ```
 
 ---
+
+## Chord Info Display
+
+By default, the chord info area below the diagram shows:
+- The chord name (large)
+- The instrument (if provided), as a badge
+- The tuning (as a row of badges for each string), labeled `Tuning:`
+
+Example:
+```
+C Major (Open)
+Instrument: [guitar]
+Tuning: [E] [A] [D] [G] [B] [E]
+```
 
 ## Data Conventions (v2 Structure)
 

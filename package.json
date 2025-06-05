@@ -1,11 +1,11 @@
 {
   "name": "chord-diagram-library",
-  "version": "0.1.14",
+  "version": "0.1.29",
   "description": "A React library for beautiful and customizable chord diagrams",
   "type": "module",
   "sideEffects": false,
-  "main": "./dist/chord-diagram-library.umd.js",
-  "module": "./dist/chord-diagram-library.es.js",
+  "main": "./dist/chord-diagram-library.umd.cjs",
+  "module": "./dist/chord-diagram-library.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
@@ -42,9 +42,9 @@
     "zod": "^3.25.28"
   },
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "framer-motion": "^10.0.0"
+    "framer-motion": "^10.3.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
   },
   "peerDependenciesMeta": {
     "react": {
@@ -58,35 +58,41 @@
     }
   },
   "resolutions": {
-    "@types/react": "^18.3.23",
+    "@types/react": "^18.3.1",
     "framer-motion": "^10.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^8.56.0",
     "@tailwindcss/forms": "^0.5.7",
     "@types/node": "^22.15.29",
-    "@types/react": "^18.3.23",
-    "@types/react-dom": "^18.3.7",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
     "@vitejs/plugin-react": "^4.5.0",
+    "ajv": "^8.17.1",
     "autoprefixer": "^10.4.17",
     "eslint": "^8.56.0",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
+    "framer-motion": "^10.18.0",
     "postcss": "^8.4.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "tailwindcss": "^3.4.1",
     "terser": "^5.40.0",
-    "typescript": "^5.2.2",
+    "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"
   },
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/chord-diagram-library.es.js",
-      "require": "./dist/chord-diagram-library.umd.js"
-    },
-    "./dist/chord-diagram-library.css": "./dist/chord-diagram-library.css",
-    "./chord-diagram-library.css": "./dist/chord-diagram-library.css"
-  }
+  ".": {
+    "types": "./dist/index.d.ts",
+    "import": "./dist/chord-diagram-library.js",
+    "require": "./dist/chord-diagram-library.umd.cjs",
+    "default": "./dist/chord-diagram-library.js"
+  },
+  "./dist/chord-diagram-library.css": "./dist/chord-diagram-library.css",
+  "./chord-diagram-library.css": "./dist/chord-diagram-library.css",
+  "./style.css": "./dist/chord-diagram-library.css"
+}
 }
