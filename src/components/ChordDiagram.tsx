@@ -1,11 +1,9 @@
-import React, { forwardRef, useState, useMemo, useCallback, ForwardedRef } from 'react';
+import React, { forwardRef, useState, useMemo, useCallback } from 'react';
 import type {
   PositionedNote,
   Barre,
   ChordDiagramData,
-  ChordPositionData,
-  FretNumberPosition,
-  NoteAnnotation
+  ChordPositionData
 } from '../types';
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
@@ -30,8 +28,8 @@ interface ChordDiagramProps {
   numStrings?: number;
   numFrets?: number;
   tuning?: string[];
-  onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent) => void;
-  onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent) => void;
+  onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
+  onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
   className?: string;
   // Bottom labels configuration
   bottomLabels?: {
@@ -41,52 +39,67 @@ interface ChordDiagramProps {
   };
 }
 
-const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
-  // Data
-  data,
-  positionIndex = 0, // Default to first position
+const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
+  (props, ref): JSX.Element | null => {
+    // Destructure props
+    const {
+      data,
+      positionIndex = 0,
+      labelType: labelTypeProp,
+      showFretNumbers: showFretNumbersProp,
+      fretNumberPosition: fretNumberPositionProp,
+      showStringNames: showStringNamesProp,
+      width: widthProp,
+      height: heightProp,
+      numStrings: numStringsProp,
+      numFrets: numFretsProp,
+      tuning: tuningProp,
+      onNoteClick: onNoteClickCallback,
+      onBarreClick: onBarreClickCallback,
+      className = '',
+      bottomLabels: propBottomLabels = {
+        showFingers: false,
+        showTones: true,
+        showIntervals: false
+      },
+    } = props;
 
-  // Display settings (can be overridden by data.display or component props)
-  labelType: labelTypeProp,
-  showFretNumbers: showFretNumbersProp, // Prop override
-  fretNumberPosition: fretNumberPositionProp, // Prop override
-  showStringNames: showStringNamesProp, // Prop override
+    // All hooks must be called unconditionally at the top level.
+    const positionToDisplay = data.positions && data.positions.length > 0 && positionIndex < data.positions.length
+      ? data.positions[positionIndex]
+      : null;
 
-  // Sizing
-  width: widthProp, // Renamed to avoid conflict with calculated width
-  height: heightProp, // Renamed to avoid conflict with calculated height
-  numStrings: numStringsProp, // Prop override
-  numFrets: numFretsProp, // Prop override for number of frets to draw
-  tuning: tuningProp, // Prop override for tuning string array
+    // Resolve display settings: Prop > data.display > component default
+    // These need to be resolvable even if positionToDisplay is null for hooks below.
+    const currentLabelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
+    const currentShowFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
+    const currentFretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
+    const currentShowStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
 
-  // Callbacks
-  onNoteClick: onNoteClickCallback, // Renamed
-  onBarreClick: onBarreClickCallback, // Renamed
+    // currentBaseFret might be undefined if positionToDisplay is null. Hooks using it must handle this.
+    const currentBaseFret = positionToDisplay?.baseFret ?? 1;
 
-  // Class name
-  className = '',
-  // Bottom labels configuration
-  bottomLabels: propBottomLabels = {
-    showFingers: false,
-    showTones: true,
-    showIntervals: false
-  },
-}: ChordDiagramProps, ref: ForwardedRef<SVGSVGElement>) => {
+    // ...function body continues here...
 
-  // All hooks must be called unconditionally at the top level.
-  const positionToDisplay = data.positions && data.positions.length > 0 && positionIndex < data.positions.length
-    ? data.positions[positionIndex]
-    : null;
+    // Local state for bottomLabels if not provided by props
+    const [bottomLabels, setBottomLabels] = useState(() => ({
+      showFingers: false,
+      showTones: true,
+      showIntervals: false,
+      ...propBottomLabels
+    }));
 
-  // Resolve display settings: Prop > data.display > component default
-  // These need to be resolvable even if positionToDisplay is null for hooks below.
-  const currentLabelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
-  const currentShowFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
-  const currentFretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
-  const currentShowStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
+    // Only use local state if propBottomLabels is undefined (uncontrolled mode)
+    const effectiveBottomLabels = propBottomLabels === undefined ? bottomLabels : propBottomLabels;
 
-  // currentBaseFret might be undefined if positionToDisplay is null. Hooks using it must handle this.
-  const currentBaseFret = positionToDisplay?.baseFret ?? 1;
+    // Toggle function for local state only
+    const toggleBottomLabel = (type: keyof typeof bottomLabels) => {
+      if (propBottomLabels !== undefined) return;
+      setBottomLabels(prev => ({
+        ...prev,
+        [type]: !prev[type]
+      }));
+    };
 
   const derivedNumStrings = useMemo(() => {
     if (numStringsProp) return numStringsProp;
@@ -132,13 +145,13 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     return defaultTuningArray;
   }, [tuningProp, data.tuning, derivedNumStrings]);
 
-  const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent) => {
+  const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<unknown>) => {
     if (onNoteClickCallback && positionToDisplay) {
       onNoteClickCallback(note, positionToDisplay, event);
     }
   }, [onNoteClickCallback, positionToDisplay]);
 
-  const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent) => {
+  const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent<unknown>) => {
     if (onBarreClickCallback && positionToDisplay) {
       onBarreClickCallback(barre, positionToDisplay, event);
     }
@@ -225,35 +238,16 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
 
   // All variables that depend on positionToDisplay being non-null and are used in JSX
   // should be defined after this null check, or ensure they have defaults.
-  // currentBaseFret is already handled with a default.
-  // processedNotesForLayer and noteLabels return defaults if positionToDisplay was null.
-  // barresForLayer is handled with a default.
-
-  // Bottom Labels configuration - use props if provided, otherwise use default state
-  const [bottomLabelsState, setBottomLabelsState] = useState({
-    showFingers: false,
-    showTones: true,
-    showIntervals: false
-  });
-  
-  // Use prop values if provided, otherwise fallback to state
-  const bottomLabels = propBottomLabels !== undefined ? propBottomLabels : bottomLabelsState;
-
-  // Toggle function only used when not controlled through props
-  const toggleBottomLabel = (type: 'showTones' | 'showFingers' | 'showIntervals') => {
-    if (propBottomLabels) {
-      // If props are provided, don't modify state (controlled component)
-      console.log('Bottom labels are controlled via props, toggle ignored');
-      return;
-    }
-    setBottomLabelsState(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
-  };
-
   return (
   <div className="flex flex-col items-center w-full">
+    {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
+    {propBottomLabels === undefined && (
+      <div className="flex gap-2 mb-2">
+        <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showFingers ? 'bg-blue-200' : ''}`}>Fingers</button>
+        <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showTones ? 'bg-blue-200' : ''}`}>Tones</button>
+        <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showIntervals ? 'bg-blue-200' : ''}`}>Intervals</button>
+      </div>
+    )}
       <div
         className="flex flex-col items-center w-full" // Added w-full here
         style={{
@@ -307,7 +301,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
                   labelType={currentLabelType} // Pass resolved labelType
                   labels={noteLabels} // Pass generated labels
                   theory={data.theory} // Pass global theory for now
-                  bottomLabels={bottomLabels}
+                  bottomLabels={effectiveBottomLabels}
                   positionNotes={positionToDisplay.notes}
                 >
                   <NotesLayer

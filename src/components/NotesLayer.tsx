@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEvent, CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 import type { Barre, PositionedNote } from '../types'; // Barre is v2. PositionedNote replaces ProcessedLayerNote.
 
@@ -12,10 +12,10 @@ interface NotesLayerProps {
   startFret?: number;
   labelType?: 'none' | 'finger' | 'tone' | 'interval';
   labels?: (string | number | null)[]; // This is the noteLabels array from ChordDiagram
-  onNoteClick?: (note: PositionedNote, event: React.MouseEvent) => void; // Changed, added event
-  onBarreClick?: (barre: Barre, event: React.MouseEvent) => void; // Added event
+  onNoteClick?: (note: PositionedNote, event: MouseEvent<SVGGElement, globalThis.MouseEvent>) => void; // Changed, added event
+  onBarreClick?: (barre: Barre, event: MouseEvent<SVGGElement, globalThis.MouseEvent>) => void; // Added event
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 // Local defaults if numStrings/numFrets/width/height were not guaranteed
@@ -48,12 +48,12 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   const fretSpacing = paddedHeight / (numFrets + 1);
   const noteRadius = Math.min(stringSpacing, fretSpacing) * 0.4;
 
-  const handleNoteClick = (e: React.MouseEvent<SVGGElement, MouseEvent>, note: PositionedNote) => { // note is PositionedNote
+  const handleNoteClick = (e: MouseEvent<SVGGElement, globalThis.MouseEvent>, note: PositionedNote) => {
     e.stopPropagation();
     onNoteClick?.(note, e); // Pass event
   };
 
-  const handleBarreClick = (e: React.MouseEvent<SVGGElement, MouseEvent>, barre: Barre) => {
+  const handleBarreClick = (e: MouseEvent<SVGGElement, globalThis.MouseEvent>, barre: Barre) => {
     e.stopPropagation();
     onBarreClick?.(barre, e); // Pass event
   };
@@ -146,7 +146,7 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
               fill="currentColor"
               className="cursor-pointer"
               whileHover={{ opacity: 0.8 }}
-              onClick={(e: React.MouseEvent<SVGGElement, MouseEvent>) => handleBarreClick(e, barre)}
+              onClick={(e: MouseEvent<SVGGElement, globalThis.MouseEvent>) => handleBarreClick(e, barre)}
             />
             {barre.finger && (
               <text
@@ -261,7 +261,7 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
           <motion.g 
             key={animationKey}
             className="cursor-pointer"
-            onClick={(e: React.MouseEvent<SVGGElement, MouseEvent>) => handleNoteClick(e, note)}
+            onClick={(e: MouseEvent<SVGGElement, globalThis.MouseEvent>) => handleNoteClick(e, note)}
             // Animation logic might need adjustment if notePositions map keys changed significantly
             // For now, assume notePositions map is keyed in a way that can be retrieved.
             // The example key for notePositions was: `note-${note.string}-${note.fret_original_or_index}`

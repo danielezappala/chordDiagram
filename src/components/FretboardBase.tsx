@@ -1,8 +1,10 @@
 import React, { useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export type FretNumberPosition = 'left' | 'right' | 'none';
 
-interface FretboardBaseProps extends React.PropsWithChildren {
+interface FretboardBaseProps extends CSSProperties {
+  children?: ReactNode;
   numStrings: number;
   numFrets: number;
   width: number;
@@ -38,8 +40,8 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   showStringNames = true, // This prop now primarily controls fallback to tuning notes
   className = '',
   tuning,
-  labelType = 'finger', // labelType is used for styling text in current code, not for choosing content here.
-  labels = [], // These are the pre-processed noteLabels from ChordDiagram
+
+
   bottomLabels = { showFingers: false, showTones: true, showIntervals: false },
 
   positionNotes = [],
@@ -106,62 +108,19 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   // Get the label for a specific string.
   // stringVisualIndex: 0 for leftmost string (e.g., Low E on guitar, which is string N)
   //                    N-1 for rightmost string (e.g., High E on guitar, which is string 1)
-  const getStringLabel = (stringVisualIndex: number, totalStrings: number): string => {
-    // For muted strings (X), always return X
-    const stringIndex = totalStrings - 1 - stringVisualIndex;
-    const labelFromNoteLabel = labels?.[stringIndex];
-    if (labelFromNoteLabel === 'X') {
-      return 'X';
-    }
-
-    // If it's a regular playing position (not an X), we need to look through the notes array
-    // to find complementary information based on the labelType
-    
-    // Get complementary info based on labelType
-    // If circles show finger numbers (labelType=finger), show tones at the bottom
-    // If circles show tones (labelType=tone), show finger numbers at the bottom
-    // If circles show intervals (labelType=interval), show tones at the bottom
-    
-    if (labelType === 'finger') {
-      // If showing finger numbers in circles, complement with tones at bottom (if available)
-      if (showStringNames && tuning && tuning.length === totalStrings) {
-        return tuning[stringVisualIndex] || '';
-      }
-    } 
-    else if (labelType === 'tone') {
-      // If showing tones in circles, show finger numbers at bottom
-      // Return the index+1 as a finger number for simplicity, if it's not a muted string
-      if (labelFromNoteLabel && labelFromNoteLabel !== ' ') {
-        return (stringIndex + 1).toString(); // Simple approximation
-      }
-    } 
-    else if (labelType === 'interval') {
-      // If showing intervals in circles, show tones at bottom if available
-      if (showStringNames && tuning && tuning.length === totalStrings) {
-        return tuning[stringVisualIndex] || '';
-      }
-    }
-
-    // Default fallback if no complementary info available
-    if (showStringNames && tuning && tuning.length === totalStrings) {
-      return tuning[stringVisualIndex] || '';
-    }
-    return '';
-  };
-
+  
   // Get information for multiple bottom label rows
   const getStringInfo = (stringVisualIndex: number, totalStrings: number) => {
     const stringIndex = totalStrings - 1 - stringVisualIndex;
-    const labelFromNoteLabel = labels?.[stringIndex];
-    const isMuted = labelFromNoteLabel === 'X';
+
     const note = positionNotes.find(n => n.position.string === stringIndex + 1);
     
     return {
-      isMuted,
       finger: note?.annotation?.finger ? String(note.annotation.finger) : '',
       tone: note?.annotation?.tone || '',
       interval: note?.annotation?.interval || '',
-      tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : ''
+      tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : '',
+      isMuted: !note || note.position == null || note.position.fret == null
     };
   };
 
@@ -172,20 +131,13 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
         // i is the visual index from left (0) to right (numStrings - 1)
         // 0 = Low E string (string N), numStrings - 1 = High E string (string 1)
         const x = i * stringSpacing;
-        const stringIndex = numStrings - 1 - i;
+
         
         // Get the position note data for this string (if it exists)
-        const noteData = positionNotes.find(n => n.position.string === stringIndex + 1);
+
         
         // Check if string is muted
-        const isMuted = noteData?.position.fret === -1 || labels?.[stringIndex] === 'X';
-        const mutedLabel = isMuted ? 'X' : '';
-        
-        // Get various possible labels
-        const fingerLabel = noteData?.annotation?.finger?.toString() || '';
-        const toneLabel = noteData?.annotation?.tone || (showStringNames && tuning ? tuning[i] : '');
-        const intervalLabel = noteData?.annotation?.interval || '';
-        
+
         // Draw the string line
         return (
           <g key={`string-group-${i}`}>

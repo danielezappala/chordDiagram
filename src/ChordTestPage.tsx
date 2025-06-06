@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
-import { ChordInfo } from './components/ChordInfo';
 
 function getStandardTuning(numStrings: number): string[] {
   if (numStrings === 4) return ['E', 'A', 'D', 'G'];
@@ -118,7 +118,7 @@ const testChords: ChordDiagramData[] = [
   }
 ];
 
-const ChordTestPage: React.FC = () => {
+const ChordTestPage = (): JSX.Element => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 250, height: 500 });
@@ -182,7 +182,7 @@ const ChordTestPage: React.FC = () => {
     }
   }, [selectedChord, detectNumStrings]);
 
-  const handleChordChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedIndex = parseInt(event.target.value, 10);
     const chord = testChordsState[selectedIndex];
     if (chord) {
@@ -224,7 +224,7 @@ const ChordTestPage: React.FC = () => {
           <label className="font-medium block mb-2">Number of Frets: {numFrets}</label>
           <input
             type="range" min="3" max="15" value={numFrets}
-            onChange={(e) => setNumFrets(parseInt(e.target.value))}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setNumFrets(parseInt(e.target.value))}
             className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
           />
           <div className="flex justify-between text-xs text-gray-500 mt-1"><span>3</span><span>15</span></div>
