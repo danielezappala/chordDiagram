@@ -131,13 +131,14 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
         const endX = getStringX(startString);
         
         // Calculate width based on the actual x positions
-        const barreWidth = endX - startX;
+        // Estendi la barra in modo che le curvature arrivino al centro dei pallini estremi
+        const barreWidth = endX - startX + noteRadius * 2;
         const y = getFretY(barre.fret);
         
         return (
           <g key={`barre-${index}`}>
             <motion.rect
-              x={startX}
+              x={startX - noteRadius}
               y={y - noteRadius}
               width={barreWidth}
               height={noteRadius * 2}
@@ -148,22 +149,76 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
               whileHover={{ opacity: 0.8 }}
               onClick={(e: MouseEvent<SVGGElement, globalThis.MouseEvent>) => handleBarreClick(e, barre)}
             />
-            {barre.finger && (
-              <text
-                x={(startX + endX) / 2}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={noteRadius * 1.2}
-                fontWeight="bold"
-                fill="#fff"
-                stroke="#222"
-                strokeWidth="1.2"
-                style={{ paintOrder: 'stroke', userSelect: 'none' }}
-              >
-                {barre.finger}
-              </text>
-            )}
+            {(() => {
+              if (props.labelType === 'finger' && barre.finger) {
+                // Comportamento attuale: mostra solo il dito centrato sulla barra
+                return (
+                  <text
+                    x={(startX + endX) / 2}
+                    y={y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={noteRadius * 1.2}
+                    fontWeight="bold"
+                    fill="#fff"
+                    stroke="#222"
+                    strokeWidth="1.2"
+                    style={{ paintOrder: 'stroke', userSelect: 'none' }}
+                  >
+                    {barre.finger}
+                  </text>
+                );
+              }
+              if ((props.labelType === 'tone' || props.labelType === 'interval') && props.labels && props.notes) {
+  // Per ogni corda sotto la barre, se c'è una nota suonata su questo fret, mostra il cerchio + label
+  const labelsToShow = [];
+  for (let string = startString; string <= endString; string++) {
+    // Trova la nota corrispondente (PositionedNote) su questa corda e fret
+    const note = props.notes.find(n => n.position.string === string && n.position.fret === barre.fret);
+    if (note) {
+      const x = getStringX(string);
+      // La label da mostrare dipende dal tipo
+      let label = null;
+      if (props.labelType === 'tone') label = note.annotation?.tone;
+      if (props.labelType === 'interval') label = note.annotation?.interval;
+      if (label) {
+        labelsToShow.push(
+          <g key={`barre-label-${barre.fret}-${string}`}>
+            {/* Cerchio nero sopra la barre, come per una nota normale */}
+            <circle
+              cx={x}
+              cy={y}
+              r={noteRadius * 1.0}
+              fill="currentColor"
+              stroke="currentColor"
+              strokeWidth={1}
+            />
+            {/* Lettera sopra il cerchio */}
+            <text
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={noteRadius * 1.1}
+              fontWeight="bold"
+              fill="#fff"
+              stroke="#222"
+              strokeWidth="1.2"
+              style={{ paintOrder: 'stroke', userSelect: 'none' }}
+            >
+              {label}
+            </text>
+          </g>
+        );
+      }
+    }
+  }
+  return labelsToShow;
+}
+              // Se labelType è none o non ci sono label, non mostrare nulla
+              return null;
+            })()}
+
           </g>
         );
       })}
