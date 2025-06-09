@@ -95,6 +95,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
           const canvas = await html2canvas(diagramRef.current, {
             useCORS: true,
             scale: 1, // Natural scale
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+              if (clonedDoc.body) {
+                clonedDoc.body.style.backgroundColor = '#ffffff';
+              }
+            },
           });
           const image = canvas.toDataURL('image/png');
           const link = document.createElement('a');
@@ -115,6 +121,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
           const canvas = await html2canvas(diagramRef.current, {
             useCORS: true,
             scale: 1, // Natural scale
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+              if (clonedDoc.body) {
+                clonedDoc.body.style.backgroundColor = '#ffffff';
+              }
+            },
           });
           canvas.toBlob(async (blob) => {
             if (blob) {

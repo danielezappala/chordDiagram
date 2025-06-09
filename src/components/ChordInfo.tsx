@@ -40,14 +40,14 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       <h2 className="text-2xl font-bold text-left mt-4 mb-3 whitespace-nowrap">{name}</h2>
       {/* Instrument row */}
       {showInstrument && instrument && (
-        <div className="flex justify-start items-baseline mb-2 w-full">
+        <div className="flex justify-start items-center mb-2 w-full">
           <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Instrument:</span>
           <span className="inline-block text-gray-700 text-xs font-medium">{instrument}</span>
         </div>
       )}
       {/* Tuning row */}
       {showTuning && tuning && tuning.length > 0 && (
-        <div className="flex flex-row items-baseline justify-start w-full mb-2">
+        <div className="flex flex-row items-center justify-start w-full mb-2">
           <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Tuning:</span>
           {tuning.map((note, i) => (
             <span key={`tuning-note-${i}`} className="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-700 text-xs font-medium border border-gray-200 mr-1">
@@ -66,7 +66,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Played Notes */}
       {showChordTones && playedNotes.length > 0 && (
         <div className="mb-2">
-          <div className="space-x-2 whitespace-nowrap flex items-baseline justify-start w-full">
+          <div className="space-x-2 whitespace-nowrap flex items-center justify-start w-full">
             <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300">Chord tones:</span>
             {playedNotes.map((tone, i) => (
               <span 
@@ -83,7 +83,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Formula */}
       {showIntervals && showFormula && intervals.length > 0 && (
         <div className="mb-2">
-          <div className="space-x-2 whitespace-nowrap flex items-baseline justify-start w-full">
+          <div className="space-x-2 whitespace-nowrap flex items-center justify-start w-full">
             <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300">Intervals:</span>
             {intervals.map((interval, i) => (
               <span 
