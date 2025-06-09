@@ -21,7 +21,7 @@ interface ChordInfoProps {
   showFormula: boolean;
   className?: string;
   instrument?: string;
-  tuning?: string[];
+  // tuning?: string[]; // Removed as per request
 }
 
 const ChordInfo: React.FC<ChordInfoProps> = ({ 
@@ -32,7 +32,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
   showFormula = true,
   className = '',
   instrument,
-  tuning,
+  // tuning, // Removed as per request
 }) => {
   // No need for complex data processing since we receive the data directly
   
@@ -42,13 +42,13 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       <h2 className="text-2xl font-bold text-left my-2 whitespace-nowrap">{name}</h2>
       {/* Instrument row */}
       {instrument && (
-        <div className="flex justify-start items-center mb-1 w-full">
+        <div className="flex justify-start items-baseline mb-1 w-full">
           <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Instrument:</span>
           <span className="inline-block text-gray-700 text-sm font-medium">{instrument}</span>
         </div>
       )}
-      {/* Tuning row */}
-      {tuning && tuning.length > 0 && (
+      {/* Tuning row - Removed as per request */}
+      {/* {tuning && tuning.length > 0 && (
         <div className="flex flex-row items-center justify-start w-full">
           <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300 mr-2">Tuning:</span>
           {tuning.map((note, i) => (
@@ -57,7 +57,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
             </span>
           ))}
         </div>
-      )}
+      )} */}
 
       {instrumentLabel && instrumentLabel.trim() !== '' && (
         <div className="text-gray-600 text-center text-sm mb-2">
@@ -68,7 +68,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Played Notes */}
       {playedNotes.length > 0 && (
         <div className="mt-2">
-          <div className="space-x-2 whitespace-nowrap flex items-center justify-start w-full">
+          <div className="space-x-2 whitespace-nowrap flex items-baseline justify-start w-full">
             <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300">Chord tones:</span>
             {playedNotes.map((tone, i) => (
               <span 
@@ -85,7 +85,7 @@ const ChordInfo: React.FC<ChordInfoProps> = ({
       {/* Formula */}
       {showFormula && intervals.length > 0 && (
         <div className="mt-2">
-          <div className="space-x-2 whitespace-nowrap flex items-center justify-start w-full">
+          <div className="space-x-2 whitespace-nowrap flex items-baseline justify-start w-full">
             <span className="inline-block px-2 py-0.5 rounded bg-gray-200 text-gray-700 text-xs font-medium border border-gray-300">Intervals:</span>
             {intervals.map((interval, i) => (
               <span 

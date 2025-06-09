@@ -1,4 +1,5 @@
-import React, { forwardRef, useState, useMemo, useCallback } from 'react';
+import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import type {
   PositionedNote,
   Barre,
@@ -41,6 +42,7 @@ interface ChordDiagramProps {
 
 const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   (props, ref): JSX.Element | null => {
+    const diagramRef = useRef<HTMLDivElement>(null);
     // Destructure props
     const {
       data,
@@ -80,6 +82,28 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
     const currentBaseFret = positionToDisplay?.baseFret ?? 1;
 
     // ...function body continues here...
+
+    const exportToPng = useCallback(async () => {
+      if (diagramRef.current) {
+        try {
+          const canvas = await html2canvas(diagramRef.current, {
+            backgroundColor: null, // Transparent background if diagram elements don't have one
+            useCORS: true,
+            scale: 2, // Higher resolution
+          });
+          const image = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `${data.name || 'chord-diagram'}.png`;
+          link.href = image;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error('Error exporting to PNG:', error);
+        }
+      }
+    }, [data.name]);
+
 
     // Local state for bottomLabels if not provided by props
     const [bottomLabels, setBottomLabels] = useState(() => ({
@@ -177,20 +201,16 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       const stringIndex = note.position.string - 1;
       if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
 
-      console.log(`String ${note.position.string}: fret=${note.position.fret}, finger=${note.annotation?.finger}, tone=${note.annotation?.tone}, currentLabelType=${currentLabelType}`);
 
       // Controlla se la corda è muta in modo più robusto
       const isMuted = note.position.fret === -1 || 
                       note.annotation?.finger?.toString().toLowerCase() === 'x';
-      
-      console.log(`String ${note.position.string}: isMuted=${isMuted}`);
 
       if (isMuted) {
         if (currentLabelType === 'finger') {
           labels[stringIndex] = 'X';
         } else if (currentLabelType === 'tone') {
           labels[stringIndex] = ''; // Stringa vuota per i toni delle corde mute
-          console.log(`String ${note.position.string} (muted, tone): setting label to ""`);
         } else if (currentLabelType === 'interval') {
           labels[stringIndex] = ''; // Stringa vuota anche per gli intervalli (o 'X' se preferito)
         } else { // Include 'none' o qualsiasi altro tipo non gestito esplicitamente
@@ -205,9 +225,6 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
         // Se labelContent è null (es. per 'none' o se l'annotazione manca), usa uno spazio.
         // Se è una stringa vuota (es. per un tono/intervallo che è intenzionalmente vuoto ma non muto), mantienila.
         labels[stringIndex] = labelContent === null ? ' ' : labelContent;
-        if (currentLabelType === 'tone') {
-          console.log(`String ${note.position.string} (NOT muted, tone): raw tone='${note.annotation?.tone}', setting label to '${labels[stringIndex]}'`);
-        }
       }
     });
     return labels;
@@ -262,7 +279,17 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   // All variables that depend on positionToDisplay being non-null and are used in JSX
   // should be defined after this null check, or ensure they have defaults.
   return (
-  <div className="flex flex-col items-center w-full">
+  <div className="relative flex flex-col items-center w-full"> {/* Added relative for positioning export button */}
+    {/* Export Button */}
+    <button
+      onClick={exportToPng}
+      title="Export as PNG"
+      className="absolute top-2 right-2 z-20 p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+      </svg>
+    </button>
     {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
     {propBottomLabels === undefined && (
       <div className="flex gap-2 mb-2">
@@ -278,10 +305,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
           transition: 'margin-left 0.2s ease-in-out'
         }}
       >
-        {/* Chord Info Section */}
-        <div className="w-full flex justify-start mb-2"> {/* Added flex and justify-center */}
-          <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
-            <ChordInfo
+        {/* Area to be exported to PNG - assign ref here */}
+        <div ref={diagramRef} className="w-full flex flex-col items-center bg-white rounded-lg shadow-md"> {/* Removed p-4, Added bg-white for defined export background */}
+          {/* Chord Info Section - Moved inside export area */}
+          <div className="w-full flex justify-start mb-2">
+            <div className="w-full max-w-[600px] px-4">
+              <ChordInfo
               data={data}
               name={data.name}
               intervals={data.theory?.formula?.split(' ') || []}
@@ -293,15 +322,15 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
             />
           </div>
         </div>
-        {/* Diagram Section */}
-        <div
-          className={`chord-diagram relative ${className || ''} order-2`}
-          style={{
-            width: diagramWidth,
-            height: diagramHeight,
-            marginLeft: '-25px'
-          }}
-        >
+          {/* Diagram Section - Now directly inside the diagramRef div */}
+          <div
+            className={`chord-diagram-svg-container relative ${className || ''}`}
+            style={{
+              width: diagramWidth,
+              height: diagramHeight,
+              // marginLeft: '-25px' // Consider if this is still needed or handled by parent
+            }}
+          >
           <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
             <svg
               ref={ref}
@@ -344,7 +373,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
               </g>
             </svg>
           </div>
-        </div>
+          </div>
+        </div> {/* Closes diagramRef div */}
       </div>
     </div>
   );

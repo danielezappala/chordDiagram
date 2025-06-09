@@ -197,8 +197,8 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   const y = paddedHeight + 16 + rowIdx * 24;
   return (
     <g key={`bottom-label-row-${row.key}`}>
-      {/* Label a sinistra stile badge */}
-      <foreignObject
+      {/* Label a sinistra stile badge - Commentato per migliorare l'eleganza */}
+      {/* <foreignObject
         x={labelX}
         y={y - 15}
         width={60}
@@ -206,12 +206,15 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
         style={{overflow: 'visible'}}
       >
         <div
-          className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
-          style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
         >
-          {leftLabel}
-        </div>
-      </foreignObject>
+          <div
+            className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
+            style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
+          >
+            {leftLabel}
+          </div>
+        </foreignObject>
+      */}
       {/* Celle della riga */}
       {Array.from({ length: numStrings }, (_, j) => {
         const stringIndex = j;

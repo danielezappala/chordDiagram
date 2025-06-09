@@ -123,8 +123,8 @@ const ChordTestPage = (): JSX.Element => {
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
-  const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']);
-  const [showTuningEditor, setShowTuningEditor] = useState(false);
+  // const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']); // Removed as Tuning is now hardcoded in chord data
+  // const [showTuningEditor, setShowTuningEditor] = useState(false); // Removed
   const [numFrets, setNumFrets] = useState<number>(5);
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
   const [bottomLabels, setBottomLabels] = useState({
@@ -164,16 +164,7 @@ const ChordTestPage = (): JSX.Element => {
     if (selectedChord) {
       const newNumStrings = detectNumStrings(selectedChord);
       setNumStrings(newNumStrings);
-
-      let defaultTuningForStrings: string[];
-      if (typeof selectedChord.tuning === 'object' && selectedChord.tuning !== null && !Array.isArray(selectedChord.tuning) && 'notes' in selectedChord.tuning) {
-        defaultTuningForStrings = selectedChord.tuning.notes;
-      } else if (Array.isArray(selectedChord.tuning)) {
-        defaultTuningForStrings = selectedChord.tuning;
-      } else {
-        defaultTuningForStrings = getStandardTuning(newNumStrings);
-      }
-      setCustomTuning(defaultTuningForStrings);
+      // setCustomTuning is removed as tuning is now part of selectedChord data
     }
   }, [selectedChord, detectNumStrings]);
 
@@ -324,48 +315,7 @@ const ChordTestPage = (): JSX.Element => {
                 </div>
               </div>
 
-              <div className="mt-6">
-                <h3 className="text-lg font-medium mb-3">Tuning</h3>
-                <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-inner">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="font-semibold text-lg">{[...customTuning].reverse().join(' ')}</span>
-                    <button
-                      onClick={() => setShowTuningEditor(!showTuningEditor)}
-                      className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1 px-3 rounded-md text-sm transition duration-200"
-                    >
-                      {showTuningEditor ? 'Done' : 'Edit'}
-                    </button>
-                  </div>
-                  {showTuningEditor && (
-                    <div className="mt-3 space-y-3">
-                      <div className={`grid grid-cols-${Math.max(1, numStrings)} gap-2`}>
-                        {[...customTuning].reverse().map((currentStringNote, stringIdx) => (
-                          <select
-                            key={stringIdx}
-                            value={currentStringNote}
-                            onChange={(e) => {
-                              const newTuningReversed = [...customTuning].reverse();
-                              newTuningReversed[stringIdx] = e.target.value;
-                              setCustomTuning(newTuningReversed.reverse());
-                            }}
-                            className="p-2 border border-gray-300 rounded-md text-center text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                          >
-                            {['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'].map((note) => (
-                              <option key={note} value={note}>{note}</option>
-                            ))}
-                          </select>
-                        ))}
-                      </div>
-                      <button
-                        onClick={() => setCustomTuning(getStandardTuning(numStrings))}
-                        className="text-sm text-blue-500 hover:text-blue-700 transition duration-200"
-                      >
-                        Reset to Standard Tuning ({numStrings} strings)
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Tuning UI section removed as per request - Lines 326-367 */}
             </div>
           </div>
         </div>
@@ -389,16 +339,16 @@ const ChordTestPage = (): JSX.Element => {
             padding: '1.5rem'
           }}>
             <ChordDiagram
-              key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + customTuning.join(',') + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels)}
+              key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(selectedChord.tuning) ? selectedChord.tuning.join(',') : (typeof selectedChord.tuning === 'object' && selectedChord.tuning && 'notes' in selectedChord.tuning && Array.isArray(selectedChord.tuning.notes) ? selectedChord.tuning.notes.join(',') : ''))}
               data={selectedChord}
               numFrets={numFrets}
               width={diagramSize.width}
               height={diagramSize.height}
               labelType={labelType}
               showFretNumbers={showFretNumbers}
-              tuning={customTuning}
+              // tuning={customTuning} // Removed, ChordDiagram will use selectedChord.tuning
               bottomLabels={bottomLabels}
-              className="border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 shadow-inner flex-none"
+              className=""
             />
           </div> {/* Closes inner styled div for ChordDiagram */}
         </div> {/* Closes center section div containing ChordDiagram */}

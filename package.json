@@ -38,6 +38,7 @@
     "url": "https://github.com/danielezappala/chord-diagram-library/issues"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "tailwind-scrollbar": "^3.0.5",
     "zod": "^3.25.28"
   },
@@ -64,6 +65,7 @@
   "devDependencies": {
     "@eslint/js": "^8.56.0",
     "@tailwindcss/forms": "^0.5.7",
+    "@types/html2canvas": "^0.5.35",
     "@types/node": "^22.15.29",
     "@types/react": "^18.2.70",
     "@types/react-dom": "^18.2.19",
