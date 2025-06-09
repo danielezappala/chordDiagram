@@ -120,7 +120,8 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
       tone: note?.annotation?.tone || '',
       interval: note?.annotation?.interval || '',
       tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : '',
-      isMuted: !note || note.position == null || note.position.fret == null
+      isMuted: !note || note.position == null || note.position.fret == null, // General check if note data is valid
+      isExplicitlyMuted: note ? (note.position.fret === -1 || note.annotation?.finger?.toString().toLowerCase() === 'x') : false // Specific check for muted strings (X or fret -1)
     };
   };
 
@@ -167,21 +168,21 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
               if (bottomLabels.showFingers) {
                 bottomLabelRows.push({
                   key: 'finger',
-                  getValue: info => info.isMuted ? 'X' : (info.finger || ''),
+                  getValue: info => info.isExplicitlyMuted ? 'X' : (info.finger || ''),
                   colorClass: 'text-blue-600 font-medium'
                 });
               }
               if (bottomLabels.showTones) {
                 bottomLabelRows.push({
                   key: 'tone',
-                  getValue: info => info.isMuted ? 'X' : (info.tone || info.tuningNote || ''),
+                  getValue: info => info.isExplicitlyMuted ? '' : (info.tone || info.tuningNote || ''),
                   colorClass: 'text-gray-900 font-semibold'
                 });
               }
               if (bottomLabels.showIntervals) {
                 bottomLabelRows.push({
                   key: 'interval',
-                  getValue: info => info.isMuted ? 'X' : (info.interval || ''),
+                  getValue: info => info.isExplicitlyMuted ? '' : (info.interval || ''),
                   colorClass: 'text-purple-700 font-medium'
                 });
               }

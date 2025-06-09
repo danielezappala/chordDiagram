@@ -177,14 +177,37 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       const stringIndex = note.position.string - 1;
       if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
 
-      if (note.position.fret === -1) {
-        labels[stringIndex] = 'X';
+      console.log(`String ${note.position.string}: fret=${note.position.fret}, finger=${note.annotation?.finger}, tone=${note.annotation?.tone}, currentLabelType=${currentLabelType}`);
+
+      // Controlla se la corda è muta in modo più robusto
+      const isMuted = note.position.fret === -1 || 
+                      note.annotation?.finger?.toString().toLowerCase() === 'x';
+      
+      console.log(`String ${note.position.string}: isMuted=${isMuted}`);
+
+      if (isMuted) {
+        if (currentLabelType === 'finger') {
+          labels[stringIndex] = 'X';
+        } else if (currentLabelType === 'tone') {
+          labels[stringIndex] = ''; // Stringa vuota per i toni delle corde mute
+          console.log(`String ${note.position.string} (muted, tone): setting label to ""`);
+        } else if (currentLabelType === 'interval') {
+          labels[stringIndex] = ''; // Stringa vuota anche per gli intervalli (o 'X' se preferito)
+        } else { // Include 'none' o qualsiasi altro tipo non gestito esplicitamente
+          labels[stringIndex] = 'X';
+        }
       } else {
         let labelContent: string | null = null;
         if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
         else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
         else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
-        labels[stringIndex] = labelContent ?? ' ';
+        
+        // Se labelContent è null (es. per 'none' o se l'annotazione manca), usa uno spazio.
+        // Se è una stringa vuota (es. per un tono/intervallo che è intenzionalmente vuoto ma non muto), mantienila.
+        labels[stringIndex] = labelContent === null ? ' ' : labelContent;
+        if (currentLabelType === 'tone') {
+          console.log(`String ${note.position.string} (NOT muted, tone): raw tone='${note.annotation?.tone}', setting label to '${labels[stringIndex]}'`);
+        }
       }
     });
     return labels;
@@ -192,7 +215,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   
   // Layout calculations
   const CONTENT_MIN_WIDTH = 200;
-  const CONTENT_MIN_HEIGHT = 300;
+  const CONTENT_MIN_HEIGHT = 250;
   const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
 
   // Start with dimensions from props or defaults
@@ -217,12 +240,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   const diagramHeight = calculatedHeight;
 
   // Calculate dimensions and padding
-  const sidePadding = 40;
-  const topPadding = 30;
-  const bottomPadding = 40;
+  const sidePadding = 90;
+  const topPadding = 80;
+  const bottomPadding = 80;
 
-  const horizontalOffset = -Math.min(diagramWidth * 0.5, 80);
-  const paddedWidth = diagramWidth - sidePadding * 1;
+  const horizontalOffset = -Math.min(diagramWidth * 0.5, 0);
+  const paddedWidth = diagramWidth - sidePadding * 1.7;
   const paddedHeight = diagramHeight - topPadding - bottomPadding;
   
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
@@ -256,7 +279,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
         }}
       >
         {/* Chord Info Section */}
-        <div className="w-full flex justify-center mb-2"> {/* Added flex and justify-center */}
+        <div className="w-full flex justify-start mb-2"> {/* Added flex and justify-center */}
           <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
             <ChordInfo
               data={data}
@@ -264,7 +287,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
               intervals={data.theory?.formula?.split(' ') || []}
               playedNotes={data.theory?.chordTones || []}
               showFormula={true}
-              className="text-center"
+              className=""
               instrument={data.instrument || ''}
               tuning={derivedActualTuning}
             />
