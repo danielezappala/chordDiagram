@@ -14,6 +14,8 @@ const testChords: ChordDiagramData[] = [
   {
     name: 'C Major (Open) v2',
     instrument: 'guitar',
+    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
+    display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
     positions: [
       {
         baseFret: 1,
@@ -28,13 +30,13 @@ const testChords: ChordDiagramData[] = [
         barres: []
       }
     ],
-    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-    display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
   {
     name: 'F Major (Barre) v2',
     instrument: 'guitar',
+    theory: { chordTones: ['F', 'A', 'C'], formula: 'R 3 5' },
+    display: { labelType: 'finger' },
     positions: [
       {
         baseFret: 1,
@@ -49,13 +51,13 @@ const testChords: ChordDiagramData[] = [
         barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }]
       }
     ],
-    theory: { chordTones: ['F', 'A', 'C'], formula: 'R 3 5' },
-    display: { labelType: 'finger' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
   {
     name: 'E7 (Open) v2',
     instrument: 'guitar',
+    theory: { chordTones: ['E', 'G#', 'B', 'D'], formula: 'R 3 5 m7' },
+    display: { labelType: 'interval' },
     positions: [
       {
         baseFret: 1,
@@ -70,13 +72,13 @@ const testChords: ChordDiagramData[] = [
         barres: []
       }
     ],
-    theory: { chordTones: ['E', 'G#', 'B', 'D'], formula: 'R 3 5 m7' },
-    display: { labelType: 'interval' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
   },
   {
     name: 'G Major (Barre @3rd)',
     instrument: 'guitar',
+    theory: { chordTones: ['G', 'B', 'D'], formula: 'R 3 5' },
+    display: { labelType: 'finger' },
     positions: [
       {
         baseFret: 3,
@@ -92,13 +94,13 @@ const testChords: ChordDiagramData[] = [
         barres: [{ fromString: 1, toString: 6, fret: 3, finger: 1 }]
       }
     ],
-    theory: { chordTones: ['G', 'B', 'D'], formula: 'R 3 5' },
-    display: { labelType: 'finger' },
     tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // Low E to High E
   },
   {
     name: 'C Major (Ukulele)',
     instrument: 'ukulele',
+    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
+    display: { labelType: 'tone' },
     positions: [
       {
         baseFret: 1,
@@ -112,8 +114,6 @@ const testChords: ChordDiagramData[] = [
         barres: []
       }
     ],
-    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-    display: { labelType: 'tone' },
     tuning: ['G', 'C', 'E', 'A'] // GCEA standard Ukulele tuning (string 4 to string 1)
   }
 ];
