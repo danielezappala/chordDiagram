@@ -87,9 +87,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       if (diagramRef.current) {
         try {
           const canvas = await html2canvas(diagramRef.current, {
-            backgroundColor: null, // Transparent background if diagram elements don't have one
             useCORS: true,
-            scale: 2, // Higher resolution
+            scale: 1, // Natural scale
           });
           const image = canvas.toDataURL('image/png');
           const link = document.createElement('a');
@@ -103,6 +102,35 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
         }
       }
     }, [data.name]);
+
+    const copyImageToClipboard = useCallback(async () => {
+      if (diagramRef.current) {
+        try {
+          const canvas = await html2canvas(diagramRef.current, {
+            useCORS: true,
+            scale: 1, // Natural scale
+          });
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              try {
+                await navigator.clipboard.write([
+                  new ClipboardItem({ 'image/png': blob })
+                ]);
+                alert('Image copied to clipboard!'); // Consider a more subtle notification
+              } catch (err) {
+                console.error('Failed to copy image to clipboard: ', err);
+                alert('Failed to copy image. See console for details.');
+              }
+            } else {
+              throw new Error('Canvas toBlob returned null');
+            }
+          }, 'image/png');
+        } catch (error) {
+          console.error('Error preparing image for clipboard:', error);
+          alert('Error preparing image for clipboard. See console for details.');
+        }
+      }
+    }, []);
 
 
     // Local state for bottomLabels if not provided by props
@@ -257,7 +285,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   const diagramHeight = calculatedHeight;
 
   // Calculate dimensions and padding
-  const sidePadding = 90;
+  const sidePadding = 80;
   const topPadding = 80;
   const bottomPadding = 80;
 
@@ -276,20 +304,34 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
     return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
   }
 
-  // All variables that depend on positionToDisplay being non-null and are used in JSX
-  // should be defined after this null check, or ensure they have defaults.
   return (
-  <div className="relative flex flex-col items-center w-full"> {/* Added relative for positioning export button */}
-    {/* Export Button */}
-    <button
-      onClick={exportToPng}
-      title="Export as PNG"
-      className="absolute top-2 right-2 z-20 p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-      </svg>
-    </button>
+    <div className="relative flex flex-col items-center w-full"> {/* Added relative for positioning export button */}
+    {/* Action Buttons Container */}
+    <div className="absolute top-2 right-2 z-20 flex space-x-2">
+      {/* Copy Button */}
+      <button
+        onClick={copyImageToClipboard}
+        title="Copy Image to Clipboard"
+        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+      {/* Export Button */}
+      <button
+        onClick={exportToPng}
+        title="Export as PNG"
+        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </button>
+    </div>
     {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
     {propBottomLabels === undefined && (
       <div className="flex gap-2 mb-2">
@@ -308,10 +350,9 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
         {/* Area to be exported to PNG - assign ref here */}
         <div ref={diagramRef} className="w-full flex flex-col items-center bg-white rounded-lg shadow-md"> {/* Removed p-4, Added bg-white for defined export background */}
           {/* Chord Info Section - Moved inside export area */}
-          <div className="w-full flex justify-start mb-2">
+          <div className="w-full flex justify-start mt-4 mb-2">
             <div className="w-full max-w-[600px] px-4">
               <ChordInfo
-              data={data}
               name={data.name}
               intervals={data.theory?.formula?.split(' ') || []}
               playedNotes={data.theory?.chordTones || []}
