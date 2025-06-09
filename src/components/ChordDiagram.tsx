@@ -38,6 +38,12 @@ interface ChordDiagramProps {
     showTones?: boolean;
     showIntervals?: boolean;
   };
+  chordInfoVisibility?: { // Object to control visibility of individual ChordInfo sections
+    showInstrument?: boolean;
+    showTuning?: boolean;
+    showChordTones?: boolean;
+    showIntervals?: boolean;
+  };
 }
 
 const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
@@ -360,6 +366,10 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
               className=""
               instrument={data.instrument || ''}
               tuning={derivedActualTuning}
+              showInstrument={props.chordInfoVisibility?.showInstrument}
+              showTuning={props.chordInfoVisibility?.showTuning}
+              showChordTones={props.chordInfoVisibility?.showChordTones}
+              showIntervals={props.chordInfoVisibility?.showIntervals}
             />
           </div>
         </div>

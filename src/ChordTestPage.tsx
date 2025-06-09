@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
@@ -123,10 +123,16 @@ const ChordTestPage = (): JSX.Element => {
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
-  // const [customTuning, setCustomTuning] = useState<string[]>(['E', 'A', 'D', 'G', 'B', 'E']); // Removed as Tuning is now hardcoded in chord data
-  // const [showTuningEditor, setShowTuningEditor] = useState(false); // Removed
+  const [dataToDisplay, setDataToDisplay] = useState<string>('');
+  const [jsonToCopy, setJsonToCopy] = useState<string>(''); // State to hold the JSON string for copying
   const [numFrets, setNumFrets] = useState<number>(5);
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
+  const [chordInfoVisibility, setChordInfoVisibility] = useState({
+    showInstrument: true,
+    showTuning: true,
+    showChordTones: true,
+    showIntervals: true,
+  });
   const [bottomLabels, setBottomLabels] = useState({
     showFingers: false,
     showTones: true,
@@ -135,6 +141,13 @@ const ChordTestPage = (): JSX.Element => {
 
   const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
     setBottomLabels(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const handleToggleChordInfoVisibility = (key: keyof typeof chordInfoVisibility) => {
+    setChordInfoVisibility(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
@@ -164,7 +177,13 @@ const ChordTestPage = (): JSX.Element => {
     if (selectedChord) {
       const newNumStrings = detectNumStrings(selectedChord);
       setNumStrings(newNumStrings);
-      // setCustomTuning is removed as tuning is now part of selectedChord data
+
+      // Prepare ordered data for display and copying
+      const { name, instrument, tuning, ...rest } = selectedChord;
+      const orderedDisplay = { name, instrument, tuning, ...rest };
+      const jsonString = JSON.stringify(orderedDisplay, null, 2);
+      setDataToDisplay(jsonString);
+      setJsonToCopy(jsonString);
     }
   }, [selectedChord, detectNumStrings]);
 
@@ -180,12 +199,14 @@ const ChordTestPage = (): JSX.Element => {
     return <div>No chord selected or no chords available.</div>;
   }
 
+
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4">
       <h1 className="text-3xl font-extrabold mb-8 text-center">Chord Diagram Tester</h1>
 
       {/* Main layout using CSS Grid: Left UI (2) | Diagram (2) | Raw Data (1) --> total 5 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 items-stretch h-full">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start h-full"> {/* Reduced gap slightly */} 
 
         {/* Left Section: All UI Controls (Chord Settings, Display & Tuning) */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2">
@@ -249,6 +270,24 @@ const ChordTestPage = (): JSX.Element => {
                         onChange={() => setLabelType(type)}
                       />
                       {type.charAt(0).toUpperCase() + type.slice(1)}
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+
+              <div className="mb-6">
+                <h4 className="font-medium mb-2">Chord Info Details</h4>
+                <div className="flex flex-col gap-3 bg-gray-100 dark:bg-gray-700 rounded-lg p-4 shadow-inner">
+                  {(Object.keys(chordInfoVisibility) as Array<keyof typeof chordInfoVisibility>).map((key) => (
+                    <label key={key} className="flex items-center gap-3 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={chordInfoVisibility[key]}
+                        onChange={() => handleToggleChordInfoVisibility(key)}
+                        className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
+                      />
+                      <span className="font-medium">{key.replace('show', '')}</span>
                     </label>
                   ))}
                 </div>
@@ -348,18 +387,42 @@ const ChordTestPage = (): JSX.Element => {
               showFretNumbers={showFretNumbers}
               // tuning={customTuning} // Removed, ChordDiagram will use selectedChord.tuning
               bottomLabels={bottomLabels}
+              chordInfoVisibility={chordInfoVisibility} // Pass new object prop
               className=""
             />
           </div> {/* Closes inner styled div for ChordDiagram */}
         </div> {/* Closes center section div containing ChordDiagram */}
-        {/* Right Section: Raw Data (Occupies 1 column) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 flex flex-col lg:col-span-1">
-          <h2 className="text-xl font-semibold mb-4">Selected Chord Data (Raw):</h2>
+        {/* Right Section: Raw Chord Data */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2 overflow-auto max-h-[calc(100vh-12rem)] relative">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Raw Chord Data</h2>
+            <button
+              onClick={() => {
+                if (jsonToCopy) {
+                  navigator.clipboard.writeText(jsonToCopy)
+                    .then(() => alert('JSON data copied to clipboard!'))
+                    .catch(err => {
+                      console.error('Failed to copy JSON: ', err);
+                      alert('Failed to copy JSON. See console for details.');
+                    });
+                } else {
+                  alert('No JSON data to copy.');
+                }
+              }}
+              title="Copy JSON to Clipboard"
+              className="p-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            </button>
+          </div>
           <pre className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto text-sm border border-gray-200 dark:border-gray-600 flex-grow">
-            {JSON.stringify(selectedChord, null, 2)}
+            {dataToDisplay}
           </pre>
+        </div>
       </div>
-    </div>
     </div>
   );
 };
