@@ -57,14 +57,18 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
     ].filter(Boolean).length;
   }, [bottomLabels]);
 
-  // Calculate height needed for bottom labels
-  const bottomLabelsHeight = useMemo(() => {
-    return bottomRowsCount > 0 ? bottomRowsCount * 20 + 8 : 0; // 20px per row plus padding
-  }, [bottomRowsCount]);
+  // Define constants for bottom label area calculation
+  const MAX_BOTTOM_LABEL_ROWS = 3; // Maximum number of label rows (e.g., Fingers, Tones, Intervals)
+  const HEIGHT_PER_BOTTOM_LABEL_ROW = 20; // Effective height in pixels for the text of each label row
+  const PADDING_FOR_BOTTOM_LABEL_BLOCK = 8; // Overall padding in pixels for the entire block of labels
 
-  // Allocate space for bottom labels
-  const labelAreaHeight = bottomLabelsHeight > 0 ? bottomLabelsHeight : 30; // Minimum 30px even with no rows
-  const paddedHeight = height - labelAreaHeight;
+  // Calculate a fixed height to reserve for the bottom labels area.
+  // This accommodates the maximum number of rows, ensuring the fretboard drawing area above remains constant.
+  const reservedLabelAreaHeight = (MAX_BOTTOM_LABEL_ROWS * HEIGHT_PER_BOTTOM_LABEL_ROW) + PADDING_FOR_BOTTOM_LABEL_BLOCK;
+
+  // paddedHeight is the height available for drawing the fret lines and fret numbers.
+  // It's derived by subtracting the fixed reserved space for labels from the total available height.
+  const paddedHeight = height - reservedLabelAreaHeight;
   
   const stringSpacing = width / (numStrings - 1);
   const fretSpacing = paddedHeight / (numFrets + 1); // +1 for the nut area

@@ -91,6 +91,10 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
 
     const exportToPng = useCallback(async () => {
       if (diagramRef.current) {
+        // Temporarily force background for html2canvas
+        const originalBackgroundColor = diagramRef.current.style.backgroundColor;
+        diagramRef.current.style.backgroundColor = '#ffffff'; // Force white
+
         try {
           const canvas = await html2canvas(diagramRef.current, {
             useCORS: true,
@@ -111,12 +115,18 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
           document.body.removeChild(link);
         } catch (error) {
           console.error('Error exporting to PNG:', error);
+        } finally {
+          diagramRef.current.style.backgroundColor = originalBackgroundColor; // Restore original background
         }
       }
     }, [data.name]);
 
     const copyImageToClipboard = useCallback(async () => {
       if (diagramRef.current) {
+        // Temporarily force background for html2canvas
+        const originalBackgroundColor = diagramRef.current.style.backgroundColor;
+        diagramRef.current.style.backgroundColor = '#ffffff'; // Force white
+
         try {
           const canvas = await html2canvas(diagramRef.current, {
             useCORS: true,
@@ -146,6 +156,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
         } catch (error) {
           console.error('Error preparing image for clipboard:', error);
           alert('Error preparing image for clipboard. See console for details.');
+        } finally {
+          diagramRef.current.style.backgroundColor = originalBackgroundColor; // Restore original background
         }
       }
     }, []);
