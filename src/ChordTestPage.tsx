@@ -205,11 +205,11 @@ const ChordTestPage = (): JSX.Element => {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4">
       <h1 className="text-3xl font-extrabold mb-8 text-center">Chord Diagram Tester</h1>
 
-      {/* Main layout using CSS Grid: Left UI (2) | Diagram (2) | Raw Data (1) --> total 5 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start h-full"> {/* Reduced gap slightly */} 
+      {/* Main layout using CSS Grid: Left UI (2/4) | Diagram (1/4) | Raw Data (1/4) --> total 4 columns */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-stretch h-full">
 
         {/* Left Section: All UI Controls (Chord Settings, Display & Tuning) */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2 h-full">
           <h2 className="text-xl font-semibold mb-4">Controls</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -253,10 +253,8 @@ const ChordTestPage = (): JSX.Element => {
                   <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${showFretNumbers ? 'translate-x-6' : 'translate-x-1'}`}/>
                 </button>
               </div>
-            </div>
 
-            <div>
-              <h3 className="text-lg font-medium mb-3">Display Options</h3>
+              {/* Moved Note Label Type Here */}
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Note Label Type</h4>
                 <div className="space-y-2">
@@ -274,7 +272,11 @@ const ChordTestPage = (): JSX.Element => {
                   ))}
                 </div>
               </div>
+            </div>
 
+            <div>
+              <h3 className="text-lg font-medium mb-3">Display Options</h3>
+              {/* Note Label Type was here, now moved to the first column */}
 
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Chord Info Details</h4>
@@ -359,8 +361,8 @@ const ChordTestPage = (): JSX.Element => {
           </div>
         </div>
 
-        {/* Center Section: Chord Diagram (Occupies 2 columns) */}
-        <div className="flex flex-col justify-start items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2 min-h-[350px]">
+        {/* Center Section: Chord Diagram (Occupies 1 column) */}
+        <div className="flex flex-col justify-start items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-1 min-h-[350px] h-full">
           <h2 className="text-xl font-semibold mb-4 text-center">Chord Diagram</h2>
           <div style={{
             position: 'relative',
@@ -392,8 +394,8 @@ const ChordTestPage = (): JSX.Element => {
             />
           </div> {/* Closes inner styled div for ChordDiagram */}
         </div> {/* Closes center section div containing ChordDiagram */}
-        {/* Right Section: Raw Chord Data */}
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-2 overflow-auto max-h-[calc(100vh-12rem)] relative">
+        {/* Right Section: Raw Data (Occupies 1 column) */}
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-1 overflow-auto max-h-[calc(100vh-12rem)] relative h-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Raw Chord Data</h2>
             <button
