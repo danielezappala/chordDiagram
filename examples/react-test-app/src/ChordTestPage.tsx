@@ -358,23 +358,8 @@ const ChordTestPage = (): JSX.Element => {
 
         {/* Center Section: Chord Diagram (Occupies 1 column) */}
         <div className="flex flex-col justify-start items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-1 min-h-[350px] h-full">
-          <h2 className="text-xl font-semibold mb-4 text-center">Chord Diagram</h2>
-          <div style={{
-            position: 'relative',
-            width: '100%',
-            height: '100%',
-            maxWidth: '348px',
-            maxHeight: '748px',
-            minWidth: '150px',
-            minHeight: '300px',
-            margin: '0 auto',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            padding: '1.5rem'
-          }}>
-            <ChordDiagram
+          <div className="flex flex-col items-center w-full h-full">
+  <ChordDiagram
               key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(selectedChord.tuning) ? selectedChord.tuning.join(',') : (typeof selectedChord.tuning === 'object' && selectedChord.tuning && 'notes' in selectedChord.tuning && Array.isArray(selectedChord.tuning.notes) ? selectedChord.tuning.notes.join(',') : ''))}
               data={selectedChord}
               numFrets={numFrets}
