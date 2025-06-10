@@ -335,14 +335,14 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   }
 
   return (
-    <div className="relative flex flex-col items-center w-full"> {/* Added relative for positioning export button */}
+    <div className="relative flex flex-col items-center w-full"> 
     {/* Action Buttons Container */}
-    <div className="absolute top-2 right-2 z-20 flex space-x-2">
+    <div className="absolute top-4 right-8 z-20 flex space-x-3 mb-4">
       {/* Copy Button */}
       <button
         onClick={copyImageToClipboard}
         title="Copy Image to Clipboard"
-        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
+        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -353,7 +353,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       <button
         onClick={exportToPng}
         title="Export as PNG"
-        className="p-1 bg-gray-200 hover:bg-gray-300 rounded-full text-gray-700 shadow"
+        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>

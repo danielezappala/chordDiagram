@@ -1,4 +1,5 @@
-import React, { MouseEvent, CSSProperties } from 'react';
+import React from 'react';
+import type { MouseEvent, CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 import type { Barre, PositionedNote } from '../types'; // Barre is v2. PositionedNote replaces ProcessedLayerNote.
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import type { CSSProperties, ReactNode } from 'react';
 
 export type FretNumberPosition = 'left' | 'right' | 'none';
@@ -49,13 +49,6 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
 }) => {
   // Calculate dimensions with padding for labels
   // Bottom label row calculations - determine how many rows to show
-  const bottomRowsCount = useMemo(() => {
-    return [
-      bottomLabels?.showFingers, 
-      bottomLabels?.showTones, 
-      bottomLabels?.showIntervals
-    ].filter(Boolean).length;
-  }, [bottomLabels]);
 
   // Define constants for bottom label area calculation
   const MAX_BOTTOM_LABEL_ROWS = 3; // Maximum number of label rows (e.g., Fingers, Tones, Intervals)
@@ -191,57 +184,50 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
                 });
               }
               return bottomLabelRows.map((row, rowIdx) => {
-  // Determina la label a sinistra
-  let leftLabel = '';
-  if (row.key === 'finger') leftLabel = 'Fingers';
-  if (row.key === 'tone') leftLabel = 'Tones';
-  if (row.key === 'interval') leftLabel = 'Intervals';
-  // Posizione label a sinistra
-  const labelX = -80; // Allineato più a sinistra
-  const y = paddedHeight + 16 + rowIdx * 24;
-  return (
-    <g key={`bottom-label-row-${row.key}`}>
-      {/* Label a sinistra stile badge - Commentato per migliorare l'eleganza */}
-      {/* <foreignObject
-        x={labelX}
-        y={y - 15}
-        width={60}
-        height={18}
-        style={{overflow: 'visible'}}
-      >
-        <div
-        >
-          <div
-            className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
-            style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
-          >
-            {leftLabel}
-          </div>
-        </foreignObject>
-      */}
-      {/* Celle della riga */}
-      {Array.from({ length: numStrings }, (_, j) => {
-        const stringIndex = j;
-        const stringX = j * stringSpacing;
-        const info = getStringInfo(stringIndex, numStrings);
-        const displayValue = row.getValue(info);
-        return (
-          <text
-            key={`bottom-label-${row.key}-${j}`}
-            x={stringX}
-            y={y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="12"
-            className={info.isMuted ? 'text-gray-400' : row.colorClass}
-          >
-            {displayValue || ''}
-          </text>
-        );
-      })}
-    </g>
-  );
-});
+                const y = paddedHeight + 16 + rowIdx * 24;
+                return (
+                  <g key={`bottom-label-row-${row.key}`}>
+                    {/* Label a sinistra stile badge - Commentato per migliorare l'eleganza */}
+                    {/* <foreignObject
+                      x={labelX}
+                      y={y - 15}
+                      width={60}
+                      height={18}
+                      style={{overflow: 'visible'}}
+                    >
+                      <div
+                      >
+                        <div
+                          className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
+                          style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
+                        >
+                          {leftLabel}
+                        </div>
+                      </foreignObject>
+                    */}
+                    {/* Celle della riga */}
+                    {Array.from({ length: numStrings }, (_, j) => {
+                      const stringIndex = j;
+                      const stringX = j * stringSpacing;
+                      const info = getStringInfo(stringIndex, numStrings);
+                      const displayValue = row.getValue(info);
+                      return (
+                        <text
+                          key={`bottom-label-${row.key}-${j}`}
+                          x={stringX}
+                          y={y}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize="12"
+                          className={info.isMuted ? 'text-gray-400' : row.colorClass}
+                        >
+                          {displayValue || ''}
+                        </text>
+                      );
+                    })}
+                  </g>
+                );
+              });
             })()}
             {/* --- END PATCH --- */}
           </g>

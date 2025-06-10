@@ -2,71 +2,136 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* Base styles */
+@layer base {
+  html {
+    @apply antialiased text-gray-900 bg-white;
   }
-  a:hover {
-    color: #747bff;
+  
+  .dark {
+    @apply text-gray-100 bg-gray-900;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  body {
+    @apply min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-400 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-500 dark:bg-gray-500;
+}
+
+/* Component styles */
+@layer components {
+  .chord-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0.25rem;
+  }
+.chord-pill {
+    min-width: 2.2em;
+    text-align: center;
+    padding-left: 0.6em;
+    padding-right: 0.6em;
+    display: inline-block;
+  }
+  .chord-pill:not(:last-child) {
+    margin-right: 0.5rem;
+  }
+  /* Chord diagram components */
+  .chord-diagram {
+    @apply relative inline-flex items-center justify-center;
+  }
+  
+  .chord-fretboard {
+    @apply stroke-current;
+    color: var(--chord-fret-color, currentColor);
+  }
+  
+  .chord-nut {
+    @apply stroke-current;
+    color: var(--chord-nut-color, currentColor);
+  }
+  
+  .chord-string {
+    @apply stroke-current;
+    color: var(--chord-string-color, currentColor);
+  }
+  
+  .chord-fret-marker {
+    @apply fill-current;
+    color: var(--chord-fret-marker-color, currentColor);
+  }
+  
+  .chord-note {
+    @apply fill-current transition-colors;
+    color: var(--chord-note-default-color, currentColor);
+  }
+  
+  .chord-note:hover {
+    color: var(--chord-note-muted-color, currentColor);
+  }
+  
+  .chord-barre {
+    @apply fill-current opacity-90;
+    color: var(--chord-barre-color, currentColor);
+  }
+  
+  .chord-finger-label {
+    @apply fill-current text-xs font-bold pointer-events-none;
+    color: var(--chord-finger-label-color, currentColor);
+  }
+  
+  /* Tooltip */
+  .tooltip {
+    @apply absolute z-50 px-3 py-2 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 invisible;
+    transition-property: opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+  
+  .tooltip-arrow {
+    @apply absolute w-2 h-2 bg-gray-900;
+    transform: rotate(45deg) translate(-50%, -50%);
+  }
+}
+
+/* Dark mode overrides */
+@layer utilities {
+  .dark .chord-fretboard {
+    @apply opacity-80;
+  }
+  
+  .dark .chord-nut {
+    @apply opacity-80;
+  }
+  
+  .dark .chord-string {
+    color: var(--chord-string-muted-color, currentColor);
+  }
+  
+  .dark .chord-fret-marker {
+    @apply opacity-60;
+  }
+  
+  .dark .chord-barre {
+    @apply opacity-90;
   }
 }
