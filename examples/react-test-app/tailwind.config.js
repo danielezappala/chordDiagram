@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
-const forms = require('@tailwindcss/forms');
+import forms from '@tailwindcss/forms';
 
-module.exports = {
+export default {
   darkMode: 'class',
   content: [
     "./index.html",

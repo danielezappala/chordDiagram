@@ -1,14 +1,9 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 
-function getStandardTuning(numStrings: number): string[] {
-  if (numStrings === 4) return ['E', 'A', 'D', 'G'];
-  if (numStrings === 5) return ['A', 'D', 'G', 'B', 'E'];
-  if (numStrings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
-  return ['E', 'A', 'D', 'G', 'B', 'E'];
-}
+
 
 const testChords: ChordDiagramData[] = [
   {
