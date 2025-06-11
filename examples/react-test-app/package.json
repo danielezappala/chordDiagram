@@ -7,8 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
-  },
+    "preview": "vite preview",
+    "test": "vitest"
+    },
   "dependencies": {
     "framer-motion": "^10.0.0",
     "music-chords-diagrams": "^0.1.0",

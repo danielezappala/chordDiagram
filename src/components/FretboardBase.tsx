@@ -123,7 +123,7 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   };
 
   return (
-    <g className={`fretboard-base ${className}`}>
+    <g className={`fretboard-base ${className}`} data-testid="fretboard-base">
       {/* Strings */}
       {Array.from({ length: numStrings }).map((_, i) => {
         // i is the visual index from left (0) to right (numStrings - 1)

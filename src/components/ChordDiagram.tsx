@@ -335,7 +335,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   }
 
   return (
-    <div className="relative flex flex-col items-center w-full"> 
+    <div className="relative flex flex-col items-center w-full" data-testid="chord-diagram"> 
     {/* Action Buttons Container */}
     <div className="absolute top-4 right-8 z-20 flex space-x-3 mb-4">
       {/* Copy Button */}
