@@ -1,4 +1,6 @@
 import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
+import ReactJson from 'react-json-view';
+import chordExamples from '../data/chord_examples.json';
 import html2canvas from 'html2canvas';
 import type {
   PositionedNote,
@@ -38,12 +40,20 @@ interface ChordDiagramProps {
     showTones?: boolean;
     showIntervals?: boolean;
   };
-  chordInfoVisibility?: { // Object to control visibility of individual ChordInfo sections
+  /**
+   * Se fornita, mostra il pulsante per copiare il JSON dell'accordo
+   */
+  onCopyJson?: (json: any) => void;
+  /**
+   * Object to control visibility of individual ChordInfo sections
+   */
+  chordInfoVisibility?: {
     showInstrument?: boolean;
     showTuning?: boolean;
     showChordTones?: boolean;
     showIntervals?: boolean;
   };
+
 }
 
 const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
@@ -335,39 +345,56 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
   }
 
   return (
-    <div className="relative flex flex-col items-center w-full" data-testid="chord-diagram"> 
-    {/* Action Buttons Container */}
-    <div className="absolute top-4 right-8 z-20 flex space-x-3 mb-4">
-      {/* Copy Button */}
-      <button
-        onClick={copyImageToClipboard}
-        title="Copy Image to Clipboard"
-        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-        </svg>
-      </button>
-      {/* Export Button */}
-      <button
-        onClick={exportToPng}
-        title="Export as PNG"
-        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-          <polyline points="7 10 12 15 17 10"></polyline>
-          <line x1="12" y1="15" x2="12" y2="3"></line>
-        </svg>
-      </button>
-    </div>
-    {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
-    {propBottomLabels === undefined && (
-      <div className="flex gap-2 mb-2">
-        <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showFingers ? 'bg-blue-200' : ''}`}>Fingers</button>
-        <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showTones ? 'bg-blue-200' : ''}`}>Tones</button>
-        <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showIntervals ? 'bg-blue-200' : ''}`}>Intervals</button>
+    <div>
+
+      {/* Resto della UI come prima */}
+      <div className={styles.diagramContainer}>
+        {/* Action Buttons Container */}
+        <div className={styles.actionButtonsContainer}>
+          {/* Copy Button */}
+          <button
+            onClick={copyImageToClipboard}
+            title="Copy Image to Clipboard"
+            className={`${styles.actionButton} chord-action-btn`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+          </button>
+          {/* Copy JSON Button (if enabled) */}
+          {props.onCopyJson && (
+            <button
+              onClick={() => props.onCopyJson && props.onCopyJson(editableData)}
+              title="Copia JSON accordo negli appunti"
+              className={`${styles.actionButton} chord-action-btn`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <polyline points="8 16 10.5 13.5 12.5 15.5 16 11"></polyline>
+              </svg>
+            </button>
+          )}
+          {/* Export Button */}
+          <button
+            onClick={exportToPng}
+            title="Export as PNG"
+            className={`${styles.actionButton} chord-action-btn`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+      {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
+      {propBottomLabels === undefined && (
+        <div className={styles.toggleButtonsContainer}>
+          <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`${styles.toggleButton} ${effectiveBottomLabels.showFingers ? styles.toggleButtonActive : ''}`}>Fingers</button>
+        <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`${styles.toggleButton} ${effectiveBottomLabels.showTones ? styles.toggleButtonActive : ''}`}>Tones</button>
+        <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`${styles.toggleButton} ${effectiveBottomLabels.showIntervals ? styles.toggleButtonActive : ''}`}>Intervals</button>
       </div>
     )}
       <div

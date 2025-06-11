@@ -1,0 +1,46 @@
+[
+  {
+    "name": "C Major (Open) v2",
+    "instrument": "guitar",
+    "theory": { "chordTones": ["C", "E", "G"], "formula": "R 3 5" },
+    "display": { "labelType": "finger", "showFretNumbers": true, "showStringNames": true },
+    "positions": [
+      {
+        "baseFret": 1,
+        "notes": [
+          { "position": { "string": 6, "fret": -1 }, "annotation": { "finger": "X", "tone": null, "interval": null } },
+          { "position": { "string": 5, "fret": 3 }, "annotation": { "finger": 3, "tone": "C", "interval": "R" } },
+          { "position": { "string": 4, "fret": 2 }, "annotation": { "finger": 2, "tone": "E", "interval": "3" } },
+          { "position": { "string": 3, "fret": 0 }, "annotation": { "finger": "O", "tone": "G", "interval": "5" } },
+          { "position": { "string": 2, "fret": 1 }, "annotation": { "finger": 1, "tone": "C", "interval": "R" } },
+          { "position": { "string": 1, "fret": 0 }, "annotation": { "finger": "O", "tone": "E", "interval": "3" } }
+        ],
+        "barres": []
+      }
+    ],
+    "tuning": ["E", "A", "D", "G", "B", "E"]
+  },
+  {
+    "name": "F Major (Barre) v2",
+    "instrument": "guitar",
+    "theory": { "chordTones": ["F", "A", "C"], "formula": "R 3 5" },
+    "display": { "labelType": "finger" },
+    "positions": [
+      {
+        "baseFret": 1,
+        "notes": [
+          { "position": { "string": 6, "fret": 1 }, "annotation": { "finger": 1, "tone": "F", "interval": "R" } },
+          { "position": { "string": 5, "fret": 3 }, "annotation": { "finger": 3, "tone": "A", "interval": "3" } },
+          { "position": { "string": 4, "fret": 3 }, "annotation": { "finger": 4, "tone": "C", "interval": "5" } },
+          { "position": { "string": 3, "fret": 2 }, "annotation": { "finger": 2, "tone": "F", "interval": "R" } },
+          { "position": { "string": 2, "fret": 1 }, "annotation": { "finger": 1, "tone": "A", "interval": "3" } },
+          { "position": { "string": 1, "fret": 1 }, "annotation": { "finger": 1, "tone": "F", "interval": "R" } }
+        ],
+        "barres": [
+          { "fret": 1, "fromString": 6, "toString": 1, "finger": 1 }
+        ]
+      }
+    ],
+    "tuning": ["E", "A", "D", "G", "B", "E"]
+  }
+]

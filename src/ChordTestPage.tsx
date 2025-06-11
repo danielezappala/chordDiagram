@@ -1,121 +1,21 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import ReactJson from 'react-json-view';
 import type { ChangeEvent } from 'react';
-import ChordDiagram from '@/components/ChordDiagram';
-import { ChordDiagramData } from '@/types';
+import ChordDiagram from './components/ChordDiagram';
+import type { ChordDiagramData } from './types';
+import chordExamples from './data/chord_examples.json';
 
-
-
-const testChords: ChordDiagramData[] = [
-  {
-    name: 'C Major (Open) v2',
-    instrument: 'guitar',
-    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-    display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
-    positions: [
-      {
-        baseFret: 1,
-        notes: [
-          { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
-          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
-          { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
-          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
-          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: 'R' } },
-          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
-        ],
-        barres: []
-      }
-    ],
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'F Major (Barre) v2',
-    instrument: 'guitar',
-    theory: { chordTones: ['F', 'A', 'C'], formula: 'R 3 5' },
-    display: { labelType: 'finger' },
-    positions: [
-      {
-        baseFret: 1,
-        notes: [
-          { position: { string: 6, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } },
-          { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: '5' } },
-          { position: { string: 4, fret: 3 }, annotation: { finger: 4, tone: 'F', interval: 'R' } },
-          { position: { string: 3, fret: 2 }, annotation: { finger: 2, tone: 'A', interval: '3' } },
-          { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: 'C', interval: '5' } },
-          { position: { string: 1, fret: 1 }, annotation: { finger: 1, tone: 'F', interval: 'R' } }
-        ],
-        barres: [{ fromString: 1, toString: 6, fret: 1, finger: 1 }]
-      }
-    ],
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'E7 (Open) v2',
-    instrument: 'guitar',
-    theory: { chordTones: ['E', 'G#', 'B', 'D'], formula: 'R 3 5 m7' },
-    display: { labelType: 'interval' },
-    positions: [
-      {
-        baseFret: 1,
-        notes: [
-          { position: { string: 6, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: 'R' } },
-          { position: { string: 5, fret: 2 }, annotation: { finger: 2, tone: 'B', interval: '5' } },
-          { position: { string: 4, fret: 0 }, annotation: { finger: 'O', tone: 'D', interval: 'm7' } },
-          { position: { string: 3, fret: 1 }, annotation: { finger: 1, tone: 'G#', interval: '3' } },
-          { position: { string: 2, fret: 0 }, annotation: { finger: 'O', tone: 'B', interval: '5' } },
-          { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: 'R' } }
-        ],
-        barres: []
-      }
-    ],
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-  },
-  {
-    name: 'G Major (Barre @3rd)',
-    instrument: 'guitar',
-    theory: { chordTones: ['G', 'B', 'D'], formula: 'R 3 5' },
-    display: { labelType: 'finger' },
-    positions: [
-      {
-        baseFret: 3,
-        notes: [
-          // String numbers are 1 (highest pitch) to 6 (lowest pitch)
-          { position: { string: 1, fret: 3 }, annotation: { finger: 1, tone: 'G', interval: 'R' } }, // High E string
-          { position: { string: 2, fret: 3 }, annotation: { finger: 1, tone: 'D', interval: '5' } }, // B string
-          { position: { string: 3, fret: 4 }, annotation: { finger: 2, tone: 'B', interval: '3' } }, // G string
-          { position: { string: 4, fret: 5 }, annotation: { finger: 4, tone: 'G', interval: 'R' } }, // D string
-          { position: { string: 5, fret: 5 }, annotation: { finger: 3, tone: 'D', interval: '5' } }, // A string
-          { position: { string: 6, fret: 3 }, annotation: { finger: 1, tone: 'G', interval: 'R' } }  // Low E string
-        ],
-        barres: [{ fromString: 1, toString: 6, fret: 3, finger: 1 }]
-      }
-    ],
-    tuning: ['E', 'A', 'D', 'G', 'B', 'E'] // Low E to High E
-  },
-  {
-    name: 'C Major (Ukulele)',
-    instrument: 'ukulele',
-    theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-    display: { labelType: 'tone' },
-    positions: [
-      {
-        baseFret: 1,
-        notes: [
-          // Ukulele strings: GCEA. String 1 is A (highest pitch), String 4 is G.
-          { position: { string: 1, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } }, // A string, 3rd fret
-          { position: { string: 2, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }, // E string, open
-          { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'C', interval: 'R' } }, // C string, open
-          { position: { string: 4, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } }  // G string, open
-        ],
-        barres: []
-      }
-    ],
-    tuning: ['G', 'C', 'E', 'A'] // GCEA standard Ukulele tuning (string 4 to string 1)
-  }
-];
+function getStandardTuning(numStrings: number): string[] {
+  if (numStrings === 4) return ['E', 'A', 'D', 'G'];
+  if (numStrings === 5) return ['A', 'D', 'G', 'B', 'E'];
+  if (numStrings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+  return ['E', 'A', 'D', 'G', 'B', 'E'];
+}
 
 const ChordTestPage = (): JSX.Element => {
-  const [testChordsState] = useState<ChordDiagramData[]>(testChords);
-  const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
+  const [selectedChord, setSelectedChord] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
+  // Stato per JSON editor
+  const [jsonEditorData, setJsonEditorData] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
   const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [dataToDisplay, setDataToDisplay] = useState<string>('');
@@ -166,7 +66,7 @@ const ChordTestPage = (): JSX.Element => {
     return Math.max(...validNotes.map((note: { position: { string: number } }) => note.position.string));
   }, []);
 
-  const [numStrings, setNumStrings] = useState(() => detectNumStrings(testChords[0]));
+  const [numStrings, setNumStrings] = useState(() => detectNumStrings((chordExamples as ChordDiagramData[])[0]));
 
   useEffect(() => {
     if (selectedChord) {
@@ -184,9 +84,10 @@ const ChordTestPage = (): JSX.Element => {
 
   const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const selectedIndex = parseInt(event.target.value, 10);
-    const chord = testChordsState[selectedIndex];
+    const chord = (chordExamples as ChordDiagramData[])[selectedIndex];
     if (chord) {
       setSelectedChord(chord);
+      setJsonEditorData(chord); // Aggiorna anche l'editor JSON
     }
   };
 
@@ -214,11 +115,11 @@ const ChordTestPage = (): JSX.Element => {
                 <label htmlFor="chord-select" className="font-medium block mb-2">Select Chord:</label>
                 <select
                   id="chord-select"
-                  value={testChordsState.findIndex(c => c.name === selectedChord.name && JSON.stringify(c.positions) === JSON.stringify(selectedChord.positions))}
+                  value={(chordExamples as ChordDiagramData[]).findIndex(c => c.name === selectedChord.name && JSON.stringify(c.positions) === JSON.stringify(selectedChord.positions))}
                   onChange={handleChordChange}
                   className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 >
-                  {testChordsState.map((chord, index) => (
+                  {(chordExamples as ChordDiagramData[]).map((chord, index) => (
                     <option key={`${chord.name}-${index}`} value={index}>
                       {chord.name}{chord.instrument ? ` (${chord.instrument})` : ''}
                     </option>
@@ -375,49 +276,40 @@ const ChordTestPage = (): JSX.Element => {
             padding: '1.5rem'
           }}>
             <ChordDiagram
-              key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(selectedChord.tuning) ? selectedChord.tuning.join(',') : (typeof selectedChord.tuning === 'object' && selectedChord.tuning && 'notes' in selectedChord.tuning && Array.isArray(selectedChord.tuning.notes) ? selectedChord.tuning.notes.join(',') : ''))}
-              data={selectedChord}
+              key={JSON.stringify(jsonEditorData) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(jsonEditorData.tuning) ? jsonEditorData.tuning.join(',') : (typeof jsonEditorData.tuning === 'object' && jsonEditorData.tuning && 'notes' in jsonEditorData.tuning && Array.isArray(jsonEditorData.tuning.notes) ? jsonEditorData.tuning.notes.join(',') : ''))}
+              data={jsonEditorData}
               numFrets={numFrets}
               width={diagramSize.width}
               height={diagramSize.height}
               labelType={labelType}
               showFretNumbers={showFretNumbers}
-              // tuning={customTuning} // Removed, ChordDiagram will use selectedChord.tuning
               bottomLabels={bottomLabels}
-              chordInfoVisibility={chordInfoVisibility} // Pass new object prop
+              chordInfoVisibility={chordInfoVisibility}
               className=""
+              onCopyJson={(json) => {
+                navigator.clipboard.writeText(JSON.stringify(json, null, 2));
+                alert('JSON copiato negli appunti!');
+              }}
             />
-          </div> {/* Closes inner styled div for ChordDiagram */}
-        </div> {/* Closes center section div containing ChordDiagram */}
+          </div>
+        </div>
         {/* Right Section: Raw Data (Occupies 1 column) */}
         <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-1 overflow-auto max-h-[calc(100vh-12rem)] relative h-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">Raw Chord Data</h2>
-            <button
-              onClick={() => {
-                if (jsonToCopy) {
-                  navigator.clipboard.writeText(jsonToCopy)
-                    .then(() => alert('JSON data copied to clipboard!'))
-                    .catch(err => {
-                      console.error('Failed to copy JSON: ', err);
-                      alert('Failed to copy JSON. See console for details.');
-                    });
-                } else {
-                  alert('No JSON data to copy.');
-                }
-              }}
-              title="Copy JSON to Clipboard"
-              className="p-1.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </svg>
-            </button>
           </div>
-          <pre className="bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto text-sm border border-gray-200 dark:border-gray-600 flex-grow">
-            {dataToDisplay}
-          </pre>
+          <ReactJson
+            src={jsonEditorData}
+            onEdit={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onAdd={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onDelete={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            name={false}
+            collapsed={false}
+            enableClipboard={true}
+            displayDataTypes={false}
+            displayObjectSize={false}
+            style={{ fontSize: '14px', background: 'transparent' }}
+          />
         </div>
       </div>
     </div>
