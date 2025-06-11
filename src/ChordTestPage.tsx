@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
-import { ChordDiagramData, PositionedNote } from './types';
+import { ChordDiagramData } from './types';
 
 
 
@@ -153,17 +153,17 @@ const ChordTestPage = (): JSX.Element => {
       return chord?.tuning && typeof chord.tuning === 'object' && 'notes' in chord.tuning ? chord.tuning.notes.length :
         (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
-    const currentPositionNotes = chord.positions[0].notes;
+    const currentPositionNotes: Array<{ position: { string: number } }> = chord.positions[0].notes;
     if (!currentPositionNotes || currentPositionNotes.length === 0) {
       return chord?.tuning && typeof chord.tuning === 'object' && 'notes' in chord.tuning ? chord.tuning.notes.length :
         (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
-    const validNotes = currentPositionNotes.filter((note: PositionedNote) => typeof note.position.string === 'number');
+    const validNotes = currentPositionNotes.filter((note: { position: { string: number } }) => typeof note.position.string === 'number');
     if (validNotes.length === 0) {
       return chord?.tuning && typeof chord.tuning === 'object' && 'notes' in chord.tuning ? chord.tuning.notes.length :
         (Array.isArray(chord?.tuning) ? chord.tuning.length : 6);
     }
-    return Math.max(...validNotes.map((note: PositionedNote) => note.position.string));
+    return Math.max(...validNotes.map((note: { position: { string: number } }) => note.position.string));
   }, []);
 
   const [numStrings, setNumStrings] = useState(() => detectNumStrings(testChords[0]));
