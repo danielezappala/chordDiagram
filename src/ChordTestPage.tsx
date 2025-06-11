@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
-import type { ChordDiagramData } from './types';
+import { ChordDiagramData, PositionedNote } from './types';
 
 
 
