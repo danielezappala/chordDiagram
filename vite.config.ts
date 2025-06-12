@@ -4,6 +4,8 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import dts from 'vite-plugin-dts';
 import { fileURLToPath } from 'url';
+import type { Plugin } from 'vite';
+
 
 // Assicura che i percorsi siano risolti correttamente anche in ESM
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -15,8 +17,8 @@ export default defineConfig({
     }),
     dts({
       insertTypesEntry: true,
-      tsConfigFilePath: './tsconfig.json',
-    }),
+      tsconfigPath: './tsconfig.json',
+    }) as unknown as Plugin,
   ],
   build: {
     // Non minificare il codice per agevolare il debug
@@ -42,6 +44,11 @@ export default defineConfig({
         // Ottimizza per la compatibilità delle dipendenze esterne
         manualChunks: undefined,
       },
+    },
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
     },
   },
 });

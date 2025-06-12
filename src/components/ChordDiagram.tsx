@@ -1,11 +1,10 @@
-import React, { forwardRef, useState, useMemo, useCallback, ForwardedRef } from 'react';
+import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
+import html2canvas from 'html2canvas';
 import type {
   PositionedNote,
   Barre,
   ChordDiagramData,
-  ChordPositionData,
-  FretNumberPosition,
-  NoteAnnotation
+  ChordPositionData
 } from '../types';
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
@@ -30,8 +29,8 @@ interface ChordDiagramProps {
   numStrings?: number;
   numFrets?: number;
   tuning?: string[];
-  onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent) => void;
-  onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent) => void;
+  onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
+  onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
   className?: string;
   // Bottom labels configuration
   bottomLabels?: {
@@ -39,54 +38,150 @@ interface ChordDiagramProps {
     showTones?: boolean;
     showIntervals?: boolean;
   };
+  chordInfoVisibility?: { // Object to control visibility of individual ChordInfo sections
+    showInstrument?: boolean;
+    showTuning?: boolean;
+    showChordTones?: boolean;
+    showIntervals?: boolean;
+  };
 }
 
-const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
-  // Data
-  data,
-  positionIndex = 0, // Default to first position
+const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
+  (props, ref): JSX.Element | null => {
+    const diagramRef = useRef<HTMLDivElement>(null);
+    // Destructure props
+    const {
+      data,
+      positionIndex = 0,
+      labelType: labelTypeProp,
+      showFretNumbers: showFretNumbersProp,
+      fretNumberPosition: fretNumberPositionProp,
+      showStringNames: showStringNamesProp,
+      width: widthProp,
+      height: heightProp,
+      numStrings: numStringsProp,
+      numFrets: numFretsProp,
+      tuning: tuningProp,
+      onNoteClick: onNoteClickCallback,
+      onBarreClick: onBarreClickCallback,
+      className = '',
+      bottomLabels: propBottomLabels = {
+        showFingers: false,
+        showTones: true,
+        showIntervals: false
+      },
+    } = props;
 
-  // Display settings (can be overridden by data.display or component props)
-  labelType: labelTypeProp,
-  showFretNumbers: showFretNumbersProp, // Prop override
-  fretNumberPosition: fretNumberPositionProp, // Prop override
-  showStringNames: showStringNamesProp, // Prop override
+    // All hooks must be called unconditionally at the top level.
+    const positionToDisplay = data.positions && data.positions.length > 0 && positionIndex < data.positions.length
+      ? data.positions[positionIndex]
+      : null;
 
-  // Sizing
-  width: widthProp, // Renamed to avoid conflict with calculated width
-  height: heightProp, // Renamed to avoid conflict with calculated height
-  numStrings: numStringsProp, // Prop override
-  numFrets: numFretsProp, // Prop override for number of frets to draw
-  tuning: tuningProp, // Prop override for tuning string array
+    // Resolve display settings: Prop > data.display > component default
+    // These need to be resolvable even if positionToDisplay is null for hooks below.
+    const currentLabelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
+    const currentShowFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
+    const currentFretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
+    const currentShowStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
 
-  // Callbacks
-  onNoteClick: onNoteClickCallback, // Renamed
-  onBarreClick: onBarreClickCallback, // Renamed
+    // currentBaseFret might be undefined if positionToDisplay is null. Hooks using it must handle this.
+    const currentBaseFret = positionToDisplay?.baseFret ?? 1;
 
-  // Class name
-  className = '',
-  // Bottom labels configuration
-  bottomLabels: propBottomLabels = {
-    showFingers: false,
-    showTones: true,
-    showIntervals: false
-  },
-}: ChordDiagramProps, ref: ForwardedRef<SVGSVGElement>) => {
+    // ...function body continues here...
 
-  // All hooks must be called unconditionally at the top level.
-  const positionToDisplay = data.positions && data.positions.length > 0 && positionIndex < data.positions.length
-    ? data.positions[positionIndex]
-    : null;
+    const exportToPng = useCallback(async () => {
+      if (diagramRef.current) {
+        // Temporarily force background for html2canvas
+        const originalBackgroundColor = diagramRef.current.style.backgroundColor;
+        diagramRef.current.style.backgroundColor = '#ffffff'; // Force white
 
-  // Resolve display settings: Prop > data.display > component default
-  // These need to be resolvable even if positionToDisplay is null for hooks below.
-  const currentLabelType = labelTypeProp ?? data.display?.labelType ?? 'finger';
-  const currentShowFretNumbers = showFretNumbersProp ?? data.display?.showFretNumbers ?? true;
-  const currentFretNumberPosition = fretNumberPositionProp ?? data.display?.fretNumberPosition ?? 'left';
-  const currentShowStringNames = showStringNamesProp ?? data.display?.showStringNames ?? true;
+        try {
+          const canvas = await html2canvas(diagramRef.current, {
+            useCORS: true,
+            scale: 1, // Natural scale
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+              if (clonedDoc.body) {
+                clonedDoc.body.style.backgroundColor = '#ffffff';
+              }
+            },
+          });
+          const image = canvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.download = `${data.name || 'chord-diagram'}.png`;
+          link.href = image;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        } catch (error) {
+          console.error('Error exporting to PNG:', error);
+        } finally {
+          diagramRef.current.style.backgroundColor = originalBackgroundColor; // Restore original background
+        }
+      }
+    }, [data.name]);
 
-  // currentBaseFret might be undefined if positionToDisplay is null. Hooks using it must handle this.
-  const currentBaseFret = positionToDisplay?.baseFret ?? 1;
+    const copyImageToClipboard = useCallback(async () => {
+      if (diagramRef.current) {
+        // Temporarily force background for html2canvas
+        const originalBackgroundColor = diagramRef.current.style.backgroundColor;
+        diagramRef.current.style.backgroundColor = '#ffffff'; // Force white
+
+        try {
+          const canvas = await html2canvas(diagramRef.current, {
+            useCORS: true,
+            scale: 1, // Natural scale
+            backgroundColor: '#ffffff',
+            onclone: (clonedDoc) => {
+              if (clonedDoc.body) {
+                clonedDoc.body.style.backgroundColor = '#ffffff';
+              }
+            },
+          });
+          canvas.toBlob(async (blob) => {
+            if (blob) {
+              try {
+                await navigator.clipboard.write([
+                  new ClipboardItem({ 'image/png': blob })
+                ]);
+                alert('Image copied to clipboard!'); // Consider a more subtle notification
+              } catch (err) {
+                console.error('Failed to copy image to clipboard: ', err);
+                alert('Failed to copy image. See console for details.');
+              }
+            } else {
+              throw new Error('Canvas toBlob returned null');
+            }
+          }, 'image/png');
+        } catch (error) {
+          console.error('Error preparing image for clipboard:', error);
+          alert('Error preparing image for clipboard. See console for details.');
+        } finally {
+          diagramRef.current.style.backgroundColor = originalBackgroundColor; // Restore original background
+        }
+      }
+    }, []);
+
+
+    // Local state for bottomLabels if not provided by props
+    const [bottomLabels, setBottomLabels] = useState(() => ({
+      showFingers: false,
+      showTones: true,
+      showIntervals: false,
+      ...propBottomLabels
+    }));
+
+    // Only use local state if propBottomLabels is undefined (uncontrolled mode)
+    const effectiveBottomLabels = propBottomLabels === undefined ? bottomLabels : propBottomLabels;
+
+    // Toggle function for local state only
+    const toggleBottomLabel = (type: keyof typeof bottomLabels) => {
+      if (propBottomLabels !== undefined) return;
+      setBottomLabels(prev => ({
+        ...prev,
+        [type]: !prev[type]
+      }));
+    };
 
   const derivedNumStrings = useMemo(() => {
     if (numStringsProp) return numStringsProp;
@@ -132,13 +227,13 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     return defaultTuningArray;
   }, [tuningProp, data.tuning, derivedNumStrings]);
 
-  const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent) => {
+  const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<unknown>) => {
     if (onNoteClickCallback && positionToDisplay) {
       onNoteClickCallback(note, positionToDisplay, event);
     }
   }, [onNoteClickCallback, positionToDisplay]);
 
-  const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent) => {
+  const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent<unknown>) => {
     if (onBarreClickCallback && positionToDisplay) {
       onBarreClickCallback(barre, positionToDisplay, event);
     }
@@ -164,14 +259,30 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
       const stringIndex = note.position.string - 1;
       if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
 
-      if (note.position.fret === -1) {
-        labels[stringIndex] = 'X';
+
+      // Controlla se la corda è muta in modo più robusto
+      const isMuted = note.position.fret === -1 || 
+                      note.annotation?.finger?.toString().toLowerCase() === 'x';
+
+      if (isMuted) {
+        if (currentLabelType === 'finger') {
+          labels[stringIndex] = 'X';
+        } else if (currentLabelType === 'tone') {
+          labels[stringIndex] = ''; // Stringa vuota per i toni delle corde mute
+        } else if (currentLabelType === 'interval') {
+          labels[stringIndex] = ''; // Stringa vuota anche per gli intervalli (o 'X' se preferito)
+        } else { // Include 'none' o qualsiasi altro tipo non gestito esplicitamente
+          labels[stringIndex] = 'X';
+        }
       } else {
         let labelContent: string | null = null;
         if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
         else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
         else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
-        labels[stringIndex] = labelContent ?? ' ';
+        
+        // Se labelContent è null (es. per 'none' o se l'annotazione manca), usa uno spazio.
+        // Se è una stringa vuota (es. per un tono/intervallo che è intenzionalmente vuoto ma non muto), mantienila.
+        labels[stringIndex] = labelContent === null ? ' ' : labelContent;
       }
     });
     return labels;
@@ -179,7 +290,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   
   // Layout calculations
   const CONTENT_MIN_WIDTH = 200;
-  const CONTENT_MIN_HEIGHT = 300;
+  const CONTENT_MIN_HEIGHT = 250;
   const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
 
   // Start with dimensions from props or defaults
@@ -204,12 +315,12 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
   const diagramHeight = calculatedHeight;
 
   // Calculate dimensions and padding
-  const sidePadding = 40;
-  const topPadding = 30;
-  const bottomPadding = 40;
+  const sidePadding = 80;
+  const topPadding = 80;
+  const bottomPadding = 80;
 
-  const horizontalOffset = -Math.min(diagramWidth * 0.5, 80);
-  const paddedWidth = diagramWidth - sidePadding * 1;
+  const horizontalOffset = -Math.min(diagramWidth * 0.5, 0);
+  const paddedWidth = diagramWidth - sidePadding * 1.7;
   const paddedHeight = diagramHeight - topPadding - bottomPadding;
   
   const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
@@ -223,37 +334,42 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
     return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
   }
 
-  // All variables that depend on positionToDisplay being non-null and are used in JSX
-  // should be defined after this null check, or ensure they have defaults.
-  // currentBaseFret is already handled with a default.
-  // processedNotesForLayer and noteLabels return defaults if positionToDisplay was null.
-  // barresForLayer is handled with a default.
-
-  // Bottom Labels configuration - use props if provided, otherwise use default state
-  const [bottomLabelsState, setBottomLabelsState] = useState({
-    showFingers: false,
-    showTones: true,
-    showIntervals: false
-  });
-  
-  // Use prop values if provided, otherwise fallback to state
-  const bottomLabels = propBottomLabels !== undefined ? propBottomLabels : bottomLabelsState;
-
-  // Toggle function only used when not controlled through props
-  const toggleBottomLabel = (type: 'showTones' | 'showFingers' | 'showIntervals') => {
-    if (propBottomLabels) {
-      // If props are provided, don't modify state (controlled component)
-      console.log('Bottom labels are controlled via props, toggle ignored');
-      return;
-    }
-    setBottomLabelsState(prev => ({
-      ...prev,
-      [type]: !prev[type]
-    }));
-  };
-
   return (
-  <div className="flex flex-col items-center w-full">
+    <div className="relative flex flex-col items-center w-full" data-testid="chord-diagram"> 
+    {/* Action Buttons Container */}
+    <div className="absolute top-4 right-8 z-20 flex space-x-3 mb-4">
+      {/* Copy Button */}
+      <button
+        onClick={copyImageToClipboard}
+        title="Copy Image to Clipboard"
+        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+      </button>
+      {/* Export Button */}
+      <button
+        onClick={exportToPng}
+        title="Export as PNG"
+        className="p-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-full text-gray-700 dark:text-gray-200 shadow chord-action-btn"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+      </button>
+    </div>
+    {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
+    {propBottomLabels === undefined && (
+      <div className="flex gap-2 mb-2">
+        <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showFingers ? 'bg-blue-200' : ''}`}>Fingers</button>
+        <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showTones ? 'bg-blue-200' : ''}`}>Tones</button>
+        <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`px-2 py-1 border rounded ${effectiveBottomLabels.showIntervals ? 'bg-blue-200' : ''}`}>Intervals</button>
+      </div>
+    )}
       <div
         className="flex flex-col items-center w-full" // Added w-full here
         style={{
@@ -261,30 +377,35 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
           transition: 'margin-left 0.2s ease-in-out'
         }}
       >
-        {/* Chord Info Section */}
-        <div className="w-full flex justify-center mb-2"> {/* Added flex and justify-center */}
-          <div className="w-full max-w-[600px] px-4"> {/* Added max-width and centered content */}
-            <ChordInfo
-              data={data}
+        {/* Area to be exported to PNG - assign ref here */}
+        <div ref={diagramRef} className="w-full flex flex-col items-center bg-white rounded-lg shadow-md"> {/* Removed p-4, Added bg-white for defined export background */}
+          {/* Chord Info Section - Moved inside export area */}
+          <div className="w-full flex justify-start mt-4 mb-2">
+            <div className="w-full max-w-[600px] px-4">
+              <ChordInfo
               name={data.name}
               intervals={data.theory?.formula?.split(' ') || []}
               playedNotes={data.theory?.chordTones || []}
               showFormula={true}
-              className="text-center"
+              className=""
               instrument={data.instrument || ''}
               tuning={derivedActualTuning}
+              showInstrument={props.chordInfoVisibility?.showInstrument}
+              showTuning={props.chordInfoVisibility?.showTuning}
+              showChordTones={props.chordInfoVisibility?.showChordTones}
+              showIntervals={props.chordInfoVisibility?.showIntervals}
             />
           </div>
         </div>
-        {/* Diagram Section */}
-        <div
-          className={`chord-diagram relative ${className || ''} order-2`}
-          style={{
-            width: diagramWidth,
-            height: diagramHeight,
-            marginLeft: '-25px'
-          }}
-        >
+          {/* Diagram Section - Now directly inside the diagramRef div */}
+          <div
+            className={`chord-diagram-svg-container relative ${className || ''}`}
+            style={{
+              width: diagramWidth,
+              height: diagramHeight,
+              // marginLeft: '-25px' // Consider if this is still needed or handled by parent
+            }}
+          >
           <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
             <svg
               ref={ref}
@@ -307,7 +428,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
                   labelType={currentLabelType} // Pass resolved labelType
                   labels={noteLabels} // Pass generated labels
                   theory={data.theory} // Pass global theory for now
-                  bottomLabels={bottomLabels}
+                  bottomLabels={effectiveBottomLabels}
                   positionNotes={positionToDisplay.notes}
                 >
                   <NotesLayer
@@ -327,7 +448,8 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(({
               </g>
             </svg>
           </div>
-        </div>
+          </div>
+        </div> {/* Closes diagramRef div */}
       </div>
     </div>
   );

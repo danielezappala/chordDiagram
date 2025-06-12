@@ -1,4 +1,5 @@
 import React from 'react';
+import type { MouseEvent, CSSProperties } from 'react';
 import { motion } from 'framer-motion';
 import type { Barre, PositionedNote } from '../types'; // Barre is v2. PositionedNote replaces ProcessedLayerNote.
 
@@ -12,10 +13,10 @@ interface NotesLayerProps {
   startFret?: number;
   labelType?: 'none' | 'finger' | 'tone' | 'interval';
   labels?: (string | number | null)[]; // This is the noteLabels array from ChordDiagram
-  onNoteClick?: (note: PositionedNote, event: React.MouseEvent) => void; // Changed, added event
-  onBarreClick?: (barre: Barre, event: React.MouseEvent) => void; // Added event
+  onNoteClick?: (note: PositionedNote, event: MouseEvent<SVGGElement, globalThis.MouseEvent>) => void; // Changed, added event
+  onBarreClick?: (barre: Barre, event: MouseEvent<SVGGElement, globalThis.MouseEvent>) => void; // Added event
   className?: string;
-  style?: React.CSSProperties;
+  style?: CSSProperties;
 }
 
 // Local defaults if numStrings/numFrets/width/height were not guaranteed
@@ -48,12 +49,12 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   const fretSpacing = paddedHeight / (numFrets + 1);
   const noteRadius = Math.min(stringSpacing, fretSpacing) * 0.4;
 
-  const handleNoteClick = (e: React.MouseEvent<SVGGElement, MouseEvent>, note: PositionedNote) => { // note is PositionedNote
+  const handleNoteClick = (e: MouseEvent<SVGGElement, globalThis.MouseEvent>, note: PositionedNote) => {
     e.stopPropagation();
     onNoteClick?.(note, e); // Pass event
   };
 
-  const handleBarreClick = (e: React.MouseEvent<SVGGElement, MouseEvent>, barre: Barre) => {
+  const handleBarreClick = (e: MouseEvent<SVGGElement, globalThis.MouseEvent>, barre: Barre) => {
     e.stopPropagation();
     onBarreClick?.(barre, e); // Pass event
   };
@@ -131,13 +132,14 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
         const endX = getStringX(startString);
         
         // Calculate width based on the actual x positions
-        const barreWidth = endX - startX;
+        // Estendi la barra in modo che le curvature arrivino al centro dei pallini estremi
+        const barreWidth = endX - startX + noteRadius * 2;
         const y = getFretY(barre.fret);
         
         return (
           <g key={`barre-${index}`}>
             <motion.rect
-              x={startX}
+              x={startX - noteRadius}
               y={y - noteRadius}
               width={barreWidth}
               height={noteRadius * 2}
@@ -146,24 +148,78 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
               fill="currentColor"
               className="cursor-pointer"
               whileHover={{ opacity: 0.8 }}
-              onClick={(e: React.MouseEvent<SVGGElement, MouseEvent>) => handleBarreClick(e, barre)}
+              onClick={(e: MouseEvent<SVGGElement, globalThis.MouseEvent>) => handleBarreClick(e, barre)}
             />
-            {barre.finger && (
-              <text
-                x={(startX + endX) / 2}
-                y={y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fontSize={noteRadius * 1.2}
-                fontWeight="bold"
-                fill="#fff"
-                stroke="#222"
-                strokeWidth="1.2"
-                style={{ paintOrder: 'stroke', userSelect: 'none' }}
-              >
-                {barre.finger}
-              </text>
-            )}
+            {(() => {
+              if (props.labelType === 'finger' && barre.finger) {
+                // Comportamento attuale: mostra solo il dito centrato sulla barra
+                return (
+                  <text
+                    x={(startX + endX) / 2}
+                    y={y}
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontSize={noteRadius * 1.2}
+                    fontWeight="bold"
+                    fill="#fff"
+                    stroke="#222"
+                    strokeWidth="1.2"
+                    style={{ paintOrder: 'stroke', userSelect: 'none' }}
+                  >
+                    {barre.finger}
+                  </text>
+                );
+              }
+              if ((props.labelType === 'tone' || props.labelType === 'interval') && props.labels && props.notes) {
+  // Per ogni corda sotto la barre, se c'è una nota suonata su questo fret, mostra il cerchio + label
+  const labelsToShow = [];
+  for (let string = startString; string <= endString; string++) {
+    // Trova la nota corrispondente (PositionedNote) su questa corda e fret
+    const note = props.notes.find(n => n.position.string === string && n.position.fret === barre.fret);
+    if (note) {
+      const x = getStringX(string);
+      // La label da mostrare dipende dal tipo
+      let label = null;
+      if (props.labelType === 'tone') label = note.annotation?.tone;
+      if (props.labelType === 'interval') label = note.annotation?.interval;
+      if (label) {
+        labelsToShow.push(
+          <g key={`barre-label-${barre.fret}-${string}`}>
+            {/* Cerchio nero sopra la barre, come per una nota normale */}
+            <circle
+              cx={x}
+              cy={y}
+              r={noteRadius * 1.0}
+              fill="currentColor"
+              stroke="currentColor"
+              strokeWidth={1}
+            />
+            {/* Lettera sopra il cerchio */}
+            <text
+              x={x}
+              y={y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize={noteRadius * 1.1}
+              fontWeight="bold"
+              fill="#fff"
+              stroke="#222"
+              strokeWidth="1.2"
+              style={{ paintOrder: 'stroke', userSelect: 'none' }}
+            >
+              {label}
+            </text>
+          </g>
+        );
+      }
+    }
+  }
+  return labelsToShow;
+}
+              // Se labelType è none o non ci sono label, non mostrare nulla
+              return null;
+            })()}
+
           </g>
         );
       })}
@@ -261,7 +317,7 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
           <motion.g 
             key={animationKey}
             className="cursor-pointer"
-            onClick={(e: React.MouseEvent<SVGGElement, MouseEvent>) => handleNoteClick(e, note)}
+            onClick={(e: MouseEvent<SVGGElement, globalThis.MouseEvent>) => handleNoteClick(e, note)}
             // Animation logic might need adjustment if notePositions map keys changed significantly
             // For now, assume notePositions map is keyed in a way that can be retrieved.
             // The example key for notePositions was: `note-${note.string}-${note.fret_original_or_index}`

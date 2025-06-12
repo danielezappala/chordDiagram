@@ -1,8 +1,10 @@
-import React, { useMemo } from 'react';
+import React from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 
 export type FretNumberPosition = 'left' | 'right' | 'none';
 
-interface FretboardBaseProps extends React.PropsWithChildren {
+interface FretboardBaseProps extends CSSProperties {
+  children?: ReactNode;
   numStrings: number;
   numFrets: number;
   width: number;
@@ -38,8 +40,8 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   showStringNames = true, // This prop now primarily controls fallback to tuning notes
   className = '',
   tuning,
-  labelType = 'finger', // labelType is used for styling text in current code, not for choosing content here.
-  labels = [], // These are the pre-processed noteLabels from ChordDiagram
+
+
   bottomLabels = { showFingers: false, showTones: true, showIntervals: false },
 
   positionNotes = [],
@@ -47,22 +49,19 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
 }) => {
   // Calculate dimensions with padding for labels
   // Bottom label row calculations - determine how many rows to show
-  const bottomRowsCount = useMemo(() => {
-    return [
-      bottomLabels?.showFingers, 
-      bottomLabels?.showTones, 
-      bottomLabels?.showIntervals
-    ].filter(Boolean).length;
-  }, [bottomLabels]);
 
-  // Calculate height needed for bottom labels
-  const bottomLabelsHeight = useMemo(() => {
-    return bottomRowsCount > 0 ? bottomRowsCount * 20 + 8 : 0; // 20px per row plus padding
-  }, [bottomRowsCount]);
+  // Define constants for bottom label area calculation
+  const MAX_BOTTOM_LABEL_ROWS = 3; // Maximum number of label rows (e.g., Fingers, Tones, Intervals)
+  const HEIGHT_PER_BOTTOM_LABEL_ROW = 20; // Effective height in pixels for the text of each label row
+  const PADDING_FOR_BOTTOM_LABEL_BLOCK = 8; // Overall padding in pixels for the entire block of labels
 
-  // Allocate space for bottom labels
-  const labelAreaHeight = bottomLabelsHeight > 0 ? bottomLabelsHeight : 30; // Minimum 30px even with no rows
-  const paddedHeight = height - labelAreaHeight;
+  // Calculate a fixed height to reserve for the bottom labels area.
+  // This accommodates the maximum number of rows, ensuring the fretboard drawing area above remains constant.
+  const reservedLabelAreaHeight = (MAX_BOTTOM_LABEL_ROWS * HEIGHT_PER_BOTTOM_LABEL_ROW) + PADDING_FOR_BOTTOM_LABEL_BLOCK;
+
+  // paddedHeight is the height available for drawing the fret lines and fret numbers.
+  // It's derived by subtracting the fixed reserved space for labels from the total available height.
+  const paddedHeight = height - reservedLabelAreaHeight;
   
   const stringSpacing = width / (numStrings - 1);
   const fretSpacing = paddedHeight / (numFrets + 1); // +1 for the nut area
@@ -106,86 +105,37 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   // Get the label for a specific string.
   // stringVisualIndex: 0 for leftmost string (e.g., Low E on guitar, which is string N)
   //                    N-1 for rightmost string (e.g., High E on guitar, which is string 1)
-  const getStringLabel = (stringVisualIndex: number, totalStrings: number): string => {
-    // For muted strings (X), always return X
-    const stringIndex = totalStrings - 1 - stringVisualIndex;
-    const labelFromNoteLabel = labels?.[stringIndex];
-    if (labelFromNoteLabel === 'X') {
-      return 'X';
-    }
-
-    // If it's a regular playing position (not an X), we need to look through the notes array
-    // to find complementary information based on the labelType
-    
-    // Get complementary info based on labelType
-    // If circles show finger numbers (labelType=finger), show tones at the bottom
-    // If circles show tones (labelType=tone), show finger numbers at the bottom
-    // If circles show intervals (labelType=interval), show tones at the bottom
-    
-    if (labelType === 'finger') {
-      // If showing finger numbers in circles, complement with tones at bottom (if available)
-      if (showStringNames && tuning && tuning.length === totalStrings) {
-        return tuning[stringVisualIndex] || '';
-      }
-    } 
-    else if (labelType === 'tone') {
-      // If showing tones in circles, show finger numbers at bottom
-      // Return the index+1 as a finger number for simplicity, if it's not a muted string
-      if (labelFromNoteLabel && labelFromNoteLabel !== ' ') {
-        return (stringIndex + 1).toString(); // Simple approximation
-      }
-    } 
-    else if (labelType === 'interval') {
-      // If showing intervals in circles, show tones at bottom if available
-      if (showStringNames && tuning && tuning.length === totalStrings) {
-        return tuning[stringVisualIndex] || '';
-      }
-    }
-
-    // Default fallback if no complementary info available
-    if (showStringNames && tuning && tuning.length === totalStrings) {
-      return tuning[stringVisualIndex] || '';
-    }
-    return '';
-  };
-
+  
   // Get information for multiple bottom label rows
   const getStringInfo = (stringVisualIndex: number, totalStrings: number) => {
     const stringIndex = totalStrings - 1 - stringVisualIndex;
-    const labelFromNoteLabel = labels?.[stringIndex];
-    const isMuted = labelFromNoteLabel === 'X';
+
     const note = positionNotes.find(n => n.position.string === stringIndex + 1);
     
     return {
-      isMuted,
       finger: note?.annotation?.finger ? String(note.annotation.finger) : '',
       tone: note?.annotation?.tone || '',
       interval: note?.annotation?.interval || '',
-      tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : ''
+      tuningNote: (showStringNames && tuning && tuning.length === totalStrings) ? tuning[stringVisualIndex] || '' : '',
+      isMuted: !note || note.position == null || note.position.fret == null, // General check if note data is valid
+      isExplicitlyMuted: note ? (note.position.fret === -1 || note.annotation?.finger?.toString().toLowerCase() === 'x') : false // Specific check for muted strings (X or fret -1)
     };
   };
 
   return (
-    <g className={`fretboard-base ${className}`}>
+    <g className={`fretboard-base ${className}`} data-testid="fretboard-base">
       {/* Strings */}
       {Array.from({ length: numStrings }).map((_, i) => {
         // i is the visual index from left (0) to right (numStrings - 1)
         // 0 = Low E string (string N), numStrings - 1 = High E string (string 1)
         const x = i * stringSpacing;
-        const stringIndex = numStrings - 1 - i;
+
         
         // Get the position note data for this string (if it exists)
-        const noteData = positionNotes.find(n => n.position.string === stringIndex + 1);
+
         
         // Check if string is muted
-        const isMuted = noteData?.position.fret === -1 || labels?.[stringIndex] === 'X';
-        const mutedLabel = isMuted ? 'X' : '';
-        
-        // Get various possible labels
-        const fingerLabel = noteData?.annotation?.finger?.toString() || '';
-        const toneLabel = noteData?.annotation?.tone || (showStringNames && tuning ? tuning[i] : '');
-        const intervalLabel = noteData?.annotation?.interval || '';
-        
+
         // Draw the string line
         return (
           <g key={`string-group-${i}`}>
@@ -215,73 +165,69 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
               if (bottomLabels.showFingers) {
                 bottomLabelRows.push({
                   key: 'finger',
-                  getValue: info => info.isMuted ? 'X' : (info.finger || ''),
+                  getValue: info => info.isExplicitlyMuted ? 'X' : (info.finger || ''),
                   colorClass: 'text-blue-600 font-medium'
                 });
               }
               if (bottomLabels.showTones) {
                 bottomLabelRows.push({
                   key: 'tone',
-                  getValue: info => info.isMuted ? 'X' : (info.tone || info.tuningNote || ''),
+                  getValue: info => info.isExplicitlyMuted ? '' : (info.tone || info.tuningNote || ''),
                   colorClass: 'text-gray-900 font-semibold'
                 });
               }
               if (bottomLabels.showIntervals) {
                 bottomLabelRows.push({
                   key: 'interval',
-                  getValue: info => info.isMuted ? 'X' : (info.interval || ''),
+                  getValue: info => info.isExplicitlyMuted ? '' : (info.interval || ''),
                   colorClass: 'text-purple-700 font-medium'
                 });
               }
               return bottomLabelRows.map((row, rowIdx) => {
-  // Determina la label a sinistra
-  let leftLabel = '';
-  if (row.key === 'finger') leftLabel = 'Fingers';
-  if (row.key === 'tone') leftLabel = 'Tones';
-  if (row.key === 'interval') leftLabel = 'Intervals';
-  // Posizione label a sinistra
-  const labelX = -80; // Allineato più a sinistra
-  const y = paddedHeight + 16 + rowIdx * 24;
-  return (
-    <g key={`bottom-label-row-${row.key}`}>
-      {/* Label a sinistra stile badge */}
-      <foreignObject
-        x={labelX}
-        y={y - 15}
-        width={60}
-        height={18}
-        style={{overflow: 'visible'}}
-      >
-        <div
-          className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
-          style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
-        >
-          {leftLabel}
-        </div>
-      </foreignObject>
-      {/* Celle della riga */}
-      {Array.from({ length: numStrings }, (_, j) => {
-        const stringIndex = j;
-        const stringX = j * stringSpacing;
-        const info = getStringInfo(stringIndex, numStrings);
-        const displayValue = row.getValue(info);
-        return (
-          <text
-            key={`bottom-label-${row.key}-${j}`}
-            x={stringX}
-            y={y}
-            textAnchor="middle"
-            dominantBaseline="middle"
-            fontSize="12"
-            className={info.isMuted ? 'text-gray-400' : row.colorClass}
-          >
-            {displayValue || ''}
-          </text>
-        );
-      })}
-    </g>
-  );
-});
+                const y = paddedHeight + 16 + rowIdx * 24;
+                return (
+                  <g key={`bottom-label-row-${row.key}`}>
+                    {/* Label a sinistra stile badge - Commentato per migliorare l'eleganza */}
+                    {/* <foreignObject
+                      x={labelX}
+                      y={y - 15}
+                      width={60}
+                      height={18}
+                      style={{overflow: 'visible'}}
+                    >
+                      <div
+                      >
+                        <div
+                          className="inline-block bg-gray-100 text-gray-700 rounded px-2 py-0.5 text-xs font-semibold mr-2 align-middle select-none"
+                          style={{lineHeight: '16px', minWidth: '32px', textAlign: 'left'}}
+                        >
+                          {leftLabel}
+                        </div>
+                      </foreignObject>
+                    */}
+                    {/* Celle della riga */}
+                    {Array.from({ length: numStrings }, (_, j) => {
+                      const stringIndex = j;
+                      const stringX = j * stringSpacing;
+                      const info = getStringInfo(stringIndex, numStrings);
+                      const displayValue = row.getValue(info);
+                      return (
+                        <text
+                          key={`bottom-label-${row.key}-${j}`}
+                          x={stringX}
+                          y={y}
+                          textAnchor="middle"
+                          dominantBaseline="middle"
+                          fontSize="12"
+                          className={info.isMuted ? 'text-gray-400' : row.colorClass}
+                        >
+                          {displayValue || ''}
+                        </text>
+                      );
+                    })}
+                  </g>
+                );
+              });
             })()}
             {/* --- END PATCH --- */}
           </g>
