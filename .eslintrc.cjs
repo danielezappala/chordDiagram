@@ -22,4 +22,11 @@ module.exports = {
     ],
   },
   ignorePatterns: ['dist'],
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json'
+      }
+    }
+  }
 };
