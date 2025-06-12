@@ -16,7 +16,10 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "music-chords-diagrams": [
+      "../../src/index.ts"
+    ]
     }
   },
   "include": ["src"],

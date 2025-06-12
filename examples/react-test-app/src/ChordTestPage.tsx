@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent } from 'react';
-import ChordDiagram from '/Users/daniele/Documents/Development/chords_tools/chord_diagram_library/src/components/ChordDiagram'    ;
-import type { ChordDiagramData } from '/Users/daniele/Documents/Development/chords_tools/chord_diagram_library/src/types';
-
+import {ChordDiagram, ChordDiagramData } from 'music-chords-diagrams';
 
 
 const testChords: ChordDiagramData[] = [
