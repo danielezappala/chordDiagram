@@ -28,7 +28,7 @@ jobs:
 
             This PR was created automatically after successful checks on the `dev` branch.
             Please review the changes carefully before merging.
-          branch: dev
+          branch: pr/dev-to-main
           base: main
           labels: |
             automerge-candidate
