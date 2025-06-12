@@ -1,5 +1,9 @@
 name: Create PR from Dev to Main
 
+permissions:
+  contents: write
+  pull-requests: write
+  
 on:
   workflow_run:
     workflows: ["CI on dev"]
