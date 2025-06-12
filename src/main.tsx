@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from 'react';
+import React, { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
@@ -34,7 +34,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 }
 
 // Main app container with providers
-function Root() {
+export function Root() {
   return (
     <StrictMode>
       <ThemeProvider>

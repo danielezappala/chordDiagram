@@ -14,10 +14,11 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && cp dist/chord-diagram-library.css chord-diagram-library.css",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint": "eslint . --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest"
   },
   "keywords": [
     "react",
@@ -38,6 +39,7 @@
     "url": "https://github.com/danielezappala/chord-diagram-library/issues"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "tailwind-scrollbar": "^3.0.5",
     "zod": "^3.25.28"
   },
@@ -64,17 +66,24 @@
   "devDependencies": {
     "@eslint/js": "^8.56.0",
     "@tailwindcss/forms": "^0.5.7",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
     "@types/node": "^22.15.29",
-    "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.6",
+    "@types/react": "^18.2.70",
+    "@types/react-dom": "^18.2.19",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
     "@vitejs/plugin-react": "^4.5.0",
     "ajv": "^8.17.1",
     "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.1",
+    "eslint-import-resolver-typescript": "^4.4.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "framer-motion": "^10.18.0",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -82,17 +91,18 @@
     "terser": "^5.40.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
-    "vite-plugin-dts": "^4.5.4"
+    "vite-plugin-dts": "^4.5.4",
+    "vitest": "^3.2.3"
   },
   "exports": {
-  ".": {
-    "types": "./dist/index.d.ts",
-    "import": "./dist/chord-diagram-library.js",
-    "require": "./dist/chord-diagram-library.umd.cjs",
-    "default": "./dist/chord-diagram-library.js"
-  },
-  "./dist/chord-diagram-library.css": "./dist/chord-diagram-library.css",
-  "./chord-diagram-library.css": "./dist/chord-diagram-library.css",
-  "./style.css": "./dist/chord-diagram-library.css"
-}
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/chord-diagram-library.js",
+      "require": "./dist/chord-diagram-library.umd.cjs",
+      "default": "./dist/chord-diagram-library.js"
+    },
+    "./dist/chord-diagram-library.css": "./dist/chord-diagram-library.css",
+    "./chord-diagram-library.css": "./dist/chord-diagram-library.css",
+    "./style.css": "./dist/chord-diagram-library.css"
+  }
 }

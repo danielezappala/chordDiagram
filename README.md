@@ -1,8 +1,10 @@
-Published on npm as `music-chords-diagrams` on date `2025-06-05`
-
+# Published on npm as `music-chords-diagrams` on date `2025-06-05`
+## test workflow
 
 # music-chords-diagrams
 
+[![Deploy Test App](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml/badge.svg?branch=main)](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml)
+[![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
 [![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
 [![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
 
@@ -45,6 +47,70 @@ Current version: `0.1.15` (beta)
 ---
 
 ## What’s New
+
+---
+
+## 🚀 Quick Start
+
+```tsx
+import React from "react";
+import { ChordDiagram } from "music-chords-diagrams";
+
+const chordData = {
+  name: "C Major",
+  positions: [
+    {
+      baseFret: 1,
+      notes: [
+        { position: { string: 6, fret: -1 } }, // Low E muted
+        { position: { string: 5, fret: 3 } },
+        { position: { string: 4, fret: 2 } },
+        { position: { string: 3, fret: 0 } },
+        { position: { string: 2, fret: 1 } },
+        { position: { string: 1, fret: 0 } }
+      ],
+      barres: []
+    }
+  ]
+};
+
+export default function App() {
+  return <ChordDiagram data={chordData} />;
+}
+```
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! To get started:
+
+1. **Fork** this repository and clone it locally.
+2. **Install dependencies:**
+   ```sh
+   npm install
+   ```
+3. **Run tests:**
+   ```sh
+   npm run test
+   ```
+4. **Build the library:**
+   ```sh
+   npm run build
+   ```
+5. **Lint your code:**
+   ```sh
+   npm run lint
+   ```
+6. **Open a Pull Request** targeting the `dev` branch.
+
+### CI/CD Workflow
+
+- Every push to `dev` triggers tests and build via GitHub Actions.
+- If successful, an automated Pull Request from `dev` to `main` is created.
+- Review and merge the PR to release new versions or trigger deploys.
+
+---
 
 - **Instrument and Tuning Info:**
   - The chord info area now displays the instrument name and tuning (as badge-style notes) directly under the chord name, if provided in the data or via props.
