@@ -1,4 +1,5 @@
 # React + TypeScript + Vite
+##
 
 This is an example React app demonstrating how to use the [`music-chords-diagrams`](https://www.npmjs.com/package/music-chords-diagrams) library.
 
