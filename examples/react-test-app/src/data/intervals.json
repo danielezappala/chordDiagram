@@ -1,0 +1,93 @@
+[
+  {
+    "name": "Perfect Unison",
+    "abbr": "P1",
+    "semitones": 0,
+    "degree": 1,
+    "quality": "perfect"
+  },
+  {
+    "name": "Minor Second",
+    "abbr": "m2",
+    "semitones": 1,
+    "degree": 2,
+    "quality": "minor"
+  },
+  {
+    "name": "Major Second",
+    "abbr": "M2",
+    "semitones": 2,
+    "degree": 2,
+    "quality": "major"
+  },
+  {
+    "name": "Minor Third",
+    "abbr": "m3",
+    "semitones": 3,
+    "degree": 3,
+    "quality": "minor"
+  },
+  {
+    "name": "Major Third",
+    "abbr": "M3",
+    "semitones": 4,
+    "degree": 3,
+    "quality": "major"
+  },
+  {
+    "name": "Perfect Fourth",
+    "abbr": "P4",
+    "semitones": 5,
+    "degree": 4,
+    "quality": "perfect"
+  },
+  {
+    "name": "Tritone",
+    "abbr": "TT",
+    "semitones": 6,
+    "degree": 4,
+    "quality": "augmented"
+  },
+  {
+    "name": "Perfect Fifth",
+    "abbr": "P5",
+    "semitones": 7,
+    "degree": 5,
+    "quality": "perfect"
+  },
+  {
+    "name": "Minor Sixth",
+    "abbr": "m6",
+    "semitones": 8,
+    "degree": 6,
+    "quality": "minor"
+  },
+  {
+    "name": "Major Sixth",
+    "abbr": "M6",
+    "semitones": 9,
+    "degree": 6,
+    "quality": "major"
+  },
+  {
+    "name": "Minor Seventh",
+    "abbr": "m7",
+    "semitones": 10,
+    "degree": 7,
+    "quality": "minor"
+  },
+  {
+    "name": "Major Seventh",
+    "abbr": "M7",
+    "semitones": 11,
+    "degree": 7,
+    "quality": "major"
+  },
+  {
+    "name": "Perfect Octave",
+    "abbr": "P8",
+    "semitones": 12,
+    "degree": 8,
+    "quality": "perfect"
+  }
+]
