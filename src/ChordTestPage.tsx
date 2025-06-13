@@ -16,6 +16,20 @@ const ChordTestPage = (): JSX.Element => {
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
   // Stato per JSON editor
   const [jsonEditorData, setJsonEditorData] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
+
+  // Sincronizza jsonEditorData quando cambia selectedChord (da UI)
+  useEffect(() => {
+    setJsonEditorData(selectedChord);
+  }, [selectedChord]);
+
+  // Sincronizza selectedChord quando cambia jsonEditorData (da JSON editor)
+  useEffect(() => {
+    // Solo se jsonEditorData è diverso da selectedChord
+    if (JSON.stringify(jsonEditorData) !== JSON.stringify(selectedChord)) {
+      setSelectedChord(jsonEditorData);
+    }
+  }, [jsonEditorData]);
+
   const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [dataToDisplay, setDataToDisplay] = useState<string>('');
@@ -300,9 +314,9 @@ const ChordTestPage = (): JSX.Element => {
           </div>
           <ReactJson
             src={jsonEditorData}
-            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
+            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
+            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
             name={false}
             collapsed={false}
             enableClipboard={true}
