@@ -6,7 +6,7 @@ export type FretNumberPosition = 'left' | 'right' | 'none';
 interface FretboardBaseProps extends CSSProperties {
   children?: ReactNode;
   numStrings: number;
-  numFrets: number;
+  
   width: number;
   height: number;
   showFretNumbers?: boolean;
@@ -32,7 +32,7 @@ interface FretboardBaseProps extends CSSProperties {
 const FretboardBase: React.FC<FretboardBaseProps> = ({
   children,
   numStrings,
-  numFrets,
+  
   width,
   height,
   showFretNumbers = true,
@@ -64,7 +64,7 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
   const paddedHeight = height - reservedLabelAreaHeight;
   
   const stringSpacing = width / (numStrings - 1);
-  const fretSpacing = paddedHeight / (numFrets + 1); // +1 for the nut area
+  const fretSpacing = paddedHeight / (5 + 1); // +1 for the nut area
 
   // Calcola la spaziatura per i numeri dei tasti in base alla larghezza della tastiera
   const fretNumberSpacing = width * 0.1; // 10% della larghezza
@@ -235,7 +235,7 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
       })}
 
       {/* Frets */}
-      {Array.from({ length: numFrets + 1 }).map((_, i) => {
+      {Array.from({ length: 5 + 1 }).map((_, i) => {
         const style = getFretStyle(i);
         return (
           <line
@@ -253,7 +253,7 @@ const FretboardBase: React.FC<FretboardBaseProps> = ({
       {fretNumberPosition !== 'none' && ( // Outer check for position still valid
         (showFretNumbers || (startFret > 1)) ? ( // Only render if showFretNumbers is true OR (it's false AND startFret > 1)
           <g className="fret-numbers">
-            {Array.from({ length: numFrets + 1 }).map((_, i) => {
+            {Array.from({ length: 5 + 1 }).map((_, i) => {
               // i is the visual fret line index. 0 is the nut/top line.
               // Fret numbers are typically for the space *after* the line.
               // So, i=1 means the first fret space.

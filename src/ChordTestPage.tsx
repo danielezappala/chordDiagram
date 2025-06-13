@@ -13,39 +13,31 @@ function getStandardTuning(numStrings: number): string[] {
 }
 
 const ChordTestPage = (): JSX.Element => {
+  const [selectedChord, setSelectedChord] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
+  // Stato per JSON editor
   const [jsonEditorData, setJsonEditorData] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
-
-  const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = parseInt(event.target.value, 10);
-    const chord = (chordExamples as ChordDiagramData[])[selectedIndex];
-    if (chord) setJsonEditorData(chord);
-  };
-
-  const getDisplay = () => jsonEditorData.display || {};
-  const updateDisplay = (patch: Partial<NonNullable<ChordDiagramData['display']>>) => {
-    setJsonEditorData(prev => ({
-      ...prev,
-      display: { ...prev.display, ...patch }
-    }));
-  };
-
-  const getBottomLabels = () => jsonEditorData.bottomLabels || { showFingers: false, showTones: true, showIntervals: false };
-  const updateBottomLabels = (patch: Partial<ChordDiagramData['bottomLabels']>) => {
-    setJsonEditorData(prev => ({
-      ...prev,
-      bottomLabels: { ...getBottomLabels(), ...patch }
-    }));
-  };
-
+  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
+  const [dataToDisplay, setDataToDisplay] = useState<string>('');
+  const [jsonToCopy, setJsonToCopy] = useState<string>(''); // State to hold the JSON string for copying
+  const [numFrets, ] = useState<number>(5);
+  const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
   const [chordInfoVisibility, setChordInfoVisibility] = useState({
     showInstrument: true,
     showTuning: true,
     showChordTones: true,
     showIntervals: true,
   });
+  const [bottomLabels, setBottomLabels] = useState({
+    showFingers: false,
+    showTones: true,
+    showIntervals: false
+  });
 
   const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
-    updateBottomLabels({ [key]: !getBottomLabels()[key] });
+    setBottomLabels(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
   };
 
   const handleToggleChordInfoVisibility = (key: keyof typeof chordInfoVisibility) => {
@@ -73,21 +65,32 @@ const ChordTestPage = (): JSX.Element => {
     return Math.max(...validNotes.map((note: { position: { string: number } }) => note.position.string));
   }, []);
 
-// --- Remove unused dataToDisplay, jsonToCopy, and obsolete useEffects ---
+  const [numStrings, setNumStrings] = useState(() => detectNumStrings((chordExamples as ChordDiagramData[])[0]));
 
-  // Helper per numero di tasti
-function getNumFrets() {
-  return jsonEditorData.positions && jsonEditorData.positions[0] && (jsonEditorData.positions[0] as any).numFrets
-    ? (jsonEditorData.positions[0] as any).numFrets
-    : 5;
-}
+  useEffect(() => {
+    if (selectedChord) {
+      const newNumStrings = detectNumStrings(selectedChord);
+      setNumStrings(newNumStrings);
 
-  // Rimuovi l'useEffect che aggiorna chiavi non valide in display
-// Non serve aggiornare display.numStrings, .dataToDisplay, .jsonToCopy
-// Il JSON editor e la UI sono già sincronizzati tramite jsonEditorData
+      // Prepare ordered data for display and copying
+      const { name, instrument, tuning, ...rest } = selectedChord;
+      const orderedDisplay = { name, instrument, tuning, ...rest };
+      const jsonString = JSON.stringify(orderedDisplay, null, 2);
+      setDataToDisplay(jsonString);
+      setJsonToCopy(jsonString);
+    }
+  }, [selectedChord, detectNumStrings]);
 
+  const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = parseInt(event.target.value, 10);
+    const chord = (chordExamples as ChordDiagramData[])[selectedIndex];
+    if (chord) {
+      setSelectedChord(chord);
+      setJsonEditorData(chord); // Aggiorna anche l'editor JSON
+    }
+  };
 
-  if (!jsonEditorData) {
+  if (!selectedChord) {
     return <div>No chord selected or no chords available.</div>;
   }
 
@@ -109,7 +112,7 @@ function getNumFrets() {
                 <label htmlFor="chord-select" className="font-medium block mb-2">Select Chord:</label>
                 <select
                   id="chord-select"
-                  value={(chordExamples as ChordDiagramData[]).findIndex(c => c.name === jsonEditorData.name && JSON.stringify(c.positions) === JSON.stringify(jsonEditorData.positions))}
+                  value={(chordExamples as ChordDiagramData[]).findIndex(c => c.name === selectedChord.name && JSON.stringify(c.positions) === JSON.stringify(selectedChord.positions))}
                   onChange={handleChordChange}
                   className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -121,35 +124,20 @@ function getNumFrets() {
                 </select>
               </div>
               <div className="mb-6">
-                <label htmlFor="num-frets" className="font-medium block mb-2">Number of Frets: <span className="font-bold">{getNumFrets()}</span></label>
-                <input
-                  type="range"
-                  id="num-frets"
-                  min="3"
-                  max="15"
-                  value={getNumFrets()}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                    const newNumFrets = parseInt(e.target.value);
-                    setJsonEditorData(prev => ({
-                      ...prev,
-                      positions: prev.positions ? prev.positions.map((pos, i) => i === 0 ? { ...pos, numFrets: newNumFrets } : pos) : prev.positions
-                    }));
-                  }}
-                  className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1 dark:text-gray-400"><span>3</span><span>15</span></div>
+                
               </div>
               <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
                 <span className="text-sm font-medium">Show Fret Numbers</span>
                 <button
-                  onClick={() => updateDisplay({ showFretNumbers: !getDisplay().showFretNumbers })}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${getDisplay().showFretNumbers ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}
-                  `}
+                  onClick={() => setShowFretNumbers(!showFretNumbers)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${showFretNumbers ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`
+                  }
                 >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${getDisplay().showFretNumbers ? 'translate-x-6' : 'translate-x-1'}`}/>
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${showFretNumbers ? 'translate-x-6' : 'translate-x-1'}`}/>
                 </button>
               </div>
 
+              {/* Moved Note Label Type Here */}
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Note Label Type</h4>
                 <div className="space-y-2">
@@ -159,8 +147,8 @@ function getNumFrets() {
                         type="radio"
                         name="labelType"
                         className="mr-3 h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        checked={getDisplay().labelType === type}
-                        onChange={() => updateDisplay({ labelType: type })}
+                        checked={labelType === type}
+                        onChange={() => setLabelType(type)}
                       />
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </label>
@@ -171,6 +159,7 @@ function getNumFrets() {
 
             <div>
               <h3 className="text-lg font-medium mb-3">Display Options</h3>
+              {/* Note Label Type was here, now moved to the first column */}
 
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Chord Info Details</h4>
@@ -195,8 +184,8 @@ function getNumFrets() {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={getBottomLabels().showFingers}
-                      onChange={() => updateBottomLabels({ showFingers: !getBottomLabels().showFingers })}
+                      checked={bottomLabels.showFingers}
+                      onChange={() => handleToggleBottomLabel('showFingers')}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Fingers</span>
@@ -204,8 +193,8 @@ function getNumFrets() {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={getBottomLabels().showTones}
-                      onChange={() => updateBottomLabels({ showTones: !getBottomLabels().showTones })}
+                      checked={bottomLabels.showTones}
+                      onChange={() => handleToggleBottomLabel('showTones')}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Tones</span>
@@ -213,14 +202,15 @@ function getNumFrets() {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={getBottomLabels().showIntervals}
-                      onChange={() => updateBottomLabels({ showIntervals: !getBottomLabels().showIntervals })}
+                      checked={bottomLabels.showIntervals}
+                      onChange={() => handleToggleBottomLabel('showIntervals')}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Intervals</span>
                   </label>
                 </div>
               </div>
+
               {/* Tuning UI section removed as per request - Lines 326-367 */}
             </div>
           </div>
@@ -245,14 +235,13 @@ function getNumFrets() {
             padding: '1.5rem'
           }}>
             <ChordDiagram
-              key={JSON.stringify(jsonEditorData)}
+              key={JSON.stringify(jsonEditorData) + numStrings + numFrets + labelType + showFretNumbers + JSON.stringify(bottomLabels) + (Array.isArray(jsonEditorData.tuning) ? jsonEditorData.tuning.join(',') : (typeof jsonEditorData.tuning === 'object' && jsonEditorData.tuning && 'notes' in jsonEditorData.tuning && Array.isArray(jsonEditorData.tuning.notes) ? jsonEditorData.tuning.notes.join(',') : ''))}
               data={jsonEditorData}
-              numFrets={getNumFrets()}
               width={300}
               height={700}
-              labelType={getDisplay().labelType || 'finger'}
-              showFretNumbers={getDisplay().showFretNumbers !== undefined ? getDisplay().showFretNumbers : true}
-              bottomLabels={getBottomLabels()}
+              labelType={labelType}
+              showFretNumbers={showFretNumbers}
+              bottomLabels={bottomLabels}
               chordInfoVisibility={chordInfoVisibility}
               className=""
               onCopyJson={(json) => {
@@ -269,9 +258,9 @@ function getNumFrets() {
           </div>
           <ReactJson
             src={jsonEditorData}
-            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
-            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
-            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); } }}
+            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
             name={false}
             collapsed={false}
             enableClipboard={true}

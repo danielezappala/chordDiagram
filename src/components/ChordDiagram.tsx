@@ -30,7 +30,7 @@ interface ChordDiagramProps {
   width?: number;
   height?: number;
   numStrings?: number;
-  numFrets?: number;
+  
   tuning?: string[];
   onNoteClick?: (note: PositionedNote, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
   onBarreClick?: (barre: Barre, position: ChordPositionData, event: React.MouseEvent<unknown>) => void;
@@ -71,7 +71,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       width: widthProp,
       height: heightProp,
       numStrings: numStringsProp,
-      numFrets: numFretsProp,
+      
       tuning: tuningProp,
       onNoteClick: onNoteClickCallback,
       onBarreClick: onBarreClickCallback,
@@ -173,7 +173,6 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       }
     }, []);
 
-
     // Local state for bottomLabels if not provided by props
     const [bottomLabels, setBottomLabels] = useState(() => ({
       showFingers: false,
@@ -194,294 +193,289 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       }));
     };
 
-  const derivedNumStrings = useMemo(() => {
-    if (numStringsProp) return numStringsProp;
+    const derivedNumStrings = useMemo(() => {
+      if (numStringsProp) return numStringsProp;
 
-    if (data.tuning) {
-      if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
-        return data.tuning.notes.length;
+      if (data.tuning) {
+        if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
+          return data.tuning.notes.length;
+        }
+        if (Array.isArray(data.tuning)) {
+          return data.tuning.length;
+        }
       }
-      if (Array.isArray(data.tuning)) {
-        return data.tuning.length;
+      // If positionToDisplay is null, we can't derive from its notes.
+      if (positionToDisplay?.notes && positionToDisplay.notes.length > 0) {
+        const validStrings = positionToDisplay.notes
+          .filter(pn => pn && pn.position)
+          .map(pn => pn.position.string);
+        if (validStrings.length > 0) {
+          return Math.max(...validStrings);
+        }
       }
-    }
-    // If positionToDisplay is null, we can't derive from its notes.
-    if (positionToDisplay?.notes && positionToDisplay.notes.length > 0) {
-      const validStrings = positionToDisplay.notes
-        .filter(pn => pn && pn.position)
-        .map(pn => pn.position.string);
-      if (validStrings.length > 0) {
-        return Math.max(...validStrings);
+      const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
+      return defaultTuningArray.length;
+    }, [numStringsProp, data.tuning, positionToDisplay]);
+
+    const derivedActualTuning = useMemo(() => {
+      if (tuningProp) return tuningProp;
+      if (data.tuning) {
+        if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
+          return data.tuning.notes;
+        }
+        if (Array.isArray(data.tuning)) {
+          return data.tuning;
+        }
       }
-    }
-    const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
-    return defaultTuningArray.length;
-  }, [numStringsProp, data.tuning, positionToDisplay]);
 
-  const derivedActualTuning = useMemo(() => {
-    if (tuningProp) return tuningProp;
-    if (data.tuning) {
-      if (typeof data.tuning === 'object' && !Array.isArray(data.tuning) && data.tuning.notes) {
-        return data.tuning.notes;
+      const strings = derivedNumStrings;
+      if (strings === 4) return ['E', 'A', 'D', 'G'];
+      if (strings === 5) return ['A', 'D', 'G', 'B', 'E'];
+      if (strings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+
+      const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
+      return defaultTuningArray;
+    }, [tuningProp, data.tuning, derivedNumStrings]);
+
+    const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<unknown>) => {
+      if (onNoteClickCallback && positionToDisplay) {
+        onNoteClickCallback(note, positionToDisplay, event);
       }
-      if (Array.isArray(data.tuning)) {
-        return data.tuning;
+    }, [onNoteClickCallback, positionToDisplay]);
+
+    const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent<unknown>) => {
+      if (onBarreClickCallback && positionToDisplay) {
+        onBarreClickCallback(barre, positionToDisplay, event);
       }
-    }
+    }, [onBarreClickCallback, positionToDisplay]);
 
-    const strings = derivedNumStrings;
-    if (strings === 4) return ['E', 'A', 'D', 'G'];
-    if (strings === 5) return ['A', 'D', 'G', 'B', 'E'];
-    if (strings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
+    const noteLabels = useMemo(() => {
+      const labels = Array(derivedNumStrings).fill(' ');
+      if (!positionToDisplay?.notes) return labels;
 
-    const defaultTuningArray = (typeof DEFAULT_TUNING !== 'undefined' && Array.isArray(DEFAULT_TUNING)) ? DEFAULT_TUNING : ['E', 'A', 'D', 'G', 'B', 'E'];
-    return defaultTuningArray;
-  }, [tuningProp, data.tuning, derivedNumStrings]);
+      if (currentLabelType === 'none') {
+        positionToDisplay.notes.forEach((note: PositionedNote) => {
+          if (note.position.fret === -1) {
+            const stringIndex = note.position.string - 1;
+            if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
+              labels[stringIndex] = 'X';
+            }
+          }
+        });
+        return labels;
+      }
 
-  const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<unknown>) => {
-    if (onNoteClickCallback && positionToDisplay) {
-      onNoteClickCallback(note, positionToDisplay, event);
-    }
-  }, [onNoteClickCallback, positionToDisplay]);
-
-  const handleBarreClickForLayer = useCallback((barre: Barre, event: React.MouseEvent<unknown>) => {
-    if (onBarreClickCallback && positionToDisplay) {
-      onBarreClickCallback(barre, positionToDisplay, event);
-    }
-  }, [onBarreClickCallback, positionToDisplay]);
-
-  const noteLabels = useMemo(() => {
-    const labels = Array(derivedNumStrings).fill(' ');
-    if (!positionToDisplay?.notes) return labels;
-
-    if (currentLabelType === 'none') {
       positionToDisplay.notes.forEach((note: PositionedNote) => {
-        if (note.position.fret === -1) {
-          const stringIndex = note.position.string - 1;
-          if (stringIndex >= 0 && stringIndex < derivedNumStrings) {
+        const stringIndex = note.position.string - 1;
+        if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
+
+        const isMuted = note.position.fret === -1 || 
+                        note.annotation?.finger?.toString().toLowerCase() === 'x';
+
+        if (isMuted) {
+          if (currentLabelType === 'finger') {
+            labels[stringIndex] = 'X';
+          } else if (currentLabelType === 'tone') {
+            labels[stringIndex] = ''; // Stringa vuota per i toni delle corde mute
+          } else if (currentLabelType === 'interval') {
+            labels[stringIndex] = ''; // Stringa vuota anche per gli intervalli (o 'X' se preferito)
+          } else { // Include 'none' o qualsiasi altro tipo non gestito esplicitamente
             labels[stringIndex] = 'X';
           }
+        } else {
+          let labelContent: string | null = null;
+          if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
+          else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
+          else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
+          
+          labels[stringIndex] = labelContent === null ? ' ' : labelContent;
         }
       });
       return labels;
+    }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]);
+  
+    // Layout calculations
+    const CONTENT_MIN_WIDTH = 200;
+    const CONTENT_MIN_HEIGHT = 250;
+    const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
+
+    // Start with dimensions from props or defaults
+    const propWidth = widthProp ?? DEFAULT_WIDTH;
+    const propHeight = heightProp ?? DEFAULT_HEIGHT;
+
+    let calculatedWidth = propWidth;
+    let calculatedHeight = propWidth / CONTENT_ASPECT_RATIO;
+
+    if (calculatedHeight > propHeight) {
+      calculatedHeight = propHeight;
+      calculatedWidth = calculatedHeight * CONTENT_ASPECT_RATIO;
     }
 
-    positionToDisplay.notes.forEach((note: PositionedNote) => {
-      const stringIndex = note.position.string - 1;
-      if (stringIndex < 0 || stringIndex >= derivedNumStrings) return;
+    // Ensure minimum dimensions
+    const ABSOLUTE_MIN_RENDER_WIDTH = 50;
+    const ABSOLUTE_MIN_RENDER_HEIGHT = 50;
+    calculatedWidth = Math.max(ABSOLUTE_MIN_RENDER_WIDTH, calculatedWidth);
+    calculatedHeight = Math.max(ABSOLUTE_MIN_RENDER_HEIGHT, calculatedHeight);
 
+    const diagramWidth = calculatedWidth;
+    const diagramHeight = calculatedHeight;
 
-      // Controlla se la corda è muta in modo più robusto
-      const isMuted = note.position.fret === -1 || 
-                      note.annotation?.finger?.toString().toLowerCase() === 'x';
+    // Calculate dimensions and padding
+    const sidePadding = 80;
+    const topPadding = 80;
+    const bottomPadding = 80;
 
-      if (isMuted) {
-        if (currentLabelType === 'finger') {
-          labels[stringIndex] = 'X';
-        } else if (currentLabelType === 'tone') {
-          labels[stringIndex] = ''; // Stringa vuota per i toni delle corde mute
-        } else if (currentLabelType === 'interval') {
-          labels[stringIndex] = ''; // Stringa vuota anche per gli intervalli (o 'X' se preferito)
-        } else { // Include 'none' o qualsiasi altro tipo non gestito esplicitamente
-          labels[stringIndex] = 'X';
-        }
-      } else {
-        let labelContent: string | null = null;
-        if (currentLabelType === 'finger') labelContent = note.annotation?.finger?.toString() ?? null;
-        else if (currentLabelType === 'tone') labelContent = note.annotation?.tone ?? null;
-        else if (currentLabelType === 'interval') labelContent = note.annotation?.interval ?? null;
-        
-        // Se labelContent è null (es. per 'none' o se l'annotazione manca), usa uno spazio.
-        // Se è una stringa vuota (es. per un tono/intervallo che è intenzionalmente vuoto ma non muto), mantienila.
-        labels[stringIndex] = labelContent === null ? ' ' : labelContent;
-      }
-    });
-    return labels;
-  }, [derivedNumStrings, positionToDisplay?.notes, currentLabelType]);
-  
-  // Layout calculations
-  const CONTENT_MIN_WIDTH = 200;
-  const CONTENT_MIN_HEIGHT = 250;
-  const CONTENT_ASPECT_RATIO = CONTENT_MIN_WIDTH / CONTENT_MIN_HEIGHT;
+    const paddedWidth = diagramWidth - sidePadding * 2;
+    const paddedHeight = diagramHeight - topPadding - bottomPadding;
 
-  // Start with dimensions from props or defaults
-  const propWidth = widthProp ?? DEFAULT_WIDTH;
-  const propHeight = heightProp ?? DEFAULT_HEIGHT;
+    const horizontalOffset = 0;
 
-  let calculatedWidth = propWidth;
-  let calculatedHeight = propWidth / CONTENT_ASPECT_RATIO;
+    const barresForLayer = useMemo(() => {
+      if (!positionToDisplay) return [];
+      return positionToDisplay.barres ?? [];
+    }, [positionToDisplay]);
 
-  if (calculatedHeight > propHeight) {
-    calculatedHeight = propHeight;
-    calculatedWidth = calculatedHeight * CONTENT_ASPECT_RATIO;
-  }
+    if (!positionToDisplay) {
+      console.error("ChordDiagram: No valid position data to display for index.", positionIndex);
+      return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
+    }
 
-  // Ensure minimum dimensions
-  const ABSOLUTE_MIN_RENDER_WIDTH = 50;
-  const ABSOLUTE_MIN_RENDER_HEIGHT = 50;
-  calculatedWidth = Math.max(ABSOLUTE_MIN_RENDER_WIDTH, calculatedWidth);
-  calculatedHeight = Math.max(ABSOLUTE_MIN_RENDER_HEIGHT, calculatedHeight);
+    return (
+      <div>
 
-  const diagramWidth = calculatedWidth;
-  const diagramHeight = calculatedHeight;
-
-  // Calculate dimensions and padding
-  const sidePadding = 80;
-  const topPadding = 80;
-  const bottomPadding = 80;
-
-  const horizontalOffset = -Math.min(diagramWidth * 0.5, 0);
-  const paddedWidth = diagramWidth - sidePadding * 1.7;
-  const paddedHeight = diagramHeight - topPadding - bottomPadding;
-  
-  const actualNumFrets = numFretsProp ?? DEFAULT_NUM_FRETS;
-
-  // barresForLayer needs to be defined before the return, and after positionToDisplay might be null
-  const barresForLayer = positionToDisplay?.barres || [];
-
-  // Early return if positionToDisplay is null. This is AFTER all hooks.
-  if (!positionToDisplay) {
-    console.error("ChordDiagram: No valid position data to display for index.", positionIndex);
-    return <svg ref={ref} width={widthProp ?? DEFAULT_WIDTH} height={heightProp ?? DEFAULT_HEIGHT} className={className}><text x="10" y="20">No position data</text></svg>;
-  }
-
-  return (
-    <div>
-
-      {/* Resto della UI come prima */}
-      <div className={styles.diagramContainer}>
-        {/* Action Buttons Container */}
-        <div className={styles.actionButtonsContainer}>
-          {/* Copy Button */}
-          <button
-            onClick={copyImageToClipboard}
-            title="Copy Image to Clipboard"
-            className={`${styles.actionButton} chord-action-btn`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-            </svg>
-          </button>
-          {/* Copy JSON Button (if enabled) */}
-          {props.onCopyJson && (
+        {/* Resto della UI come prima */}
+        <div className={styles.diagramContainer}>
+          {/* Action Buttons Container */}
+          <div className={styles.actionButtonsContainer}>
+            {/* Copy Button */}
             <button
-              onClick={() => props.onCopyJson && props.onCopyJson(props.data)}
-              title="Copia JSON accordo negli appunti"
+              onClick={copyImageToClipboard}
+              title="Copy Image to Clipboard"
               className={`${styles.actionButton} chord-action-btn`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <polyline points="8 16 10.5 13.5 12.5 15.5 16 11"></polyline>
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
               </svg>
             </button>
-          )}
-          {/* Export Button */}
-          <button
-            onClick={exportToPng}
-            title="Export as PNG"
-            className={`${styles.actionButton} chord-action-btn`}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-          </button>
-        </div>
-      </div>
-      {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
-      {propBottomLabels === undefined && (
-        <div className={styles.toggleButtonsContainer}>
-          <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`${styles.toggleButton} ${effectiveBottomLabels.showFingers ? styles.toggleButtonActive : ''}`}>Fingers</button>
-        <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`${styles.toggleButton} ${effectiveBottomLabels.showTones ? styles.toggleButtonActive : ''}`}>Tones</button>
-        <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`${styles.toggleButton} ${effectiveBottomLabels.showIntervals ? styles.toggleButtonActive : ''}`}>Intervals</button>
-      </div>
-    )}
-      <div
-        className="flex flex-col items-center w-full" // Added w-full here
-        style={{
-          marginLeft: `${horizontalOffset}px`,
-          transition: 'margin-left 0.2s ease-in-out'
-        }}
-      >
-        {/* Area to be exported to PNG - assign ref here */}
-        <div ref={diagramRef} className="w-full flex flex-col items-center bg-white rounded-lg shadow-md"> {/* Removed p-4, Added bg-white for defined export background */}
-          {/* Chord Info Section - Moved inside export area */}
-          <div className="w-full flex justify-start mt-4 mb-2">
-            <div className="w-full max-w-[600px] px-4">
-              <ChordInfo
-              name={data.name}
-              intervals={data.theory?.formula?.split(' ') || []}
-              playedNotes={data.theory?.chordTones || []}
-              showFormula={true}
-              className=""
-              instrument={data.instrument || ''}
-              tuning={derivedActualTuning}
-              showInstrument={props.chordInfoVisibility?.showInstrument}
-              showTuning={props.chordInfoVisibility?.showTuning}
-              showChordTones={props.chordInfoVisibility?.showChordTones}
-              showIntervals={props.chordInfoVisibility?.showIntervals}
-            />
-          </div>
-        </div>
-          {/* Diagram Section - Now directly inside the diagramRef div */}
-          <div
-            className={`chord-diagram-svg-container relative ${className || ''}`}
-            style={{
-              width: diagramWidth,
-              height: diagramHeight,
-              // marginLeft: '-25px' // Consider if this is still needed or handled by parent
-            }}
-          >
-          <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
-            <svg
-              ref={ref}
-              className="w-full h-full"
-              viewBox={`0 0 ${diagramWidth} ${diagramHeight}`}
-              preserveAspectRatio="xMidYMid meet"
-              style={{ overflow: 'visible' }}
+            {/* Copy JSON Button (if enabled) */}
+            {props.onCopyJson && (
+              <button
+                onClick={() => props.onCopyJson && props.onCopyJson(props.data)}
+                title="Copia JSON accordo negli appunti"
+                className={`${styles.actionButton} chord-action-btn`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <polyline points="8 16 10.5 13.5 12.5 15.5 16 11"></polyline>
+                </svg>
+              </button>
+            )}
+            {/* Export Button */}
+            <button
+              onClick={exportToPng}
+              title="Export as PNG"
+              className={`${styles.actionButton} chord-action-btn`}
             >
-              <g transform={`translate(${sidePadding}, ${topPadding})`}>
-                <FretboardBase
-                  width={paddedWidth}
-                  height={paddedHeight}
-                  numStrings={derivedNumStrings}
-                  numFrets={actualNumFrets}
-                  startFret={currentBaseFret}
-                  showFretNumbers={currentShowFretNumbers}
-                  fretNumberPosition={currentFretNumberPosition}
-                  showStringNames={currentShowStringNames}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+        {/* Toggle buttons for bottom labels, only if using local state (propBottomLabels not provided) */}
+        {propBottomLabels === undefined && (
+          <div className={styles.toggleButtonsContainer}>
+            <button type="button" onClick={() => toggleBottomLabel('showFingers')} className={`${styles.toggleButton} ${effectiveBottomLabels.showFingers ? styles.toggleButtonActive : ''}`}>Fingers</button>
+            <button type="button" onClick={() => toggleBottomLabel('showTones')} className={`${styles.toggleButton} ${effectiveBottomLabels.showTones ? styles.toggleButtonActive : ''}`}>Tones</button>
+            <button type="button" onClick={() => toggleBottomLabel('showIntervals')} className={`${styles.toggleButton} ${effectiveBottomLabels.showIntervals ? styles.toggleButtonActive : ''}`}>Intervals</button>
+          </div>
+        )}
+        <div
+          className="flex flex-col items-center w-full" // Added w-full here
+          style={{
+            marginLeft: `${horizontalOffset}px`,
+            transition: 'margin-left 0.2s ease-in-out'
+          }}
+        >
+          {/* Area to be exported to PNG - assign ref here */}
+          <div ref={diagramRef} className="w-full flex flex-col items-center bg-white rounded-lg shadow-md"> {/* Removed p-4, Added bg-white for defined export background */}
+            {/* Chord Info Section - Moved inside export area */}
+            <div className="w-full flex justify-start mt-4 mb-2">
+              <div className="w-full max-w-[600px] px-4">
+                <ChordInfo
+                  name={data.name}
+                  intervals={data.theory?.formula?.split(' ') || []}
+                  playedNotes={data.theory?.chordTones || []}
+                  showFormula={true}
+                  className=""
+                  instrument={data.instrument || ''}
                   tuning={derivedActualTuning}
-                  labelType={currentLabelType} // Pass resolved labelType
-                  labels={noteLabels} // Pass generated labels
-                  theory={data.theory} // Pass global theory for now
-                  bottomLabels={effectiveBottomLabels}
-                  positionNotes={positionToDisplay.notes}
+                  showInstrument={props.chordInfoVisibility?.showInstrument}
+                  showTuning={props.chordInfoVisibility?.showTuning}
+                  showChordTones={props.chordInfoVisibility?.showChordTones}
+                  showIntervals={props.chordInfoVisibility?.showIntervals}
+                />
+              </div>
+            </div>
+            {/* Diagram Section - Now directly inside the diagramRef div */}
+            <div
+              className={`chord-diagram-svg-container relative ${className || ''}`}
+              style={{
+                width: diagramWidth,
+                height: diagramHeight,
+                // marginLeft: '-25px' // Consider if this is still needed or handled by parent
+              }}
+            >
+              <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
+                <svg
+                  ref={ref}
+                  className="w-full h-full"
+                  viewBox={`0 0 ${diagramWidth} ${diagramHeight}`}
+                  preserveAspectRatio="xMidYMid meet"
+                  style={{ overflow: 'visible' }}
                 >
-                  <NotesLayer
-                    width={paddedWidth}
-                    height={paddedHeight}
-                    notes={positionToDisplay.notes} // Pass PositionedNote[] directly
-                    barres={barresForLayer}
-                    numStrings={derivedNumStrings}
-                    numFrets={actualNumFrets}
-                    startFret={currentBaseFret}
-                    labelType={currentLabelType} // Pass resolved labelType
-                    labels={noteLabels} // Pass generated labels
-                    onNoteClick={onNoteClickCallback ? handleNoteClickForLayer : undefined}
-                    onBarreClick={onBarreClickCallback ? handleBarreClickForLayer : undefined}
-                  />
-                </FretboardBase>
-              </g>
-            </svg>
-          </div>
-          </div>
-        </div> {/* Closes diagramRef div */}
+                  <g transform={`translate(${sidePadding}, ${topPadding})`}>
+                    <FretboardBase
+                      width={paddedWidth}
+                      height={paddedHeight}
+                      numStrings={derivedNumStrings}
+                      startFret={currentBaseFret}
+                      showFretNumbers={currentShowFretNumbers}
+                      fretNumberPosition={currentFretNumberPosition}
+                      showStringNames={currentShowStringNames}
+                      tuning={derivedActualTuning}
+                      labelType={currentLabelType} // Pass resolved labelType
+                      labels={noteLabels} // Pass generated labels
+                      theory={data.theory} // Pass global theory for now
+                      bottomLabels={effectiveBottomLabels}
+                      positionNotes={positionToDisplay.notes}
+                    >
+                      <NotesLayer
+                        width={paddedWidth}
+                        height={paddedHeight}
+                        notes={positionToDisplay.notes} // Pass PositionedNote[] directly
+                        barres={barresForLayer}
+                        numStrings={derivedNumStrings}
+                        numFrets={5}
+                        startFret={currentBaseFret}
+                        labelType={currentLabelType} // Pass resolved labelType
+                        labels={noteLabels} // Pass generated labels
+                        onNoteClick={onNoteClickCallback ? handleNoteClickForLayer : undefined}
+                        onBarreClick={onBarreClickCallback ? handleBarreClickForLayer : undefined}
+                      />
+                    </FretboardBase>
+                  </g>
+                </svg>
+              </div> {/* Closes relative div */}
+            </div> {/* Closes diagramRef div */}
+          </div> {/* Closes flex div */}
+        </div>
       </div>
-    </div>
-  );
-});
+    );
+  });
 
 ChordDiagram.displayName = 'ChordDiagram';
 

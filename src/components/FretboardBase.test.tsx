@@ -8,7 +8,7 @@ describe('FretboardBase', () => {
     render(
       <FretboardBase
         numStrings={6}
-        numFrets={5}
+
         width={300}
         height={120}
         showFretNumbers={true}
@@ -29,7 +29,7 @@ describe('FretboardBase', () => {
     render(
       <FretboardBase
         numStrings={4}
-        numFrets={4}
+
         width={200}
         height={80}
       >
