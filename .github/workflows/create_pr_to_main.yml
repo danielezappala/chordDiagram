@@ -1,0 +1,40 @@
+name: Create PR from Dev to Main
+
+permissions:
+  contents: write
+  pull-requests: write
+  
+on:
+  workflow_run:
+    workflows: ["CI on dev"]
+    types:
+      - completed
+    branches:
+      - dev
+
+jobs:
+  create_pull_request_job:
+    name: Create Pull Request to Main
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create Pull Request from dev to main
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Merge dev into main"
+          body: |
+            Automated Pull Request to merge changes from `dev` into `main`.
+
+            This PR was created automatically after successful checks on the `dev` branch.
+            Please review the changes carefully before merging.
+          branch: pr/dev-to-main
+          base: main
+          labels: |
+            automerge-candidate
+            dev-to-main
+          draft: false

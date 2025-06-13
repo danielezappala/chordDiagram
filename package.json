@@ -1,6 +1,6 @@
 {
   "name": "music-chords-diagrams",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "description": "A React library for beautiful and customizable chord diagrams",
   "type": "module",
   "sideEffects": false,
@@ -32,15 +32,16 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/danielezappala/chord-diagram-library"
+    "url": "git+https://github.com/danielezappala/chordDiagram.git"
   },
-  "homepage": "https://github.com/danielezappala/chord-diagram-library#readme",
+  "homepage": "https://github.com/danielezappala/chordDiagram#readme",
   "bugs": {
-    "url": "https://github.com/danielezappala/chord-diagram-library/issues"
+    "url": "https://github.com/danielezappala/chordDiagram/issues"
   },
   "dependencies": {
     "html2canvas": "^1.4.1",
     "react-json-view": "^1.21.3",
+    "music-chords-diagrams": "^0.2.2",
     "tailwind-scrollbar": "^3.0.5",
     "zod": "^3.25.28"
   },
