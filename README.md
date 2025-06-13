@@ -1,5 +1,3 @@
-# v0.2.2 Published on npm as `music-chords-diagrams` on date `2025-06-13` 
-
 
 # music-chords-diagrams
 
@@ -16,7 +14,6 @@
 [![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
 [![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
 
-**Latest version published on npm: `0.1.0`**
 
 A customizable and interactive React library for rendering chord diagrams for guitar, bass, ukulele, and other stringed instruments. Built with TypeScript, Tailwind CSS, and Framer Motion.
 ## Features
