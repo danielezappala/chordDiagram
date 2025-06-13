@@ -9,7 +9,8 @@
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
-    "src/types.ts"
+    "src/types.ts",
+    "src/data/chord_examples.json"
   ],
   "scripts": {
     "dev": "vite",

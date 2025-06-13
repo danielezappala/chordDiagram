@@ -111,9 +111,31 @@ We welcome contributions! To get started:
 
 ### CI/CD Workflow
 
-- Every push to `dev` triggers tests and build via GitHub Actions.
-- If successful, an automated Pull Request from `dev` to `main` is created.
-- Review and merge the PR to release new versions or trigger deploys.
+**Pipeline automatica:**
+1. **ci-dev**: Ogni push su `dev` esegue build, lint e test tramite GitHub Actions.
+2. **auto-merge**: Se la CI su `dev` ha successo, parte il merge automatico da `dev` a `main` (senza PR).
+3. **deploy-demo**: Ogni push su `main` (incluso l'auto-merge) builda la test-app e la pubblica su GitHub Pages.
+4. **publish**: Ogni volta che viene creato e pushato un tag versione (es: `v0.2.3`) su `main`, parte la pubblicazione su npm.
+
+**Passaggi manuali dopo l'auto-merge:**
+
+Dopo che il merge automatico da `dev` a `main` è avvenuto, esegui questi comandi per pubblicare una nuova versione:
+
+```sh
+# 1. Vai su main e aggiorna la repo
+git checkout main
+git pull origin main
+
+# 2. Aggiorna la versione (patch/minor/major)
+npm version patch   # oppure minor/major
+
+# 3. Pusha commit e tag
+git push origin main --follow-tags
+```
+
+Questo attiverà:
+- Deploy demo su GitHub Pages (push su main)
+- Pubblicazione su npm (push del tag)
 
 ---
 
