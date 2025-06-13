@@ -3,6 +3,7 @@ import React from 'react';
 
 
 import { VersionBadge } from './components/VersionBadge';
+import { LibraryVersionBadge } from './components/LibraryVersionBadge';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <div className="w-full bg-gradient-to-r from-pink-500 via-yellow-400 to-blue-500 text-white text-center py-3 shadow-lg z-50">
         <span className="font-bold text-lg tracking-wide">TEST APP &mdash; ChordTestPage</span>
         <VersionBadge />
+        <LibraryVersionBadge />
       </div>
       <div className="flex-1 overflow-y-auto">
         <div className="min-h-full p-6">
