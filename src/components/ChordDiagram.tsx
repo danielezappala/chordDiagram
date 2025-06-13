@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
 import ReactJson from 'react-json-view';
 import chordExamples from '../data/chord_examples.json';
+import styles from './ChordDiagram.module.css';
 import html2canvas from 'html2canvas';
 import type {
   PositionedNote,
@@ -365,7 +366,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
           {/* Copy JSON Button (if enabled) */}
           {props.onCopyJson && (
             <button
-              onClick={() => props.onCopyJson && props.onCopyJson(editableData)}
+              onClick={() => props.onCopyJson && props.onCopyJson(props.data)}
               title="Copia JSON accordo negli appunti"
               className={`${styles.actionButton} chord-action-btn`}
             >

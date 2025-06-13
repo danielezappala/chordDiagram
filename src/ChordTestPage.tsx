@@ -300,9 +300,9 @@ const ChordTestPage = (): JSX.Element => {
           </div>
           <ReactJson
             src={jsonEditorData}
-            onEdit={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onAdd={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onDelete={e => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
             name={false}
             collapsed={false}
             enableClipboard={true}
