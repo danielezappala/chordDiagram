@@ -13,46 +13,39 @@ function getStandardTuning(numStrings: number): string[] {
 }
 
 const ChordTestPage = (): JSX.Element => {
-  const [selectedChord, setSelectedChord] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
-  // Stato per JSON editor
   const [jsonEditorData, setJsonEditorData] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
 
-  // Sincronizza jsonEditorData quando cambia selectedChord (da UI)
-  useEffect(() => {
-    setJsonEditorData(selectedChord);
-  }, [selectedChord]);
+  const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const selectedIndex = parseInt(event.target.value, 10);
+    const chord = (chordExamples as ChordDiagramData[])[selectedIndex];
+    if (chord) setJsonEditorData(chord);
+  };
 
-  // Sincronizza selectedChord quando cambia jsonEditorData (da JSON editor)
-  useEffect(() => {
-    // Solo se jsonEditorData è diverso da selectedChord
-    if (JSON.stringify(jsonEditorData) !== JSON.stringify(selectedChord)) {
-      setSelectedChord(jsonEditorData);
-    }
-  }, [jsonEditorData]);
+  const getDisplay = () => jsonEditorData.display || {};
+  const updateDisplay = (patch: Partial<NonNullable<ChordDiagramData['display']>>) => {
+    setJsonEditorData(prev => ({
+      ...prev,
+      display: { ...prev.display, ...patch }
+    }));
+  };
 
-  const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
-  const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
-  const [dataToDisplay, setDataToDisplay] = useState<string>('');
-  const [jsonToCopy, setJsonToCopy] = useState<string>(''); // State to hold the JSON string for copying
-  const [numFrets, setNumFrets] = useState<number>(5);
-  const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
+  const getBottomLabels = () => jsonEditorData.bottomLabels || { showFingers: false, showTones: true, showIntervals: false };
+  const updateBottomLabels = (patch: Partial<ChordDiagramData['bottomLabels']>) => {
+    setJsonEditorData(prev => ({
+      ...prev,
+      bottomLabels: { ...getBottomLabels(), ...patch }
+    }));
+  };
+
   const [chordInfoVisibility, setChordInfoVisibility] = useState({
     showInstrument: true,
     showTuning: true,
     showChordTones: true,
     showIntervals: true,
   });
-  const [bottomLabels, setBottomLabels] = useState({
-    showFingers: false,
-    showTones: true,
-    showIntervals: false
-  });
 
   const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
-    setBottomLabels(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    updateBottomLabels({ [key]: !getBottomLabels()[key] });
   };
 
   const handleToggleChordInfoVisibility = (key: keyof typeof chordInfoVisibility) => {
@@ -80,36 +73,23 @@ const ChordTestPage = (): JSX.Element => {
     return Math.max(...validNotes.map((note: { position: { string: number } }) => note.position.string));
   }, []);
 
-  const [numStrings, setNumStrings] = useState(() => detectNumStrings((chordExamples as ChordDiagramData[])[0]));
+// --- Remove unused dataToDisplay, jsonToCopy, and obsolete useEffects ---
 
-  useEffect(() => {
-    if (selectedChord) {
-      const newNumStrings = detectNumStrings(selectedChord);
-      setNumStrings(newNumStrings);
+  // Helper per numero di tasti
+function getNumFrets() {
+  return jsonEditorData.positions && jsonEditorData.positions[0] && (jsonEditorData.positions[0] as any).numFrets
+    ? (jsonEditorData.positions[0] as any).numFrets
+    : 5;
+}
 
-      // Prepare ordered data for display and copying
-      const { name, instrument, tuning, ...rest } = selectedChord;
-      const orderedDisplay = { name, instrument, tuning, ...rest };
-      const jsonString = JSON.stringify(orderedDisplay, null, 2);
-      setDataToDisplay(jsonString);
-      setJsonToCopy(jsonString);
-    }
-  }, [selectedChord, detectNumStrings]);
+  // Rimuovi l'useEffect che aggiorna chiavi non valide in display
+// Non serve aggiornare display.numStrings, .dataToDisplay, .jsonToCopy
+// Il JSON editor e la UI sono già sincronizzati tramite jsonEditorData
 
-  const handleChordChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const selectedIndex = parseInt(event.target.value, 10);
-    const chord = (chordExamples as ChordDiagramData[])[selectedIndex];
-    if (chord) {
-      setSelectedChord(chord);
-      setJsonEditorData(chord); // Aggiorna anche l'editor JSON
-    }
-  };
 
-  if (!selectedChord) {
+  if (!jsonEditorData) {
     return <div>No chord selected or no chords available.</div>;
   }
-
-
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white p-4">
@@ -129,7 +109,7 @@ const ChordTestPage = (): JSX.Element => {
                 <label htmlFor="chord-select" className="font-medium block mb-2">Select Chord:</label>
                 <select
                   id="chord-select"
-                  value={(chordExamples as ChordDiagramData[]).findIndex(c => c.name === selectedChord.name && JSON.stringify(c.positions) === JSON.stringify(selectedChord.positions))}
+                  value={(chordExamples as ChordDiagramData[]).findIndex(c => c.name === jsonEditorData.name && JSON.stringify(c.positions) === JSON.stringify(jsonEditorData.positions))}
                   onChange={handleChordChange}
                   className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-blue-500 focus:border-blue-500"
                 >
@@ -141,14 +121,20 @@ const ChordTestPage = (): JSX.Element => {
                 </select>
               </div>
               <div className="mb-6">
-                <label htmlFor="num-frets" className="font-medium block mb-2">Number of Frets: <span className="font-bold">{numFrets}</span></label>
+                <label htmlFor="num-frets" className="font-medium block mb-2">Number of Frets: <span className="font-bold">{getNumFrets()}</span></label>
                 <input
                   type="range"
                   id="num-frets"
                   min="3"
                   max="15"
-                  value={numFrets}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setNumFrets(parseInt(e.target.value))}
+                  value={getNumFrets()}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    const newNumFrets = parseInt(e.target.value);
+                    setJsonEditorData(prev => ({
+                      ...prev,
+                      positions: prev.positions ? prev.positions.map((pos, i) => i === 0 ? { ...pos, numFrets: newNumFrets } : pos) : prev.positions
+                    }));
+                  }}
                   className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500"
                 />
                 <div className="flex justify-between text-xs text-gray-500 mt-1 dark:text-gray-400"><span>3</span><span>15</span></div>
@@ -156,15 +142,14 @@ const ChordTestPage = (): JSX.Element => {
               <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
                 <span className="text-sm font-medium">Show Fret Numbers</span>
                 <button
-                  onClick={() => setShowFretNumbers(!showFretNumbers)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${showFretNumbers ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}`
-                  }
+                  onClick={() => updateDisplay({ showFretNumbers: !getDisplay().showFretNumbers })}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${getDisplay().showFretNumbers ? 'bg-blue-600' : 'bg-gray-300 dark:bg-gray-600'}
+                  `}
                 >
-                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${showFretNumbers ? 'translate-x-6' : 'translate-x-1'}`}/>
+                  <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform ${getDisplay().showFretNumbers ? 'translate-x-6' : 'translate-x-1'}`}/>
                 </button>
               </div>
 
-              {/* Moved Note Label Type Here */}
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Note Label Type</h4>
                 <div className="space-y-2">
@@ -174,8 +159,8 @@ const ChordTestPage = (): JSX.Element => {
                         type="radio"
                         name="labelType"
                         className="mr-3 h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                        checked={labelType === type}
-                        onChange={() => setLabelType(type)}
+                        checked={getDisplay().labelType === type}
+                        onChange={() => updateDisplay({ labelType: type })}
                       />
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </label>
@@ -186,7 +171,6 @@ const ChordTestPage = (): JSX.Element => {
 
             <div>
               <h3 className="text-lg font-medium mb-3">Display Options</h3>
-              {/* Note Label Type was here, now moved to the first column */}
 
               <div className="mb-6">
                 <h4 className="font-medium mb-2">Chord Info Details</h4>
@@ -211,8 +195,8 @@ const ChordTestPage = (): JSX.Element => {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={bottomLabels.showFingers}
-                      onChange={() => handleToggleBottomLabel('showFingers')}
+                      checked={getBottomLabels().showFingers}
+                      onChange={() => updateBottomLabels({ showFingers: !getBottomLabels().showFingers })}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Fingers</span>
@@ -220,8 +204,8 @@ const ChordTestPage = (): JSX.Element => {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={bottomLabels.showTones}
-                      onChange={() => handleToggleBottomLabel('showTones')}
+                      checked={getBottomLabels().showTones}
+                      onChange={() => updateBottomLabels({ showTones: !getBottomLabels().showTones })}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Tones</span>
@@ -229,43 +213,14 @@ const ChordTestPage = (): JSX.Element => {
                   <label className="flex items-center gap-3 cursor-pointer select-none">
                     <input
                       type="checkbox"
-                      checked={bottomLabels.showIntervals}
-                      onChange={() => handleToggleBottomLabel('showIntervals')}
+                      checked={getBottomLabels().showIntervals}
+                      onChange={() => updateBottomLabels({ showIntervals: !getBottomLabels().showIntervals })}
                       className="form-checkbox h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="font-medium">Intervals</span>
                   </label>
                 </div>
               </div>
-
-              <div>
-                <h3 className="text-lg font-medium mb-3">Diagram Size</h3>
-                <div className="space-y-4 w-full">
-                  <div>
-                    <label className="block mb-1">Width (max 350px)</label>
-                    <input type="range" min="150" max="350" step="5" value={diagramSize.width}
-                      onChange={(e) => {
-                        const newWidth = parseInt(e.target.value);
-                        setDiagramSize({ width: newWidth, height: newWidth * 2 });
-                      }} className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{diagramSize.width}px</span>
-                  </div>
-                  <div>
-                    <label className="block mb-1">Height (auto: 2× width)</label>
-                    <input type="range" min="200" max="700" step="10"
-                      value={diagramSize.width * 2}
-                      onChange={(e) => {
-                        const newHeight = parseInt(e.target.value);
-                        setDiagramSize({ width: Math.round(newHeight / 2), height: newHeight });
-                      }}
-                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500"
-                      disabled
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{diagramSize.width * 2}px (auto)</span>
-                  </div>
-                </div>
-              </div>
-
               {/* Tuning UI section removed as per request - Lines 326-367 */}
             </div>
           </div>
@@ -290,14 +245,14 @@ const ChordTestPage = (): JSX.Element => {
             padding: '1.5rem'
           }}>
             <ChordDiagram
-              key={JSON.stringify(jsonEditorData) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(jsonEditorData.tuning) ? jsonEditorData.tuning.join(',') : (typeof jsonEditorData.tuning === 'object' && jsonEditorData.tuning && 'notes' in jsonEditorData.tuning && Array.isArray(jsonEditorData.tuning.notes) ? jsonEditorData.tuning.notes.join(',') : ''))}
+              key={JSON.stringify(jsonEditorData)}
               data={jsonEditorData}
-              numFrets={numFrets}
-              width={diagramSize.width}
-              height={diagramSize.height}
-              labelType={labelType}
-              showFretNumbers={showFretNumbers}
-              bottomLabels={bottomLabels}
+              numFrets={getNumFrets()}
+              width={300}
+              height={700}
+              labelType={getDisplay().labelType || 'finger'}
+              showFretNumbers={getDisplay().showFretNumbers !== undefined ? getDisplay().showFretNumbers : true}
+              bottomLabels={getBottomLabels()}
               chordInfoVisibility={chordInfoVisibility}
               className=""
               onCopyJson={(json) => {
