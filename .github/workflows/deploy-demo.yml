@@ -17,10 +17,7 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install root dependencies
-        run: npm install
-
-      - name: Install test app dependencies
+      - name: Install dependencies
         run: |
           cd examples/react-test-app
           npm install
