@@ -1,29 +1,5 @@
 [
   {
-    "name": "C Major",
-    "instrument": "guitar",
-    "theory": { "chordTones": ["C", "E", "G"], "formula": "R 3 5" },
-    "display": { "labelType": "finger" },
-    "positions": [
-      {
-        "baseFret": 1,
-        "notes": [
-          { "position": { "string": 6, "fret": -1 }, "annotation": { "finger": null, "tone": "", "interval": "" } },
-          { "position": { "string": 5, "fret": 3 }, "annotation": { "finger": 3, "tone": "C", "interval": "R" } },
-          { "position": { "string": 4, "fret": 2 }, "annotation": { "finger": 2, "tone": "E", "interval": "3" } },
-          { "position": { "string": 3, "fret": 0 }, "annotation": { "finger": null, "tone": "G", "interval": "5" } },
-          { "position": { "string": 2, "fret": 1 }, "annotation": { "finger": 1, "tone": "C", "interval": "R" } },
-          { "position": { "string": 1, "fret": 0 }, "annotation": { "finger": null, "tone": "E", "interval": "3" } }
-        ],
-        "barres": []
-      }
-    ],
-    "tuning": ["E", "A", "D", "G", "B", "E"]
-  }
-]
-
-[
-  {
     "name": "C Major (Open) v2",
     "instrument": "guitar",
     "theory": { "chordTones": ["C", "E", "G"], "formula": "R 3 5" },
