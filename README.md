@@ -3,6 +3,14 @@
 
 # music-chords-diagrams
 
+[![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
+[![Auto PR dev→main](https://github.com/danielezappala/chordDiagram/actions/workflows/create_pr_to_main.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/create_pr_to_main.yml)
+[![Deploy Test App](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml/badge.svg?branch=main)](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml)
+[![Publish to npm](https://github.com/danielezappala/chordDiagram/actions/workflows/publish.yml/badge.svg?branch=main)](https://github.com/danielezappala/chordDiagram/actions/workflows/publish.yml)
+[![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
+[![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
+
+
 [![Deploy Test App](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml/badge.svg?branch=main)](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml)
 [![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
 [![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
