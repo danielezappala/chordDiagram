@@ -26,14 +26,14 @@ const ChordTestPage = (): JSX.Element => {
   });
 
   const handleToggleBottomLabel = (key: 'showFingers' | 'showTones' | 'showIntervals') => {
-    setBottomLabels((prev: typeof bottomLabels) => ({
+    setBottomLabels(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
   };
 
   const handleToggleChordInfoVisibility = (key: keyof typeof chordInfoVisibility) => {
-    setChordInfoVisibility((prev: typeof chordInfoVisibility) => ({
+    setChordInfoVisibility(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
@@ -229,8 +229,8 @@ const ChordTestPage = (): JSX.Element => {
               bottomLabels={bottomLabels}
               chordInfoVisibility={chordInfoVisibility}
               className=""
-              onCopyJson={(json: unknown) => {
-                navigator.clipboard.writeText(JSON.stringify(json as ChordDiagramData, null, 2));
+              onCopyJson={(json) => {
+                navigator.clipboard.writeText(JSON.stringify(json, null, 2));
                 alert('JSON copiato negli appunti!');
               }}
             />
