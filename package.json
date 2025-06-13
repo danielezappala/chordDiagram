@@ -21,6 +21,9 @@
     "test": "vitest",
   "sync-version": "npm install && node ./scripts/update-readme-version.js"
   },
+  "eslintIgnore": [
+    "scripts/"
+  ],
   "keywords": [
     "react",
     "chord",
