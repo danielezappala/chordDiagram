@@ -1,24 +1,16 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import ReactJson from 'react-json-view';
 import type { ChangeEvent } from 'react';
 import ChordDiagram from './components/ChordDiagram';
 import type { ChordDiagramData } from './types';
 import chordExamples from './data/chord_examples.json';
 
-function getStandardTuning(numStrings: number): string[] {
-  if (numStrings === 4) return ['E', 'A', 'D', 'G'];
-  if (numStrings === 5) return ['A', 'D', 'G', 'B', 'E'];
-  if (numStrings === 7) return ['B', 'E', 'A', 'D', 'G', 'B', 'E'];
-  return ['E', 'A', 'D', 'G', 'B', 'E'];
-}
 
 const ChordTestPage = (): JSX.Element => {
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
   // Stato per JSON editor
   const [jsonEditorData, setJsonEditorData] = useState<ChordDiagramData>((chordExamples as ChordDiagramData[])[0]);
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
-  const [dataToDisplay, setDataToDisplay] = useState<string>('');
-  const [jsonToCopy, setJsonToCopy] = useState<string>(''); // State to hold the JSON string for copying
   const [numFrets, ] = useState<number>(5);
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
   const [chordInfoVisibility, setChordInfoVisibility] = useState({
@@ -71,13 +63,6 @@ const ChordTestPage = (): JSX.Element => {
     if (selectedChord) {
       const newNumStrings = detectNumStrings(selectedChord);
       setNumStrings(newNumStrings);
-
-      // Prepare ordered data for display and copying
-      const { name, instrument, tuning, ...rest } = selectedChord;
-      const orderedDisplay = { name, instrument, tuning, ...rest };
-      const jsonString = JSON.stringify(orderedDisplay, null, 2);
-      setDataToDisplay(jsonString);
-      setJsonToCopy(jsonString);
     }
   }, [selectedChord, detectNumStrings]);
 
@@ -258,9 +243,24 @@ const ChordTestPage = (): JSX.Element => {
           </div>
           <ReactJson
             src={jsonEditorData}
-            onEdit={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onAdd={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
-            onDelete={(e: any) => { if (e.updated_src) { setJsonEditorData(e.updated_src as any); setSelectedChord(e.updated_src as any); } }}
+            onEdit={(e: { updated_src?: unknown }) => {
+              if (e.updated_src && typeof e.updated_src === 'object') {
+                setJsonEditorData(e.updated_src as ChordDiagramData);
+                setSelectedChord(e.updated_src as ChordDiagramData);
+              }
+            }}
+            onAdd={(e: { updated_src?: unknown }) => {
+              if (e.updated_src && typeof e.updated_src === 'object') {
+                setJsonEditorData(e.updated_src as ChordDiagramData);
+                setSelectedChord(e.updated_src as ChordDiagramData);
+              }
+            }}
+            onDelete={(e: { updated_src?: unknown }) => {
+              if (e.updated_src && typeof e.updated_src === 'object') {
+                setJsonEditorData(e.updated_src as ChordDiagramData);
+                setSelectedChord(e.updated_src as ChordDiagramData);
+              }
+            }}
             name={false}
             collapsed={false}
             enableClipboard={true}

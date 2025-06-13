@@ -1,6 +1,4 @@
 import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
-import ReactJson from 'react-json-view';
-import chordExamples from '../data/chord_examples.json';
 import styles from './ChordDiagram.module.css';
 import html2canvas from 'html2canvas';
 import type {
@@ -11,7 +9,7 @@ import type {
 } from '../types';
 
 // Local defaults (as DEFAULT constants are no longer in types.ts)
-const DEFAULT_NUM_FRETS = 5;
+
 const DEFAULT_WIDTH = 200; // Adjusted as per prompt
 const DEFAULT_HEIGHT = 300; // Adjusted as per prompt
 const DEFAULT_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
@@ -44,7 +42,7 @@ interface ChordDiagramProps {
   /**
    * Se fornita, mostra il pulsante per copiare il JSON dell'accordo
    */
-  onCopyJson?: (json: any) => void;
+  onCopyJson?: (json: unknown) => void;
   /**
    * Object to control visibility of individual ChordInfo sections
    */
@@ -237,7 +235,7 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
       return defaultTuningArray;
     }, [tuningProp, data.tuning, derivedNumStrings]);
 
-    const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<unknown>) => {
+    const handleNoteClickForLayer = useCallback((note: PositionedNote, event: React.MouseEvent<SVGGElement, MouseEvent>) => {
       if (onNoteClickCallback && positionToDisplay) {
         onNoteClickCallback(note, positionToDisplay, event);
       }
