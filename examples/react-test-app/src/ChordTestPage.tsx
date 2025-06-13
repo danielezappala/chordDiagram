@@ -114,11 +114,11 @@ const testChords: ChordDiagramData[] = [
 const ChordTestPage = (): JSX.Element => {
   const [testChordsState] = useState<ChordDiagramData[]>(testChords);
   const [selectedChord, setSelectedChord] = useState<ChordDiagramData>(testChords[0]);
-  const [diagramSize, setDiagramSize] = useState({ width: 300, height: 700 });
+
   const [labelType, setLabelType] = useState<'none' | 'finger' | 'tone' | 'interval'>('finger');
   const [dataToDisplay, setDataToDisplay] = useState<string>('');
   const [jsonToCopy, setJsonToCopy] = useState<string>(''); // State to hold the JSON string for copying
-  const [numFrets, setNumFrets] = useState<number>(5);
+
   const [showFretNumbers, setShowFretNumbers] = useState<boolean>(true);
   const [chordInfoVisibility, setChordInfoVisibility] = useState({
     showInstrument: true,
@@ -223,19 +223,7 @@ const ChordTestPage = (): JSX.Element => {
                   ))}
                 </select>
               </div>
-              <div className="mb-6">
-                <label htmlFor="num-frets" className="font-medium block mb-2">Number of Frets: <span className="font-bold">{numFrets}</span></label>
-                <input
-                  type="range"
-                  id="num-frets"
-                  min="3"
-                  max="15"
-                  value={numFrets}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) => setNumFrets(parseInt(e.target.value))}
-                  className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500"
-                />
-                <div className="flex justify-between text-xs text-gray-500 mt-1 dark:text-gray-400"><span>3</span><span>15</span></div>
-              </div>
+
               <div className="flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-3 rounded-lg shadow-sm">
                 <span className="text-sm font-medium">Show Fret Numbers</span>
                 <button
@@ -321,33 +309,7 @@ const ChordTestPage = (): JSX.Element => {
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-medium mb-3">Diagram Size</h3>
-                <div className="space-y-4 w-full">
-                  <div>
-                    <label className="block mb-1">Width (max 350px)</label>
-                    <input type="range" min="150" max="350" step="5" value={diagramSize.width}
-                      onChange={(e) => {
-                        const newWidth = parseInt(e.target.value);
-                        setDiagramSize({ width: newWidth, height: newWidth * 2 });
-                      }} className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500" />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{diagramSize.width}px</span>
-                  </div>
-                  <div>
-                    <label className="block mb-1">Height (auto: 2× width)</label>
-                    <input type="range" min="200" max="700" step="10"
-                      value={diagramSize.width * 2}
-                      onChange={(e) => {
-                        const newHeight = parseInt(e.target.value);
-                        setDiagramSize({ width: Math.round(newHeight / 2), height: newHeight });
-                      }}
-                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer dark:bg-blue-700 accent-blue-500"
-                      disabled
-                    />
-                    <span className="text-sm text-gray-600 dark:text-gray-400">{diagramSize.width * 2}px (auto)</span>
-                  </div>
-                </div>
-              </div>
+
 
               {/* Tuning UI section removed as per request - Lines 326-367 */}
             </div>
@@ -358,16 +320,14 @@ const ChordTestPage = (): JSX.Element => {
         <div className="flex flex-col justify-start items-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md border border-gray-200 dark:border-gray-700 lg:col-span-1 min-h-[350px] h-full">
           <div className="flex flex-col items-center w-full h-full">
   <ChordDiagram
-              key={JSON.stringify(selectedChord) + numStrings + numFrets + labelType + showFretNumbers + diagramSize.width + diagramSize.height + JSON.stringify(bottomLabels) + (Array.isArray(selectedChord.tuning) ? selectedChord.tuning.join(',') : (typeof selectedChord.tuning === 'object' && selectedChord.tuning && 'notes' in selectedChord.tuning && Array.isArray(selectedChord.tuning.notes) ? selectedChord.tuning.notes.join(',') : ''))}
+              key={JSON.stringify(selectedChord) + numStrings + labelType + showFretNumbers + JSON.stringify(bottomLabels) + (Array.isArray(selectedChord.tuning) ? selectedChord.tuning.join(',') : (typeof selectedChord.tuning === 'object' && selectedChord.tuning && 'notes' in selectedChord.tuning && Array.isArray(selectedChord.tuning.notes) ? selectedChord.tuning.notes.join(',') : ''))}
               data={selectedChord}
-              numFrets={numFrets}
-              width={diagramSize.width}
-              height={diagramSize.height}
+              width={300}
+              height={700}
               labelType={labelType}
               showFretNumbers={showFretNumbers}
-              // tuning={customTuning} // Removed, ChordDiagram will use selectedChord.tuning
               bottomLabels={bottomLabels}
-              chordInfoVisibility={chordInfoVisibility} // Pass new object prop
+              chordInfoVisibility={chordInfoVisibility}
               className=""
             />
           </div> {/* Closes inner styled div for ChordDiagram */}
