@@ -18,7 +18,8 @@
     "preview": "vite preview",
     "prepublishOnly": "npm run build",
     "type-check": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest",
+  "sync-version": "npm install && node ./scripts/update-readme-version.js"
   },
   "keywords": [
     "react",

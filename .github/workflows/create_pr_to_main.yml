@@ -5,12 +5,14 @@ permissions:
   pull-requests: write
   
 on:
-  workflow_run:
-    workflows: ["CI on dev"]
-    types:
-      - completed
-    branches:
-      - dev
+  # Disabilitato: solo trigger manuale
+  workflow_dispatch:
+  # workflow_run:
+  #   workflows: ["CI on dev"]
+  #   types:
+  #     - completed
+  #   branches:
+  #     - dev
 
 jobs:
   create_pull_request_job:
