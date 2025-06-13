@@ -19,7 +19,7 @@
     "prepublishOnly": "npm run build",
     "type-check": "tsc --noEmit",
     "test": "vitest",
-  "sync-version": "npm install && node ./scripts/update-readme-version.js"
+  "sync-version": "npm install && node ./scripts/update-readme.js"
   },
   "eslintIgnore": [
     "scripts/"
