@@ -1,6 +1,7 @@
 import React, { forwardRef, useState, useMemo, useCallback, useRef } from 'react';
 import styles from './ChordDiagram.module.css';
 import html2canvas from 'html2canvas';
+import { LibraryVersionBadge } from './LibraryVersionBadge';
 import type {
   PositionedNote,
   Barre,
@@ -419,58 +420,44 @@ const ChordDiagram = forwardRef<SVGSVGElement, ChordDiagramProps>(
               </div>
             </div>
             {/* Diagram Section - Now directly inside the diagramRef div */}
-            <div
-              className={`chord-diagram-svg-container relative ${className || ''}`}
-              style={{
-                width: diagramWidth,
-                height: diagramHeight,
-                // marginLeft: '-25px' // Consider if this is still needed or handled by parent
-              }}
+            <svg
+              width={diagramWidth}
+              height={diagramHeight}
             >
-              <div className="relative w-full h-full" style={{ marginLeft: '-2px' }}>
-                <svg
-                  ref={ref}
-                  className="w-full h-full"
-                  viewBox={`0 0 ${diagramWidth} ${diagramHeight}`}
-                  preserveAspectRatio="xMidYMid meet"
-                  style={{ overflow: 'visible' }}
+              <g transform={`translate(${sidePadding}, ${topPadding})`}>
+                <FretboardBase
+                  width={paddedWidth}
+                  height={paddedHeight}
+                  numStrings={derivedNumStrings}
+                  startFret={currentBaseFret}
+                  showFretNumbers={currentShowFretNumbers}
+                  fretNumberPosition={currentFretNumberPosition}
+                  showStringNames={currentShowStringNames}
+                  tuning={derivedActualTuning}
+                  labelType={currentLabelType} // Pass resolved labelType
+                  labels={noteLabels} // Pass generated labels
+                  theory={data.theory} // Pass global theory for now
+                  bottomLabels={effectiveBottomLabels}
+                  positionNotes={positionToDisplay.notes}
                 >
-                  <g transform={`translate(${sidePadding}, ${topPadding})`}>
-                    <FretboardBase
-                      width={paddedWidth}
-                      height={paddedHeight}
-                      numStrings={derivedNumStrings}
-                      startFret={currentBaseFret}
-                      showFretNumbers={currentShowFretNumbers}
-                      fretNumberPosition={currentFretNumberPosition}
-                      showStringNames={currentShowStringNames}
-                      tuning={derivedActualTuning}
-                      labelType={currentLabelType} // Pass resolved labelType
-                      labels={noteLabels} // Pass generated labels
-                      theory={data.theory} // Pass global theory for now
-                      bottomLabels={effectiveBottomLabels}
-                      positionNotes={positionToDisplay.notes}
-                    >
-                      <NotesLayer
-                        width={paddedWidth}
-                        height={paddedHeight}
-                        notes={positionToDisplay.notes} // Pass PositionedNote[] directly
-                        barres={barresForLayer}
-                        numStrings={derivedNumStrings}
-                        numFrets={5}
-                        startFret={currentBaseFret}
-                        labelType={currentLabelType} // Pass resolved labelType
-                        labels={noteLabels} // Pass generated labels
-                        onNoteClick={onNoteClickCallback ? handleNoteClickForLayer : undefined}
-                        onBarreClick={onBarreClickCallback ? handleBarreClickForLayer : undefined}
-                      />
-                    </FretboardBase>
-                  </g>
-                </svg>
-              </div> {/* Closes relative div */}
-            </div> {/* Closes diagramRef div */}
-          </div> {/* Closes flex div */}
-        </div>
+                  <NotesLayer
+                    width={paddedWidth}
+                    height={paddedHeight}
+                    notes={positionToDisplay.notes} // Pass PositionedNote[] directly
+                    barres={barresForLayer}
+                    numStrings={derivedNumStrings}
+                    numFrets={5}
+                    startFret={currentBaseFret}
+                    labelType={currentLabelType} // Pass resolved labelType
+                    labels={noteLabels} // Pass generated labels
+                    onNoteClick={onNoteClickCallback ? handleNoteClickForLayer : undefined}
+                    onBarreClick={onBarreClickCallback ? handleBarreClickForLayer : undefined}
+                  />
+                </FretboardBase>
+              </g>
+            </svg>
+          </div> {/* Closes diagramRef div */}
+        </div> {/* Closes flex div */}
       </div>
     );
   });
@@ -492,6 +479,13 @@ const ChordDiagramWithErrorBoundary = forwardRef<SVGSVGElement, ChordDiagramProp
 });
 
 ChordDiagramWithErrorBoundary.displayName = 'ChordDiagramWithErrorBoundary';
+
+// Version badge discreto in basso a destra fuori dal diagramma
+export const ChordDiagramVersionBadgeArea = () => (
+  <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginTop: '0.5em' }}>
+    <LibraryVersionBadge />
+  </div>
+);
 
 export default ChordDiagramWithErrorBoundary;
 // Export the type for named imports (ChordDiagramProps is now imported from types.ts)

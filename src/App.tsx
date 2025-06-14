@@ -2,6 +2,9 @@ import ChordTestPage from './ChordTestPage';
 import React from 'react';
 
 
+
+import { ChordDiagramVersionBadgeArea } from './components/ChordDiagram';
+
 function App() {
   return (
     <div className="h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white flex flex-col">
@@ -10,6 +13,7 @@ function App() {
           <ChordTestPage />
         </div>
       </div>
+      <ChordDiagramVersionBadgeArea />
     </div>
   );
 }
