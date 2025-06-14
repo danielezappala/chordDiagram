@@ -2,12 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Personalizzazioni specifiche della test app (se servono) */
-/* Ad esempio: banner demo, override di layout della pagina di test, ecc. */
-
-/* Se vuoi mantenere uno stile custom per il banner demo, puoi aggiungerlo qui. */
-
-/* Tutti gli stili relativi a .chord-action-btn, .chord-pill, .chord-diagram, .chord-fretboard, ecc. sono già gestiti dalla libreria. Non serve duplicarli qui. */
 
 /* Custom scrollbar (opzionale, se vuoi mantenerlo solo nella test app) */
 ::-webkit-scrollbar {

@@ -4,7 +4,7 @@ import type { ChangeEvent } from 'react';
 import { ChordDiagram } from 'music-chords-diagrams';
 import chordExamplesRaw from './data/chord_examples.json';
 import type { ChordDiagramData } from 'music-chords-diagrams';
-import './ChordDiagram.module.css';
+// import './ChordDiagram.module.css';
 const chordExamples: ChordDiagramData[] = chordExamplesRaw as unknown as ChordDiagramData[];
 
 const ChordTestPage = (): JSX.Element => {

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { AnimatePresence } from 'framer-motion';
 import './index.css';
 import App from './App';
+import 'music-chords-diagrams/dist/chord-diagram-library.css';
 
 // Helper component to handle dark mode
 function ThemeProvider({ children }: { children: React.ReactNode }) {
