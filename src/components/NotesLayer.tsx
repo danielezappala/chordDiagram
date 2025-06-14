@@ -46,7 +46,8 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   const paddedHeight = height - labelAreaHeight; // height here is paddedHeight from ChordDiagram
   
   const stringSpacing = numStrings > 1 ? width / (numStrings - 1) : width; // Avoid division by zero if numStrings is 1
-  const fretSpacing = paddedHeight / (numFrets + 1);
+  // Aumenta la larghezza dei tasti del 15%
+  const fretSpacing = (paddedHeight / (numFrets + 1)) * 0.8;
   const noteRadius = Math.min(stringSpacing, fretSpacing) * 0.4;
 
   const handleNoteClick = (e: MouseEvent<SVGGElement, globalThis.MouseEvent>, note: PositionedNote) => {
@@ -72,26 +73,25 @@ const NotesLayer: React.FC<NotesLayerProps> = (props) => {
   };
   
   // Calculate the y position for a given fret number
-  const getFretY = (fret: number): number => { // fret is always number
-    // For open strings (fret === 0)
-    if (fret === 0) return -fretSpacing * 0.75; // Positioned higher
-    
-    // For fingered frets (fret > 0)
-    const fretNum = fret;
-    
-    // Calculate the y position for a given fret number.
-    // Notes are typically centered between fret lines.
-    // The fret lines are at 0, fretSpacing, 2*fretSpacing, etc.
-    // - For fretNum = 1 (first fret), the note is centered at 0.5 * fretSpacing.
-    // - For fretNum = 2 (second fret), the note is centered at 1.5 * fretSpacing.
-    // And so on. This is achieved by (fretNum - 0.5) * fretSpacing.
-    let y = (fretNum - 0.5) * fretSpacing;
-    
-    // Adjust for startFret > 1.
+  const getFretY = (fret: number): number => {
+    // Per le corde a vuoto (fret === 0), posiziona il pallino sopra il capotasto
+    if (fret === 0) return -fretSpacing * 0.75;
+
+    // Per tasti premuti (fret > 0):
+    // Posiziona il centro del pallino ben all'interno dello spazio del tasto,
+    // lasciando un margine pari a noteRadius sia sopra che sotto.
+    // Lo spazio del tasto va da (fret-1)*fretSpacing a fret*fretSpacing.
+    // Il centro ideale è:
+    //   y = (fret-1)*fretSpacing + noteRadius + (fretSpacing-2*noteRadius)/2
+    //     = (fret-1)*fretSpacing + fretSpacing/2
+    // (Se noteRadius è piccolo rispetto a fretSpacing, coincide col centro del tasto)
+    let y = (fret - 1) * fretSpacing + noteRadius + (fretSpacing - 2 * noteRadius) / 2;
+
+    // Se il diagramma parte da startFret > 1, correggi la posizione
     if (startFret > 1) {
       y -= (startFret - 1) * fretSpacing;
     }
-    
+
     return y;
   };
 
