@@ -1,4 +1,3 @@
-
 # music-chords-diagrams
 
 [![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
@@ -43,22 +42,21 @@ yarn add music-chords-diagrams
 import { ChordDiagram } from 'music-chords-diagrams';
 import 'music-chords-diagrams/dist/style.css';
 
+// Minimal example - see "Chord Data Format" for full options
 const chordData = {
   name: 'C Major',
-  positions: [
-    {
-      baseFret: 1,
-      notes: [
-        { position: { string: 6, fret: -1 } },
-        { position: { string: 5, fret: 3 } },
-        { position: { string: 4, fret: 2 } },
-        { position: { string: 3, fret: 0 } },
-        { position: { string: 2, fret: 1 } },
-        { position: { string: 1, fret: 0 } }
-      ],
-      barres: []
-    }
-  ]
+  positions: [{
+    baseFret: 1,
+    notes: [
+      { position: { string: 6, fret: -1 } }, // muted string
+      { position: { string: 5, fret: 3 } },
+      { position: { string: 4, fret: 2 } },
+      { position: { string: 3, fret: 0 } },
+      { position: { string: 2, fret: 1 } },
+      { position: { string: 1, fret: 0 } }
+    ],
+    barres: []
+  }]
 };
 
 export default function App() {
@@ -71,30 +69,6 @@ export default function App() {
 ## Chord Data Format
 
 The `ChordDiagram` component expects a data object with this structure:
-
-### Minimal Example
-
-```js
-{
-  name: 'C Major',
-  positions: [
-    {
-      baseFret: 1,
-      notes: [
-        { position: { string: 6, fret: -1 } }, // muted string
-        { position: { string: 5, fret: 3 } },
-        { position: { string: 4, fret: 2 } },
-        { position: { string: 3, fret: 0 } },
-        { position: { string: 2, fret: 1 } },
-        { position: { string: 1, fret: 0 } }
-      ],
-      barres: []
-    }
-  ]
-}
-```
-
-### Full Example (with all supported fields)
 
 ```js
 {
@@ -263,4 +237,3 @@ If you're not using a bundler that handles CSS imports in JavaScript, you might 
 <link rel="stylesheet" href="node_modules/chord-diagram-library/dist/style.css">
 ```
 (Adjust path as necessary depending on how `node_modules` are served).
-
