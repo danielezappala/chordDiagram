@@ -1,6 +1,5 @@
 
 # music-chords-diagrams
-# 
 
 [![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
 [![Auto PR dev→main](https://github.com/danielezappala/chordDiagram/actions/workflows/create_pr_to_main.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/create_pr_to_main.yml)
@@ -9,66 +8,48 @@
 [![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
 [![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
 
-
-[![Deploy Test App](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml/badge.svg?branch=main)](https://github.com/danielezappala/chordDiagram/actions/workflows/deploy-demo.yml)
-[![CI on dev](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml/badge.svg?branch=dev)](https://github.com/danielezappala/chordDiagram/actions/workflows/ci-dev.yml)
-[![npm version](https://img.shields.io/npm/v/music-chords-diagrams?label=npm)](https://www.npmjs.com/package/music-chords-diagrams)
-[![npm downloads](https://img.shields.io/npm/dm/music-chords-diagrams.svg)](https://www.npmjs.com/package/music-chords-diagrams)
-
-
 A customizable and interactive React library for rendering chord diagrams for guitar, bass, ukulele, and other stringed instruments. Built with TypeScript, Tailwind CSS, and Framer Motion.
+
+---
+
 ## Features
 
 - 🎸 Render beautiful, responsive chord diagrams
 - 🎨 Customizable appearance with Tailwind CSS
 - ✨ Smooth animations with Framer Motion
-- 🎮 Interactive editor for creating and editing chords
-- 🌓 Dark mode support
-- 📱 Touch and mouse support
-- 🎨 Customizable colors, sizes, and labels
+- 🏷️ Customizable info, sizes, and label
+
+---
 
 ## Installation
 
-### Peer Dependencies
+```bash
+npm install music-chords-diagrams
+# or
+yarn add music-chords-diagrams
+```
 
-This library requires the following peer dependencies in your project:
-
+**Peer dependencies:**
 - react (>=18)
 - react-dom (>=18)
 - framer-motion (>=7)
-- tailwindcss (optional, only if you want to customize styles)
-- tailwindcss (if you want to customize styles, otherwise the built CSS is included)
-
-
-```bash
-npm install chord-diagram-library@beta
-# or
-yarn add chord-diagram-library@beta
-```
-
-> **Note:** Use `@beta` to install the latest published version if you want to test the latest features before the stable release.
-
-Current version: `0.1.15` (beta)
+- tailwindcss (optional, for custom styles)
 
 ---
 
-## What’s New
-
----
-
-## 🚀 Quick Start
+## Quick Start
 
 ```tsx
-import React from "react";
-import { ChordDiagram } from "music-chords-diagrams";
+import { ChordDiagram } from 'music-chords-diagrams';
+import 'music-chords-diagrams/dist/style.css';
 
 const chordData = {
-  name: "C Major",
+  name: 'C Major',
   positions: [
     {
       baseFret: 1,
       notes: [
-        { position: { string: 6, fret: -1 } }, // Low E muted
+        { position: { string: 6, fret: -1 } },
         { position: { string: 5, fret: 3 } },
         { position: { string: 4, fret: 2 } },
         { position: { string: 3, fret: 0 } },
@@ -87,172 +68,101 @@ export default function App() {
 
 ---
 
-## 🤝 Contributing
+## Chord Data Format
+
+The `ChordDiagram` component expects a data object with this structure:
+
+### Minimal Example
+
+```js
+{
+  name: 'C Major',
+  positions: [
+    {
+      baseFret: 1,
+      notes: [
+        { position: { string: 6, fret: -1 } }, // muted string
+        { position: { string: 5, fret: 3 } },
+        { position: { string: 4, fret: 2 } },
+        { position: { string: 3, fret: 0 } },
+        { position: { string: 2, fret: 1 } },
+        { position: { string: 1, fret: 0 } }
+      ],
+      barres: []
+    }
+  ]
+}
+```
+
+### Full Example (with all supported fields)
+
+```js
+{
+  name: "C Major (Open)",
+  instrument: "guitar",
+  theory: { chordTones: ["C", "E", "G"], formula: "R 3 5" },
+  display: { labelType: "finger", showFretNumbers: true, showStringNames: true },
+  positions: [
+    {
+      baseFret: 1,
+      notes: [
+        { position: { string: 6, fret: -1 }, annotation: { finger: null, tone: null, interval: null } },
+        { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: "C", interval: "R" } },
+        { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: "E", interval: "3" } },
+        { position: { string: 3, fret: 0 }, annotation: { finger: "O", tone: "G", interval: "5" } },
+        { position: { string: 2, fret: 1 }, annotation: { finger: 1, tone: "C", interval: "R" } },
+        { position: { string: 1, fret: 0 }, annotation: { finger: "O", tone: "E", interval: "3" } }
+      ],
+      barres: []
+    }
+  ],
+  tuning: ["E", "A", "D", "G", "B", "E"]
+}
+```
+
+- **name**: Chord name (string, required)
+- **positions**: Array of positions (at least one required)
+  - **baseFret**: Fret number shown at the top of the diagram
+  - **notes**: Array of note objects, one per string
+    - **position.string**: String number (1 = highest pitch)
+    - **position.fret**: Fret number (`-1` for muted, `0` for open)
+    - **annotation**: (optional) `{ finger, tone, interval }`
+  - **barres**: (optional) Array of barre objects `{ fret, fromString, toString, finger }`
+- **instrument**: (optional) Instrument name
+- **theory**: (optional) Chord tones and formula
+- **display**: (optional) Display preferences
+- **tuning**: (optional) Array of string notes, lowest to highest
+
+---
+
+## API Overview
+
+- `<ChordDiagram />` is the main component. Pass your chord data as the `data` prop.
+- The main API is the `<ChordDiagram />` React component, which takes a chord data object as shown above.
+- For advanced usage, TypeScript type definitions are available in `src/types.ts`.
+- Supports custom tunings, multiple positions, fingerings, intervals, and more.
+
+---
+
+## Contributing
 
 We welcome contributions! To get started:
 
-1. **Fork** this repository and clone it locally.
-2. **Install dependencies:**
-   ```sh
-   npm install
-   ```
-3. **Run tests:**
-   ```sh
-   npm run test
-   ```
-4. **Build the library:**
-   ```sh
-   npm run build
-   ```
-5. **Lint your code:**
-   ```sh
-   npm run lint
-   ```
-6. **Open a Pull Request** targeting the `dev` branch.
+1. Fork this repository and clone it locally.
+2. Install dependencies: `npm install`
+3. Run tests: `npm run test`
+4. Build the library: `npm run build`
+5. Lint your code: `npm run lint`
+6. Open a Pull Request targeting the `dev` branch.
 
-### CI/CD Workflow
-
-**Pipeline automatica:**
-1. **ci-dev**: Ogni push su `dev` esegue build, lint e test tramite GitHub Actions.
-2. **auto-merge**: Se la CI su `dev` ha successo, parte il merge automatico da `dev` a `main` (senza PR).
-3. **deploy-demo**: Ogni push su `main` (incluso l'auto-merge) builda la test-app e la pubblica su GitHub Pages.
-4. **publish**: Ogni volta che viene creato e pushato un tag versione (es: `v0.2.3`) su `main`, parte la pubblicazione su npm.
-
-**Passaggi manuali dopo l'auto-merge:**
-
-Dopo che il merge automatico da `dev` a `main` è avvenuto, esegui questi comandi per pubblicare una nuova versione:
-
-```sh
-# 1. Vai su main e aggiorna la repo
-git checkout main
-git pull origin main
-
-# 2. Aggiorna la versione (patch/minor/major)
-npm version patch   # oppure minor/major
-
-# 3. Pusha commit e tag
-git push origin main --follow-tags
-```
-
-Questo attiverà:
-- Deploy demo su GitHub Pages (push su main)
-- Pubblicazione su npm (push del tag)
+See [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
 
 ---
 
-- **Instrument and Tuning Info:**
-  - The chord info area now displays the instrument name and tuning (as badge-style notes) directly under the chord name, if provided in the data or via props.
-  - The tuning notes are shown in a single horizontal row with the label `Tuning:`.
-- **Bottom Label Toggles & Badges:**
-  - Bottom label rows (Fingers, Tones, Intervals) can be toggled on/off and are always synchronized with their left-side label badges.
-  - Left-side badges for each bottom label row are styled consistently and aligned for clarity.
-- **TypeScript & API:**
-  - New props: `instrument` and `tuning` can be passed to `ChordInfo` and will be displayed if present.
-  - `tuning` can be a `string[]` or derived from `ChordDiagramData`.
+## License
 
----
+MIT
 
----
-
-## Quick Start
-
-1. **Install the library and peer dependencies:**
-   ```bash
-   npm install chord-diagram-library@beta react@^18 react-dom@^18 framer-motion@^7
-   # tailwindcss only if you want to customize styles
-   ```
-
-2. **Importa il componente e il CSS:**
-   ```tsx
-   import { ChordDiagram } from 'chord-diagram-library';
-   import type { ChordDiagramData } from 'chord-diagram-library';
-   import 'chord-diagram-library/chord-diagram-library.css'; // Always import the CSS
-   ```
-
-3. **Usa il componente in React:**
-   ```tsx
-   // Example with instrument and tuning info
-   import { ChordDiagram } from 'chord-diagram-library';
-   import type { ChordDiagramData } from 'chord-diagram-library';
-
-   const cMajorData: ChordDiagramData = {
-     name: 'C Major (Open)',
-     instrument: 'guitar',
-     positions: [ /* ... */ ],
-     tuning: ['E', 'A', 'D', 'G', 'B', 'E'],
-   };
-
-   <ChordDiagram
-     data={cMajorData}
-     width={250}
-     height={300}
-   />
-   // The diagram will show the instrument and tuning badges below the chord name.
-   ```
-   const cMajorData: ChordDiagramData = {
-     name: 'C Major (Open)',
-     instrument: 'guitar',
-     positions: [
-       {
-         baseFret: 1,
-         notes: [
-           { position: { string: 6, fret: -1 }, annotation: { finger: 'X', tone: undefined, interval: undefined } },
-           { position: { string: 5, fret: 3 }, annotation: { finger: 3, tone: 'C', interval: 'R' } },
-           { position: { string: 4, fret: 2 }, annotation: { finger: 2, tone: 'E', interval: '3' } },
-           { position: { string: 3, fret: 0 }, annotation: { finger: 'O', tone: 'G', interval: '5' } },
-           { position: { string: 1, fret: 0 }, annotation: { finger: 'O', tone: 'E', interval: '3' } }
-         ],
-         barres: []
-       }
-     ],
-     theory: { chordTones: ['C', 'E', 'G'], formula: 'R 3 5' },
-     display: { labelType: 'finger', showFretNumbers: true, showStringNames: true },
-     tuning: ['E', 'A', 'D', 'G', 'B', 'E']
-   };
-        { position: { string: 4, fret: 2 }, annotation: { tone: 'E', finger: '2' } }, // D string, 2nd fret = E
-        { position: { string: 5, fret: 3 }, annotation: { tone: 'C', finger: '3' } }, // A string, 3rd fret = C
-{{ ... }}
-        { position: { string: 6, fret: -1 } }, // Low E string muted
-      ],
-      // Optional barres for this position
-      // barres: [{ fromString: 1, toString: 5, fret: 3, finger: '1' }]
-    }
-  ],
-  tuning: {
-    name: 'Standard Guitar',
-    notes: ['E', 'A', 'D', 'G', 'B', 'E'] // Low E to High E
-  }
-};
-
-function App() {
-  return (
-    <ChordDiagram
-      data={cMajorData}
-      width={250} // Example width
-      height={300} // Example height
-    />
-  );
-}
-```
-
-## Interactive Editor
-
-Use the `InteractiveChordEditor` component to let users create and edit chord diagrams:
-
-```tsx
-import { InteractiveChordEditor } from '@yourusername/chord-diagram-lib';
-
-function App() {
-  return (
-    <div className="p-8">
-      <h1>Chord Diagram Editor</h1>
-      <InteractiveChordEditor />
-    </div>
-  );
-}
-```
-
-## API Reference
 
 ### ChordDiagram Props
 
@@ -273,29 +183,6 @@ function App() {
 | `onBarreClick`   | `(barre: Barre, posData: ChordPositionData, event: MouseEvent) => void`       | `undefined` | Callback for when a barre is clicked.                                       |
 | `style`          | `React.CSSProperties`                                                         | `undefined` | Custom inline styles for the main container.                                |
 | `className` | `string` | `''` | Additional CSS class names for the main SVG container. |
-
-## Usage in Another Project (Local Test)
-
-To test your library before publishing:
-
-1. Build the library:
-   ```bash
-   npm run build
-   ```
-2. Pack it:
-   ```bash
-   npm pack
-   ```
-   This will generate a file like `chord-diagram-library-0.1.0.tgz`.
-3. In your test project, run:
-   ```bash
-   npm install /path/to/chord-diagram-library-0.1.0.tgz
-   ```
-4. Import in your React app:
-   ```tsx
-   import { ChordDiagram } from 'chord-diagram-library';
-   import 'chord-diagram-library/dist/style.css';
-   ```
 
 ---
 
@@ -352,16 +239,6 @@ This convention applies to `FretPosition.string` and `Barre.fromString/toString`
 *   `ChordPositionData.baseFret` determines the fret shown at the top of the diagram for that specific position.
 *   **Fret Number Display**: If `showFretNumbers` is true (or conditionally for `baseFret > 1`), displayed numbers correspond to actual fret numbers, starting with `baseFret`.
 
-### InteractiveChordEditor Props
-
-| Prop | Type | Default | Description |
-|------|------|---------|-------------|
-| `initialStrings` | `number` | `6` | Initial number of strings |
-| `initialFrets` | `number` | `5` | Initial number of frets |
-| `width` | `number \| string` | `300` | Width of the editor |
-| `height` | `number \| string` | `350` | Height of the editor |
-| `className` | `string` | `''` | Additional CSS class names |
-
 ## Types
 
 ```typescript
@@ -387,66 +264,3 @@ If you're not using a bundler that handles CSS imports in JavaScript, you might 
 ```
 (Adjust path as necessary depending on how `node_modules` are served).
 
-## Styling Customization
-
-The library uses Tailwind CSS for styling. You can customize the appearance by overriding the default styles:
-
-```css
-/* In your global CSS */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer components {
-  .chord-note {
-    @apply fill-current text-blue-600 dark:text-blue-400;
-  }
-  
-  .chord-barre {
-    @apply fill-current text-purple-600 dark:text-purple-400;
-  }
-  
-  .chord-string {
-    @apply stroke-current text-gray-800 dark:text-gray-200;
-  }
-}
-```
-
-## Development
-
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   # or
-   yarn
-   ```
-3. Start the development server:
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-4. Open http://localhost:5173 in your browser
-
-## Building for Production
-
-```bash
-npm run build
-# or
-yarn build
-```
-
-## Contributing
-
-Pull requests and issues are welcome! Please open an issue for bugs or feature requests.
-
----
-
-## License
-
-MIT
-
-# trigger deploy-demo again
-
- 
